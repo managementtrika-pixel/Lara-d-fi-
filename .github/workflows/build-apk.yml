@@ -1,0 +1,65 @@
+name: Construire APK ZeubiCardGames
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Vérifier le projet
+        run: |
+          test -f ZeubiCardGames_Android_Project.zip || {
+            echo "Ajoute ZeubiCardGames_Android_Project.zip à la racine du dépôt."
+            exit 1
+          }
+
+      - name: Installer Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Installer Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Installer Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Installer Android 35
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Extraire le projet
+        run: |
+          rm -rf workspace
+          mkdir workspace
+          unzip -q ZeubiCardGames_Android_Project.zip -d workspace
+
+      - name: Compiler l’APK
+        working-directory: workspace/ZeubiCardGames_Android
+        run: gradle --no-daemon assembleDebug
+
+      - name: Préparer l’APK
+        run: |
+          mkdir -p apk
+          cp workspace/ZeubiCardGames_Android/app/build/outputs/apk/debug/app-debug.apk apk/ZeubiCardGames.apk
+
+      - name: Publier l’APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZeubiCardGames-APK
+          path: apk/ZeubiCardGames.apk
+          retention-days: 30
