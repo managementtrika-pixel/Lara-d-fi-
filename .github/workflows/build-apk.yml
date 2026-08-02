@@ -45,16 +45,49 @@ jobs:
           yes | sdkmanager --licenses >/dev/null || true
           sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
-      - name: Extraire le projet
+      - name: Conserver la même signature Android
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: zeubicardgames-debug-keystore-v1
+
+      - name: Préparer la signature Android
+        run: |
+          mkdir -p ~/.android
+          if [ ! -f ~/.android/debug.keystore ]; then
+            keytool -genkeypair \
+              -keystore ~/.android/debug.keystore \
+              -storepass android \
+              -alias androiddebugkey \
+              -keypass android \
+              -dname "CN=Android Debug,O=ZeubiCardGames,C=FR" \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000
+          fi
+
+      - name: Extraire et corriger le projet
         run: |
           rm -rf workspace
           mkdir workspace
           unzip -q ZeubiCardGames_Android_Project.zip -d workspace
           PROJECT_DIR="$(dirname "$(find workspace -maxdepth 3 -name settings.gradle -print -quit)")"
           test -n "$PROJECT_DIR" && test -f "$PROJECT_DIR/settings.gradle"
+
+          MANIFEST="$PROJECT_DIR/app/src/main/AndroidManifest.xml"
+          APP_GRADLE="$PROJECT_DIR/app/build.gradle"
+          test -f "$MANIFEST" && test -f "$APP_GRADLE"
+
+          sed -i 's/android:screenOrientation="sensorLandscape"/android:screenOrientation="portrait"/' "$MANIFEST"
+          sed -i 's/android:screenOrientation="landscape"/android:screenOrientation="portrait"/' "$MANIFEST"
+          sed -i -E "s/versionCode [0-9]+/versionCode $((GITHUB_RUN_NUMBER + 1))/" "$APP_GRADLE"
+          sed -i -E "s/versionName '[^']+'/versionName '1.0.${GITHUB_RUN_NUMBER}'/" "$APP_GRADLE"
+
+          grep 'screenOrientation' "$MANIFEST"
+          grep -E 'versionCode|versionName' "$APP_GRADLE"
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
-      - name: Compiler l’APK
+      - name: Compiler l’APK vertical
         run: gradle -p "$PROJECT_DIR" --no-daemon assembleDebug
 
       - name: Préparer l’APK
@@ -80,6 +113,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "APK déjà à jour."
           else
-            git commit -m "Publier ZeubiCardGames.apk [skip ci]"
+            git commit -m "Publier ZeubiCardGames vertical [skip ci]"
             git push
           fi
