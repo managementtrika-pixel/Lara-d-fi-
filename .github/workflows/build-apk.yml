@@ -6,6 +6,7 @@ on:
     paths:
       - 'ZeubiCardGames_Android_Project.zip'
       - 'ZeubiCardGames_Android_Project_V8_5_Mobile.zip'
+      - 'ZeubiCardGames_V8_5_CombatModes_BoosterDisplay.html'
       - '.github/workflows/build-apk.yml'
   workflow_dispatch:
 
@@ -20,7 +21,7 @@ jobs:
       - name: Récupérer le dépôt
         uses: actions/checkout@v4
 
-      - name: Choisir la version du projet
+      - name: Choisir le projet Android
         run: |
           if [ -f ZeubiCardGames_Android_Project_V8_5_Mobile.zip ]; then
             PROJECT_ZIP='ZeubiCardGames_Android_Project_V8_5_Mobile.zip'
@@ -31,7 +32,6 @@ jobs:
             exit 1
           fi
           echo "PROJECT_ZIP=$PROJECT_ZIP" >> "$GITHUB_ENV"
-          echo "Projet utilisé : $PROJECT_ZIP"
 
       - name: Installer Java 17
         uses: actions/setup-java@v4
@@ -52,7 +52,7 @@ jobs:
           yes | sdkmanager --licenses >/dev/null || true
           sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
-      - name: Conserver la même signature Android
+      - name: Conserver la signature Android
         uses: actions/cache@v4
         with:
           path: ~/.android/debug.keystore
@@ -73,7 +73,7 @@ jobs:
               -validity 10000
           fi
 
-      - name: Extraire et vérifier le projet
+      - name: Injecter la vraie V8.5 et corriger le mobile
         run: |
           rm -rf workspace
           mkdir workspace
@@ -84,24 +84,126 @@ jobs:
           MANIFEST="$PROJECT_DIR/app/src/main/AndroidManifest.xml"
           APP_GRADLE="$PROJECT_DIR/app/build.gradle"
           HTML="$PROJECT_DIR/app/src/main/assets/index.html"
-          test -f "$MANIFEST" && test -f "$APP_GRADLE" && test -f "$HTML"
+          MAIN_ACTIVITY="$PROJECT_DIR/app/src/main/java/com/zeubicardgames/app/MainActivity.java"
+
+          test -f "$MANIFEST" && test -f "$APP_GRADLE"
+          if [ -f ZeubiCardGames_V8_5_CombatModes_BoosterDisplay.html ]; then
+            cp ZeubiCardGames_V8_5_CombatModes_BoosterDisplay.html "$HTML"
+          fi
+          test -f "$HTML"
 
           sed -i 's/android:screenOrientation="sensorLandscape"/android:screenOrientation="portrait"/' "$MANIFEST"
           sed -i 's/android:screenOrientation="landscape"/android:screenOrientation="portrait"/' "$MANIFEST"
           sed -i -E "s/versionCode [0-9]+/versionCode $((GITHUB_RUN_NUMBER + 1))/" "$APP_GRADLE"
           sed -i -E "s/versionName '[^']+'/versionName '8.5.${GITHUB_RUN_NUMBER}'/" "$APP_GRADLE"
 
-          grep 'screenOrientation' "$MANIFEST"
-          grep -E 'versionCode|versionName' "$APP_GRADLE"
+          cat > "$MAIN_ACTIVITY" <<'JAVA'
+          package com.zeubicardgames.app;
+
+          import android.annotation.SuppressLint;
+          import android.app.Activity;
+          import android.os.Build;
+          import android.os.Bundle;
+          import android.view.View;
+          import android.webkit.WebChromeClient;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+
+          public class MainActivity extends Activity {
+              private WebView webView;
+
+              @SuppressLint("SetJavaScriptEnabled")
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  applyImmersiveMode();
+
+                  webView = new WebView(this);
+                  webView.setVerticalScrollBarEnabled(false);
+                  webView.setHorizontalScrollBarEnabled(false);
+                  webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+                  setContentView(webView);
+
+                  WebSettings settings = webView.getSettings();
+                  settings.setJavaScriptEnabled(true);
+                  settings.setDomStorageEnabled(true);
+                  settings.setDatabaseEnabled(true);
+                  settings.setAllowFileAccess(true);
+                  settings.setAllowContentAccess(true);
+                  settings.setMediaPlaybackRequiresUserGesture(false);
+                  settings.setUseWideViewPort(true);
+                  settings.setLoadWithOverviewMode(false);
+                  settings.setTextZoom(100);
+                  settings.setDefaultFontSize(16);
+                  settings.setDefaultFixedFontSize(16);
+                  settings.setMinimumFontSize(1);
+                  settings.setMinimumLogicalFontSize(1);
+                  settings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
+                  settings.setBuiltInZoomControls(false);
+                  settings.setDisplayZoomControls(false);
+                  settings.setSupportZoom(false);
+                  settings.setDefaultTextEncodingName("utf-8");
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                      settings.setSafeBrowsingEnabled(true);
+                  }
+
+                  webView.setWebChromeClient(new WebChromeClient());
+                  webView.setWebViewClient(new WebViewClient() {
+                      @Override
+                      public void onPageFinished(WebView view, String url) {
+                          super.onPageFinished(view, url);
+                          view.evaluateJavascript(
+                              "(function(){" +
+                              "var m=document.querySelector('meta[name=viewport]');" +
+                              "if(!m){m=document.createElement('meta');m.name='viewport';document.head.appendChild(m);}" +
+                              "m.content='width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover';" +
+                              "document.documentElement.style.webkitTextSizeAdjust='100%';" +
+                              "document.body.style.webkitTextSizeAdjust='100%';" +
+                              "})();", null
+                          );
+                      }
+                  });
+
+                  webView.setBackgroundColor(0xFFEDF4FA);
+                  webView.loadUrl("file:///android_asset/index.html");
+              }
+
+              private void applyImmersiveMode() {
+                  getWindow().getDecorView().setSystemUiVisibility(
+                      View.SYSTEM_UI_FLAG_FULLSCREEN
+                          | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                          | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                          | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                          | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                          | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                  );
+              }
+
+              @Override
+              public void onBackPressed() {
+                  if (webView != null && webView.canGoBack()) webView.goBack();
+                  else super.onBackPressed();
+              }
+
+              @Override
+              protected void onResume() {
+                  super.onResume();
+                  applyImmersiveMode();
+              }
+          }
+          JAVA
+
           grep -q '<title>ZeubiCardGames V8</title>' "$HTML"
+          grep -q 'V8.5' "$HTML"
           if grep -qi 'coffre' "$HTML"; then
-            echo 'Ancienne version détectée : des coffres sont encore présents.'
+            echo 'Erreur : ancienne version avec coffres détectée.'
             exit 1
           fi
-          echo 'Version V8.5 confirmée, sans coffres.'
+          echo 'V8.5 confirmée, sans coffres, portrait et viewport mobile corrigé.'
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
-      - name: Compiler l’APK V8.5 vertical
+      - name: Compiler l’APK V8.5
         run: gradle -p "$PROJECT_DIR" --no-daemon assembleDebug
 
       - name: Préparer l’APK
@@ -119,7 +221,7 @@ jobs:
           path: apk/ZeubiCardGames.apk
           retention-days: 30
 
-      - name: Ajouter le lien de téléchargement au dépôt
+      - name: Publier le téléchargement direct
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -127,6 +229,6 @@ jobs:
           if git diff --cached --quiet; then
             echo 'APK déjà à jour.'
           else
-            git commit -m 'Publier ZeubiCardGames V8.5 mobile [skip ci]'
+            git commit -m 'Publier ZeubiCardGames V8.5 corrigé [skip ci]'
             git push
           fi
