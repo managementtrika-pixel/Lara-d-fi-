@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - 'ZeubiCardGames_Android_Project.zip'
+      - 'ZeubiCardGames_Android_Project_V8_5_Mobile.zip'
       - '.github/workflows/build-apk.yml'
   workflow_dispatch:
 
@@ -19,12 +20,18 @@ jobs:
       - name: Récupérer le dépôt
         uses: actions/checkout@v4
 
-      - name: Vérifier le projet
+      - name: Choisir la version du projet
         run: |
-          test -f ZeubiCardGames_Android_Project.zip || {
-            echo "Le fichier ZeubiCardGames_Android_Project.zip est absent."
+          if [ -f ZeubiCardGames_Android_Project_V8_5_Mobile.zip ]; then
+            PROJECT_ZIP='ZeubiCardGames_Android_Project_V8_5_Mobile.zip'
+          elif [ -f ZeubiCardGames_Android_Project.zip ]; then
+            PROJECT_ZIP='ZeubiCardGames_Android_Project.zip'
+          else
+            echo 'Aucun projet Android trouvé.'
             exit 1
-          }
+          fi
+          echo "PROJECT_ZIP=$PROJECT_ZIP" >> "$GITHUB_ENV"
+          echo "Projet utilisé : $PROJECT_ZIP"
 
       - name: Installer Java 17
         uses: actions/setup-java@v4
@@ -66,28 +73,35 @@ jobs:
               -validity 10000
           fi
 
-      - name: Extraire et corriger le projet
+      - name: Extraire et vérifier le projet
         run: |
           rm -rf workspace
           mkdir workspace
-          unzip -q ZeubiCardGames_Android_Project.zip -d workspace
+          unzip -q "$PROJECT_ZIP" -d workspace
           PROJECT_DIR="$(dirname "$(find workspace -maxdepth 3 -name settings.gradle -print -quit)")"
           test -n "$PROJECT_DIR" && test -f "$PROJECT_DIR/settings.gradle"
 
           MANIFEST="$PROJECT_DIR/app/src/main/AndroidManifest.xml"
           APP_GRADLE="$PROJECT_DIR/app/build.gradle"
-          test -f "$MANIFEST" && test -f "$APP_GRADLE"
+          HTML="$PROJECT_DIR/app/src/main/assets/index.html"
+          test -f "$MANIFEST" && test -f "$APP_GRADLE" && test -f "$HTML"
 
           sed -i 's/android:screenOrientation="sensorLandscape"/android:screenOrientation="portrait"/' "$MANIFEST"
           sed -i 's/android:screenOrientation="landscape"/android:screenOrientation="portrait"/' "$MANIFEST"
           sed -i -E "s/versionCode [0-9]+/versionCode $((GITHUB_RUN_NUMBER + 1))/" "$APP_GRADLE"
-          sed -i -E "s/versionName '[^']+'/versionName '1.0.${GITHUB_RUN_NUMBER}'/" "$APP_GRADLE"
+          sed -i -E "s/versionName '[^']+'/versionName '8.5.${GITHUB_RUN_NUMBER}'/" "$APP_GRADLE"
 
           grep 'screenOrientation' "$MANIFEST"
           grep -E 'versionCode|versionName' "$APP_GRADLE"
+          grep -q '<title>ZeubiCardGames V8</title>' "$HTML"
+          if grep -qi 'coffre' "$HTML"; then
+            echo 'Ancienne version détectée : des coffres sont encore présents.'
+            exit 1
+          fi
+          echo 'Version V8.5 confirmée, sans coffres.'
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
-      - name: Compiler l’APK vertical
+      - name: Compiler l’APK V8.5 vertical
         run: gradle -p "$PROJECT_DIR" --no-daemon assembleDebug
 
       - name: Préparer l’APK
@@ -101,7 +115,7 @@ jobs:
       - name: Publier l’APK dans les Actions
         uses: actions/upload-artifact@v4
         with:
-          name: ZeubiCardGames-APK
+          name: ZeubiCardGames-V8-5-APK
           path: apk/ZeubiCardGames.apk
           retention-days: 30
 
@@ -111,8 +125,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add downloads/ZeubiCardGames.apk
           if git diff --cached --quiet; then
-            echo "APK déjà à jour."
+            echo 'APK déjà à jour.'
           else
-            git commit -m "Publier ZeubiCardGames vertical [skip ci]"
+            git commit -m 'Publier ZeubiCardGames V8.5 mobile [skip ci]'
             git push
           fi
