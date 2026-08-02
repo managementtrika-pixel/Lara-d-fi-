@@ -3,10 +3,13 @@ name: Construire APK ZeubiCardGames
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'ZeubiCardGames_Android_Project.zip'
+      - '.github/workflows/build-apk.yml'
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -19,7 +22,7 @@ jobs:
       - name: Vérifier le projet
         run: |
           test -f ZeubiCardGames_Android_Project.zip || {
-            echo "Ajoute ZeubiCardGames_Android_Project.zip à la racine du dépôt."
+            echo "Le fichier ZeubiCardGames_Android_Project.zip est absent."
             exit 1
           }
 
@@ -47,19 +50,36 @@ jobs:
           rm -rf workspace
           mkdir workspace
           unzip -q ZeubiCardGames_Android_Project.zip -d workspace
+          PROJECT_DIR="$(dirname "$(find workspace -maxdepth 3 -name settings.gradle -print -quit)")"
+          test -n "$PROJECT_DIR" && test -f "$PROJECT_DIR/settings.gradle"
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
       - name: Compiler l’APK
-        working-directory: workspace/ZeubiCardGames_Android
-        run: gradle --no-daemon assembleDebug
+        run: gradle -p "$PROJECT_DIR" --no-daemon assembleDebug
 
       - name: Préparer l’APK
         run: |
-          mkdir -p apk
-          cp workspace/ZeubiCardGames_Android/app/build/outputs/apk/debug/app-debug.apk apk/ZeubiCardGames.apk
+          APK_SOURCE="$(find "$PROJECT_DIR" -path '*/build/outputs/apk/debug/*-debug.apk' -print -quit)"
+          test -n "$APK_SOURCE" && test -f "$APK_SOURCE"
+          mkdir -p apk downloads
+          cp "$APK_SOURCE" apk/ZeubiCardGames.apk
+          cp "$APK_SOURCE" downloads/ZeubiCardGames.apk
 
-      - name: Publier l’APK
+      - name: Publier l’APK dans les Actions
         uses: actions/upload-artifact@v4
         with:
           name: ZeubiCardGames-APK
           path: apk/ZeubiCardGames.apk
           retention-days: 30
+
+      - name: Ajouter le lien de téléchargement au dépôt
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add downloads/ZeubiCardGames.apk
+          if git diff --cached --quiet; then
+            echo "APK déjà à jour."
+          else
+            git commit -m "Publier ZeubiCardGames.apk [skip ci]"
+            git push
+          fi
