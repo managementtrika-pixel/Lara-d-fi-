@@ -28,6 +28,11 @@ jobs:
           unzip -q ZeubiCardGames_Native_Source.zip -d .
           chmod +x native/gradlew native/tools/build_catalog.mjs
 
+          # API 36 est la plateforme Android stable disponible sur le runner.
+          sed -i 's/compileSdk = 37/compileSdk = 36/' native/app/build.gradle.kts
+          sed -i 's/targetSdk = 37/targetSdk = 36/' native/app/build.gradle.kts
+          grep -E 'compileSdk|targetSdk|minSdk' native/app/build.gradle.kts
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -46,22 +51,22 @@ jobs:
 
       - uses: android-actions/setup-android@v3
 
-      - name: Installer SDK Android 37
+      - name: Installer SDK Android 36 stable
         run: |
           yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager "platform-tools" "platforms;android-37" "build-tools;36.0.0"
+          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
 
       - name: Lint
         working-directory: native
-        run: ./gradlew lint --no-daemon
+        run: ./gradlew lint --no-daemon --stacktrace
 
       - name: Tests unitaires
         working-directory: native
-        run: ./gradlew testDebugUnitTest --no-daemon
+        run: ./gradlew testDebugUnitTest --no-daemon --stacktrace
 
       - name: Compiler APK debug
         working-directory: native
-        run: ./gradlew assembleDebug --no-daemon
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Préparer l’APK
         run: |
