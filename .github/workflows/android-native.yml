@@ -32,13 +32,14 @@ jobs:
           sed -i 's/compileSdk = 37/compileSdk = 36/' native/app/build.gradle.kts
           sed -i 's/targetSdk = 37/targetSdk = 36/' native/app/build.gradle.kts
 
-          # AGP 9 intègre Kotlin nativement : l’ancien plugin Android Kotlin ferait doublon.
+          # AGP 9 intègre Kotlin nativement : retirer l’ancienne configuration redondante.
           sed -i '/alias(libs.plugins.kotlin.android)/d' native/app/build.gradle.kts
+          sed -i '/kotlinOptions { jvmTarget = "17" }/d' native/app/build.gradle.kts
 
           echo '--- Configuration Android ---'
           grep -E 'compileSdk|targetSdk|minSdk' native/app/build.gradle.kts
           echo '--- Plugins application ---'
-          sed -n '1,12p' native/app/build.gradle.kts
+          sed -n '1,40p' native/app/build.gradle.kts
 
       - uses: actions/setup-node@v4
         with:
