@@ -1,0 +1,138 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "491f5e0ea4c88131b1922431f525a49f",
+    "entities": [
+      {
+        "tableName": "owned_cards",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`canonicalId` TEXT NOT NULL, `quantity` INTEGER NOT NULL, `selectedVariantId` TEXT, PRIMARY KEY(`canonicalId`))",
+        "fields": [
+          {
+            "fieldPath": "canonicalId",
+            "columnName": "canonicalId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "quantity",
+            "columnName": "quantity",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "selectedVariantId",
+            "columnName": "selectedVariantId",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "canonicalId"
+          ]
+        }
+      },
+      {
+        "tableName": "decks",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `cardIdsCsv` TEXT NOT NULL, `updatedAt` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cardIdsCsv",
+            "columnName": "cardIdsCsv",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "campaign",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`opponentId` TEXT NOT NULL, `completed` INTEGER NOT NULL, `wins` INTEGER NOT NULL, PRIMARY KEY(`opponentId`))",
+        "fields": [
+          {
+            "fieldPath": "opponentId",
+            "columnName": "opponentId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "completed",
+            "columnName": "completed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "wins",
+            "columnName": "wins",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "opponentId"
+          ]
+        }
+      },
+      {
+        "tableName": "missions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`missionId` TEXT NOT NULL, `progress` INTEGER NOT NULL, `claimed` INTEGER NOT NULL, PRIMARY KEY(`missionId`))",
+        "fields": [
+          {
+            "fieldPath": "missionId",
+            "columnName": "missionId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "progress",
+            "columnName": "progress",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "claimed",
+            "columnName": "claimed",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "missionId"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '491f5e0ea4c88131b1922431f525a49f')"
+    ]
+  }
+}

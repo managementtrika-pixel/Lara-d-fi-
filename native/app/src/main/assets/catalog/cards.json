@@ -1,0 +1,2865 @@
+[
+  {
+    "canonicalId": "cod:001:lara_recrue",
+    "setId": "cod",
+    "number": "001",
+    "name": "Lara Recrue",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 70,
+    "retreat": 1,
+    "rarity": "C",
+    "attacks": [
+      {
+        "name": "Premier chargeur",
+        "damage": 10,
+        "cost": 1
+      },
+      {
+        "name": "Tir approximatif",
+        "damage": 20,
+        "cost": 1
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "cod:001:lara_recrue:v1",
+        "fullPath": "cards/full/cod_001_lara_recrue__v1.webp",
+        "thumbPath": "cards/thumb/cod_001_lara_recrue__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:002:larafale",
+    "setId": "cod",
+    "number": "002",
+    "name": "Larafale",
+    "kind": "pokemon",
+    "stage": "evo1",
+    "evolvesFrom": "Lara Recrue",
+    "hp": 150,
+    "retreat": 2,
+    "rarity": "R",
+    "attacks": [
+      {
+        "name": "Rafale contrôlée",
+        "damage": 60,
+        "cost": 1
+      },
+      {
+        "name": "Feu nourri",
+        "damage": 110,
+        "cost": 3
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "cod:002:larafale:v1",
+        "fullPath": "cards/full/cod_002_larafale__v1.webp",
+        "thumbPath": "cards/thumb/cod_002_larafale__v1.webp"
+      },
+      {
+        "variantId": "cod:002:larafale:v2",
+        "fullPath": "cards/full/cod_002_larafale__v2.webp",
+        "thumbPath": "cards/thumb/cod_002_larafale__v2.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:003:trikuss_no_scope",
+    "setId": "cod",
+    "number": "003",
+    "name": "Trikuss No-Scope",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 60,
+    "retreat": 1,
+    "rarity": "C",
+    "attacks": [
+      {
+        "name": "Sans viser",
+        "damage": 10,
+        "cost": 1
+      },
+      {
+        "name": "Ça devait passer",
+        "damage": 20,
+        "cost": 1
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "cod:003:trikuss_no_scope:v1",
+        "fullPath": "cards/full/cod_003_trikuss_no_scope__v1.webp",
+        "thumbPath": "cards/thumb/cod_003_trikuss_no_scope__v1.webp"
+      },
+      {
+        "variantId": "cod:003:trikuss_no_scope:v2",
+        "fullPath": "cards/full/cod_003_trikuss_no_scope__v2.webp",
+        "thumbPath": "cards/thumb/cod_003_trikuss_no_scope__v2.webp"
+      },
+      {
+        "variantId": "cod:003:trikuss_no_scope:v3",
+        "fullPath": "cards/full/cod_003_trikuss_no_scope__v3.webp",
+        "thumbPath": "cards/thumb/cod_003_trikuss_no_scope__v3.webp"
+      },
+      {
+        "variantId": "cod:003:trikuss_no_scope:v4",
+        "fullPath": "cards/full/cod_003_trikuss_no_scope__v4.webp",
+        "thumbPath": "cards/thumb/cod_003_trikuss_no_scope__v4.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:004:croft_quickscope",
+    "setId": "cod",
+    "number": "004",
+    "name": "Croft Quickscope",
+    "kind": "pokemon",
+    "stage": "evo1",
+    "evolvesFrom": "Trikuss No-Scope",
+    "hp": 120,
+    "retreat": 1,
+    "rarity": "R",
+    "attacks": [
+      {
+        "name": "Quickscope",
+        "damage": 50,
+        "cost": 1
+      },
+      {
+        "name": "Réflexe de précision",
+        "damage": 80,
+        "cost": 2
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "cod:004:croft_quickscope:v1",
+        "fullPath": "cards/full/cod_004_croft_quickscope__v1.webp",
+        "thumbPath": "cards/thumb/cod_004_croft_quickscope__v1.webp"
+      },
+      {
+        "variantId": "cod:004:croft_quickscope:v2",
+        "fullPath": "cards/full/cod_004_croft_quickscope__v2.webp",
+        "thumbPath": "cards/thumb/cod_004_croft_quickscope__v2.webp"
+      },
+      {
+        "variantId": "cod:004:croft_quickscope:v3",
+        "fullPath": "cards/full/cod_004_croft_quickscope__v3.webp",
+        "thumbPath": "cards/thumb/cod_004_croft_quickscope__v3.webp"
+      },
+      {
+        "variantId": "cod:004:croft_quickscope:v4",
+        "fullPath": "cards/full/cod_004_croft_quickscope__v4.webp",
+        "thumbPath": "cards/thumb/cod_004_croft_quickscope__v4.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:005:lara_360",
+    "setId": "cod",
+    "number": "005",
+    "name": "Lara 360",
+    "kind": "pokemon",
+    "stage": "evo2",
+    "evolvesFrom": "Croft Quickscope",
+    "hp": 190,
+    "retreat": 2,
+    "rarity": "UR",
+    "attacks": [
+      {
+        "name": "Rotation impossible",
+        "damage": 90,
+        "cost": 2
+      },
+      {
+        "name": "360 ONE SHOT",
+        "damage": 150,
+        "cost": 3
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "cod:005:lara_360:v1",
+        "fullPath": "cards/full/cod_005_lara_360__v1.webp",
+        "thumbPath": "cards/thumb/cod_005_lara_360__v1.webp"
+      },
+      {
+        "variantId": "cod:005:lara_360:v2",
+        "fullPath": "cards/full/cod_005_lara_360__v2.webp",
+        "thumbPath": "cards/thumb/cod_005_lara_360__v2.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:006:trikuss_gun",
+    "setId": "cod",
+    "number": "006",
+    "name": "Trikuss Gun",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 100,
+    "retreat": 1,
+    "rarity": "U",
+    "attacks": [
+      {
+        "name": "Tir instinctif",
+        "damage": 30,
+        "cost": 1
+      },
+      {
+        "name": "Gunfight",
+        "damage": 70,
+        "cost": 2
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "cod:006:trikuss_gun:v1",
+        "fullPath": "cards/full/cod_006_trikuss_gun__v1.webp",
+        "thumbPath": "cards/thumb/cod_006_trikuss_gun__v1.webp"
+      },
+      {
+        "variantId": "cod:006:trikuss_gun:v2",
+        "fullPath": "cards/full/cod_006_trikuss_gun__v2.webp",
+        "thumbPath": "cards/thumb/cod_006_trikuss_gun__v2.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:007:laradar",
+    "setId": "cod",
+    "number": "007",
+    "name": "Laradar",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 110,
+    "retreat": 1,
+    "rarity": "U",
+    "attacks": [
+      {
+        "name": "Détection",
+        "damage": 30,
+        "cost": 1
+      },
+      {
+        "name": "Cible verrouillée",
+        "damage": 70,
+        "cost": 2
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "cod:007:laradar:v1",
+        "fullPath": "cards/full/cod_007_laradar__v1.webp",
+        "thumbPath": "cards/thumb/cod_007_laradar__v1.webp"
+      },
+      {
+        "variantId": "cod:007:laradar:v2",
+        "fullPath": "cards/full/cod_007_laradar__v2.webp",
+        "thumbPath": "cards/thumb/cod_007_laradar__v2.webp"
+      },
+      {
+        "variantId": "cod:007:laradar:v3",
+        "fullPath": "cards/full/cod_007_laradar__v3.webp",
+        "thumbPath": "cards/thumb/cod_007_laradar__v3.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:008:gains_fantome",
+    "setId": "cod",
+    "number": "008",
+    "name": "Gains Fantôme",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 80,
+    "retreat": 1,
+    "rarity": "C",
+    "attacks": [
+      {
+        "name": "Pas feutrés",
+        "damage": 20,
+        "cost": 1
+      },
+      {
+        "name": "Fantôme",
+        "damage": 30,
+        "cost": 1
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "cod:008:gains_fantome:v1",
+        "fullPath": "cards/full/cod_008_gains_fantome__v1.webp",
+        "thumbPath": "cards/thumb/cod_008_gains_fantome__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:009:gains_silence_de_mort",
+    "setId": "cod",
+    "number": "009",
+    "name": "Gains Silence de Mort",
+    "kind": "pokemon",
+    "stage": "evo1",
+    "evolvesFrom": "Gains Fantôme",
+    "hp": 160,
+    "retreat": 2,
+    "rarity": "SR",
+    "attacks": [
+      {
+        "name": "Présence effacée",
+        "damage": 70,
+        "cost": 2
+      },
+      {
+        "name": "Silence de Mort",
+        "damage": 110,
+        "cost": 3
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "cod:009:gains_silence_de_mort:v1",
+        "fullPath": "cards/full/cod_009_gains_silence_de_mort__v1.webp",
+        "thumbPath": "cards/thumb/cod_009_gains_silence_de_mort__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:010:lara_campeuse",
+    "setId": "cod",
+    "number": "010",
+    "name": "Lara Campeuse",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 60,
+    "retreat": 1,
+    "rarity": "C",
+    "attacks": [
+      {
+        "name": "J’attends…",
+        "damage": 10,
+        "cost": 1
+      },
+      {
+        "name": "Toujours au même endroit",
+        "damage": 20,
+        "cost": 1
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "cod:010:lara_campeuse:v1",
+        "fullPath": "cards/full/cod_010_lara_campeuse__v1.webp",
+        "thumbPath": "cards/thumb/cod_010_lara_campeuse__v1.webp"
+      },
+      {
+        "variantId": "cod:010:lara_campeuse:v2",
+        "fullPath": "cards/full/cod_010_lara_campeuse__v2.webp",
+        "thumbPath": "cards/thumb/cod_010_lara_campeuse__v2.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:011:lara_predator",
+    "setId": "cod",
+    "number": "011",
+    "name": "Lara Predator",
+    "kind": "pokemon",
+    "stage": "evo1",
+    "evolvesFrom": "Lara Campeuse",
+    "hp": 160,
+    "retreat": 2,
+    "rarity": "SR",
+    "attacks": [
+      {
+        "name": "Traque",
+        "damage": 60,
+        "cost": 2
+      },
+      {
+        "name": "Prédateur",
+        "damage": 120,
+        "cost": 3
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "cod:011:lara_predator:v1",
+        "fullPath": "cards/full/cod_011_lara_predator__v1.webp",
+        "thumbPath": "cards/thumb/cod_011_lara_predator__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:012:croft_akimbo_gains",
+    "setId": "cod",
+    "number": "012",
+    "name": "Croft Akimbo Gains",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 120,
+    "retreat": 1,
+    "rarity": "R",
+    "attacks": [
+      {
+        "name": "Double tir",
+        "damage": 50,
+        "cost": 1
+      },
+      {
+        "name": "Akimbo Rush",
+        "damage": 90,
+        "cost": 2
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "cod:012:croft_akimbo_gains:v1",
+        "fullPath": "cards/full/cod_012_croft_akimbo_gains__v1.webp",
+        "thumbPath": "cards/thumb/cod_012_croft_akimbo_gains__v1.webp"
+      },
+      {
+        "variantId": "cod:012:croft_akimbo_gains:v2",
+        "fullPath": "cards/full/cod_012_croft_akimbo_gains__v2.webp",
+        "thumbPath": "cards/thumb/cod_012_croft_akimbo_gains__v2.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:013:croft_rpg_gains",
+    "setId": "cod",
+    "number": "013",
+    "name": "Croft RPG Gains",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 140,
+    "retreat": 2,
+    "rarity": "R",
+    "attacks": [
+      {
+        "name": "Anti-véhicule",
+        "damage": 50,
+        "cost": 1
+      },
+      {
+        "name": "RPG Gains",
+        "damage": 120,
+        "cost": 3
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "cod:013:croft_rpg_gains:v1",
+        "fullPath": "cards/full/cod_013_croft_rpg_gains__v1.webp",
+        "thumbPath": "cards/thumb/cod_013_croft_rpg_gains__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:014:lara_niveau_1",
+    "setId": "cod",
+    "number": "014",
+    "name": "Lara Niveau 1",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 60,
+    "retreat": 1,
+    "rarity": "C",
+    "attacks": [
+      {
+        "name": "Classe par défaut",
+        "damage": 10,
+        "cost": 1
+      },
+      {
+        "name": "Première partie",
+        "damage": 20,
+        "cost": 1
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "cod:014:lara_niveau_1:v1",
+        "fullPath": "cards/full/cod_014_lara_niveau_1__v1.webp",
+        "thumbPath": "cards/thumb/cod_014_lara_niveau_1__v1.webp"
+      },
+      {
+        "variantId": "cod:014:lara_niveau_1:v2",
+        "fullPath": "cards/full/cod_014_lara_niveau_1__v2.webp",
+        "thumbPath": "cards/thumb/cod_014_lara_niveau_1__v2.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:015:lara_prestige_master",
+    "setId": "cod",
+    "number": "015",
+    "name": "Lara Prestige Master",
+    "kind": "pokemon",
+    "stage": "evo1",
+    "evolvesFrom": "Lara Niveau 1",
+    "hp": 180,
+    "retreat": 2,
+    "rarity": "UR",
+    "attacks": [
+      {
+        "name": "Classe optimisée",
+        "damage": 80,
+        "cost": 2
+      },
+      {
+        "name": "Prestige Master",
+        "damage": 140,
+        "cost": 3
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "cod:015:lara_prestige_master:v1",
+        "fullPath": "cards/full/cod_015_lara_prestige_master__v1.webp",
+        "thumbPath": "cards/thumb/cod_015_lara_prestige_master__v1.webp"
+      },
+      {
+        "variantId": "cod:015:lara_prestige_master:v2",
+        "fullPath": "cards/full/cod_015_lara_prestige_master__v2.webp",
+        "thumbPath": "cards/thumb/cod_015_lara_prestige_master__v2.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:016:lara_950",
+    "setId": "cod",
+    "number": "016",
+    "name": "Lara 950",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 70,
+    "retreat": 1,
+    "rarity": "C",
+    "attacks": [
+      {
+        "name": "Premier achat",
+        "damage": 20,
+        "cost": 1
+      },
+      {
+        "name": "Mauvais tirage",
+        "damage": 30,
+        "cost": 1
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "cod:016:lara_950:v1",
+        "fullPath": "cards/full/cod_016_lara_950__v1.webp",
+        "thumbPath": "cards/thumb/cod_016_lara_950__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:017:trikuss_wonder",
+    "setId": "cod",
+    "number": "017",
+    "name": "Trikuss Wonder",
+    "kind": "pokemon",
+    "stage": "evo1",
+    "evolvesFrom": "Lara 950",
+    "hp": 180,
+    "retreat": 2,
+    "rarity": "SR",
+    "attacks": [
+      {
+        "name": "Arme miracle",
+        "damage": 80,
+        "cost": 2
+      },
+      {
+        "name": "Fin de manche",
+        "damage": 140,
+        "cost": 3
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "cod:017:trikuss_wonder:v1",
+        "fullPath": "cards/full/cod_017_trikuss_wonder__v1.webp",
+        "thumbPath": "cards/thumb/cod_017_trikuss_wonder__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:018:lara_warfare",
+    "setId": "cod",
+    "number": "018",
+    "name": "Lara Warfare",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 140,
+    "retreat": 2,
+    "rarity": "R",
+    "attacks": [
+      {
+        "name": "Assaut tactique",
+        "damage": 60,
+        "cost": 1
+      },
+      {
+        "name": "Warfare",
+        "damage": 110,
+        "cost": 3
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "cod:018:lara_warfare:v1",
+        "fullPath": "cards/full/cod_018_lara_warfare__v1.webp",
+        "thumbPath": "cards/thumb/cod_018_lara_warfare__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:019:uav_en_ligne",
+    "setId": "cod",
+    "number": "019",
+    "name": "UAV en ligne",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "U",
+    "attacks": [],
+    "effect": "searchPokemon",
+    "variants": [
+      {
+        "variantId": "cod:019:uav_en_ligne:v1",
+        "fullPath": "cards/full/cod_019_uav_en_ligne__v1.webp",
+        "thumbPath": "cards/thumb/cod_019_uav_en_ligne__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:020:largage_tactique",
+    "setId": "cod",
+    "number": "020",
+    "name": "Largage tactique",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "U",
+    "attacks": [],
+    "effect": "recoverEnergy2",
+    "variants": [
+      {
+        "variantId": "cod:020:largage_tactique:v1",
+        "fullPath": "cards/full/cod_020_largage_tactique__v1.webp",
+        "thumbPath": "cards/thumb/cod_020_largage_tactique__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:021:changement_de_classe",
+    "setId": "cod",
+    "number": "021",
+    "name": "Changement de classe",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "U",
+    "attacks": [],
+    "effect": "switchAndBuff",
+    "variants": [
+      {
+        "variantId": "cod:021:changement_de_classe:v1",
+        "fullPath": "cards/full/cod_021_changement_de_classe__v1.webp",
+        "thumbPath": "cards/thumb/cod_021_changement_de_classe__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:022:drone_de_reconnaissance",
+    "setId": "cod",
+    "number": "022",
+    "name": "Drone de reconnaissance",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "U",
+    "attacks": [],
+    "effect": "peekHandDraw",
+    "variants": [
+      {
+        "variantId": "cod:022:drone_de_reconnaissance:v1",
+        "fullPath": "cards/full/cod_022_drone_de_reconnaissance__v1.webp",
+        "thumbPath": "cards/thumb/cod_022_drone_de_reconnaissance__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:023:serie_d_eliminations",
+    "setId": "cod",
+    "number": "023",
+    "name": "Série d’éliminations",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "R",
+    "attacks": [],
+    "effect": "streakDraw",
+    "variants": [
+      {
+        "variantId": "cod:023:serie_d_eliminations:v1",
+        "fullPath": "cards/full/cod_023_serie_d_eliminations__v1.webp",
+        "thumbPath": "cards/thumb/cod_023_serie_d_eliminations__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:024:extraction",
+    "setId": "cod",
+    "number": "024",
+    "name": "Extraction !",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "R",
+    "attacks": [],
+    "effect": "switchHeal30",
+    "variants": [
+      {
+        "variantId": "cod:024:extraction:v1",
+        "fullPath": "cards/full/cod_024_extraction__v1.webp",
+        "thumbPath": "cards/thumb/cod_024_extraction__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:025:plaque_d_armure",
+    "setId": "cod",
+    "number": "025",
+    "name": "Plaque d’armure",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "R",
+    "attacks": [],
+    "effect": "reduce40",
+    "variants": [
+      {
+        "variantId": "cod:025:plaque_d_armure:v1",
+        "fullPath": "cards/full/cod_025_plaque_d_armure__v1.webp",
+        "thumbPath": "cards/thumb/cod_025_plaque_d_armure__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:026:flash",
+    "setId": "cod",
+    "number": "026",
+    "name": "Flash !",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "SR",
+    "attacks": [],
+    "effect": "reduce30Lock",
+    "variants": [
+      {
+        "variantId": "cod:026:flash:v1",
+        "fullPath": "cards/full/cod_026_flash__v1.webp",
+        "thumbPath": "cards/thumb/cod_026_flash__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:027:mine_surprise",
+    "setId": "cod",
+    "number": "027",
+    "name": "Mine surprise",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "R",
+    "attacks": [],
+    "effect": "counter30",
+    "variants": [
+      {
+        "variantId": "cod:027:mine_surprise:v1",
+        "fullPath": "cards/full/cod_027_mine_surprise__v1.webp",
+        "thumbPath": "cards/thumb/cod_027_mine_surprise__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:028:derniere_chance",
+    "setId": "cod",
+    "number": "028",
+    "name": "Dernière chance",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "SR",
+    "attacks": [],
+    "effect": "survive10",
+    "variants": [
+      {
+        "variantId": "cod:028:derniere_chance:v1",
+        "fullPath": "cards/full/cod_028_derniere_chance__v1.webp",
+        "thumbPath": "cards/thumb/cod_028_derniere_chance__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:029:brouillage_radar",
+    "setId": "cod",
+    "number": "029",
+    "name": "Brouillage radar",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "SR",
+    "attacks": [],
+    "effect": "cancelTrainer",
+    "variants": [
+      {
+        "variantId": "cod:029:brouillage_radar:v1",
+        "fullPath": "cards/full/cod_029_brouillage_radar__v1.webp",
+        "thumbPath": "cards/thumb/cod_029_brouillage_radar__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "cod:030:on_a_encore_une_partie",
+    "setId": "cod",
+    "number": "030",
+    "name": "On a encore une partie",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "UR",
+    "attacks": [],
+    "effect": "revive60",
+    "variants": [
+      {
+        "variantId": "cod:030:on_a_encore_une_partie:v1",
+        "fullPath": "cards/full/cod_030_on_a_encore_une_partie__v1.webp",
+        "thumbPath": "cards/thumb/cod_030_on_a_encore_une_partie__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:001:trikrillin",
+    "setId": "dbz",
+    "number": "001",
+    "name": "Trikrillin",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 60,
+    "retreat": 1,
+    "rarity": "C",
+    "attacks": [
+      {
+        "name": "Petit chauve, gros courage",
+        "damage": 20,
+        "cost": 1
+      },
+      {
+        "name": "Ki hésitant",
+        "damage": 30,
+        "cost": 1
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "dbz:001:trikrillin:v1",
+        "fullPath": "cards/full/dbz_001_trikrillin__v1.webp",
+        "thumbPath": "cards/thumb/dbz_001_trikrillin__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:002:trikamehameha",
+    "setId": "dbz",
+    "number": "002",
+    "name": "Trikamehameha",
+    "kind": "pokemon",
+    "stage": "evo1",
+    "evolvesFrom": "Trikrillin",
+    "hp": 150,
+    "retreat": 2,
+    "rarity": "R",
+    "attacks": [
+      {
+        "name": "Kamehameha",
+        "damage": 70,
+        "cost": 2
+      },
+      {
+        "name": "Trikamehameha",
+        "damage": 120,
+        "cost": 3
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "dbz:002:trikamehameha:v1",
+        "fullPath": "cards/full/dbz_002_trikamehameha__v1.webp",
+        "thumbPath": "cards/thumb/dbz_002_trikamehameha__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:003:trikaioken",
+    "setId": "dbz",
+    "number": "003",
+    "name": "Trikaioken",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 90,
+    "retreat": 1,
+    "rarity": "U",
+    "attacks": [
+      {
+        "name": "Kaioken",
+        "damage": 40,
+        "cost": 1
+      },
+      {
+        "name": "Corps sous pression",
+        "damage": 60,
+        "cost": 2
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "dbz:003:trikaioken:v1",
+        "fullPath": "cards/full/dbz_003_trikaioken__v1.webp",
+        "thumbPath": "cards/thumb/dbz_003_trikaioken__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:004:trikaioken_20",
+    "setId": "dbz",
+    "number": "004",
+    "name": "Trikaioken ×20",
+    "kind": "pokemon",
+    "stage": "evo1",
+    "evolvesFrom": "Trikaioken",
+    "hp": 190,
+    "retreat": 2,
+    "rarity": "SR",
+    "attacks": [
+      {
+        "name": "Multiplicateur ×20",
+        "damage": 100,
+        "cost": 2
+      },
+      {
+        "name": "Surcharge écarlate",
+        "damage": 150,
+        "cost": 3
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "dbz:004:trikaioken_20:v1",
+        "fullPath": "cards/full/dbz_004_trikaioken_20__v1.webp",
+        "thumbPath": "cards/thumb/dbz_004_trikaioken_20__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:005:rayanjin",
+    "setId": "dbz",
+    "number": "005",
+    "name": "Rayanjin",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 70,
+    "retreat": 1,
+    "rarity": "C",
+    "attacks": [
+      {
+        "name": "Fierté Saiyan",
+        "damage": 30,
+        "cost": 1
+      },
+      {
+        "name": "Montée de ki",
+        "damage": 40,
+        "cost": 1
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "dbz:005:rayanjin:v1",
+        "fullPath": "cards/full/dbz_005_rayanjin__v1.webp",
+        "thumbPath": "cards/thumb/dbz_005_rayanjin__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:006:super_rayanjin",
+    "setId": "dbz",
+    "number": "006",
+    "name": "Super Rayanjin",
+    "kind": "pokemon",
+    "stage": "evo1",
+    "evolvesFrom": "Rayanjin",
+    "hp": 150,
+    "retreat": 2,
+    "rarity": "R",
+    "attacks": [
+      {
+        "name": "Transformation",
+        "damage": 70,
+        "cost": 2
+      },
+      {
+        "name": "Colère Saiyan",
+        "damage": 120,
+        "cost": 3
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "dbz:006:super_rayanjin:v1",
+        "fullPath": "cards/full/dbz_006_super_rayanjin__v1.webp",
+        "thumbPath": "cards/thumb/dbz_006_super_rayanjin__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:007:rayanjin_3",
+    "setId": "dbz",
+    "number": "007",
+    "name": "Rayanjin 3",
+    "kind": "pokemon",
+    "stage": "evo2",
+    "evolvesFrom": "Super Rayanjin",
+    "hp": 230,
+    "retreat": 3,
+    "rarity": "UR",
+    "attacks": [
+      {
+        "name": "Ascension 3",
+        "damage": 110,
+        "cost": 3
+      },
+      {
+        "name": "Hurlement Saiyan",
+        "damage": 170,
+        "cost": 4
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "dbz:007:rayanjin_3:v1",
+        "fullPath": "cards/full/dbz_007_rayanjin_3__v1.webp",
+        "thumbPath": "cards/thumb/dbz_007_rayanjin_3__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:008:trigeta",
+    "setId": "dbz",
+    "number": "008",
+    "name": "Trigeta",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 100,
+    "retreat": 1,
+    "rarity": "U",
+    "attacks": [
+      {
+        "name": "Prince PLAYER",
+        "damage": 40,
+        "cost": 1
+      },
+      {
+        "name": "Canon d’énergie",
+        "damage": 70,
+        "cost": 2
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "dbz:008:trigeta:v1",
+        "fullPath": "cards/full/dbz_008_trigeta__v1.webp",
+        "thumbPath": "cards/thumb/dbz_008_trigeta__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:009:majin_trigeta",
+    "setId": "dbz",
+    "number": "009",
+    "name": "Majin Trigeta",
+    "kind": "pokemon",
+    "stage": "evo1",
+    "evolvesFrom": "Trigeta",
+    "hp": 200,
+    "retreat": 2,
+    "rarity": "SR",
+    "attacks": [
+      {
+        "name": "Orgueil Majin",
+        "damage": 100,
+        "cost": 2
+      },
+      {
+        "name": "Explosion finale",
+        "damage": 160,
+        "cost": 4
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "dbz:009:majin_trigeta:v1",
+        "fullPath": "cards/full/dbz_009_majin_trigeta__v1.webp",
+        "thumbPath": "cards/thumb/dbz_009_majin_trigeta__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:010:trikan",
+    "setId": "dbz",
+    "number": "010",
+    "name": "Trikan",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 80,
+    "retreat": 1,
+    "rarity": "C",
+    "attacks": [
+      {
+        "name": "Potentiel caché",
+        "damage": 30,
+        "cost": 1
+      },
+      {
+        "name": "Colère contenue",
+        "damage": 50,
+        "cost": 1
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "dbz:010:trikan:v1",
+        "fullPath": "cards/full/dbz_010_trikan__v1.webp",
+        "thumbPath": "cards/thumb/dbz_010_trikan__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:011:trikan_ultime",
+    "setId": "dbz",
+    "number": "011",
+    "name": "Trikan Ultime",
+    "kind": "pokemon",
+    "stage": "evo1",
+    "evolvesFrom": "Trikan",
+    "hp": 190,
+    "retreat": 2,
+    "rarity": "SR",
+    "attacks": [
+      {
+        "name": "Silence écrasant",
+        "damage": 60,
+        "cost": 2
+      },
+      {
+        "name": "Onde de maîtrise",
+        "damage": 140,
+        "cost": 3
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "dbz:011:trikan_ultime:v1",
+        "fullPath": "cards/full/dbz_011_trikan_ultime__v1.webp",
+        "thumbPath": "cards/thumb/dbz_011_trikan_ultime__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:012:trikolo",
+    "setId": "dbz",
+    "number": "012",
+    "name": "Trikolo",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 90,
+    "retreat": 1,
+    "rarity": "C",
+    "attacks": [
+      {
+        "name": "Frappe enseignée",
+        "damage": 20,
+        "cost": 1
+      },
+      {
+        "name": "Onde de sérénité",
+        "damage": 30,
+        "cost": 1
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "dbz:012:trikolo:v1",
+        "fullPath": "cards/full/dbz_012_trikolo__v1.webp",
+        "thumbPath": "cards/thumb/dbz_012_trikolo__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:013:trikolo_fusionne",
+    "setId": "dbz",
+    "number": "013",
+    "name": "Trikolo Fusionné",
+    "kind": "pokemon",
+    "stage": "evo1",
+    "evolvesFrom": "Trikolo",
+    "hp": 180,
+    "retreat": 2,
+    "rarity": "R",
+    "attacks": [
+      {
+        "name": "Déferlante unifiée",
+        "damage": 80,
+        "cost": 2
+      },
+      {
+        "name": "Flux originel",
+        "damage": 120,
+        "cost": 3
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "dbz:013:trikolo_fusionne:v1",
+        "fullPath": "cards/full/dbz_013_trikolo_fusionne__v1.webp",
+        "thumbPath": "cards/thumb/dbz_013_trikolo_fusionne__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:014:triks_du_futur",
+    "setId": "dbz",
+    "number": "014",
+    "name": "Triks du Futur",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 90,
+    "retreat": 1,
+    "rarity": "U",
+    "attacks": [
+      {
+        "name": "Estoc temporel",
+        "damage": 20,
+        "cost": 1
+      },
+      {
+        "name": "Écho du futur",
+        "damage": 40,
+        "cost": 1
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "dbz:014:triks_du_futur:v1",
+        "fullPath": "cards/full/dbz_014_triks_du_futur__v1.webp",
+        "thumbPath": "cards/thumb/dbz_014_triks_du_futur__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:015:triks_du_futur_super_saiyan",
+    "setId": "dbz",
+    "number": "015",
+    "name": "Triks du Futur Super Saiyan",
+    "kind": "pokemon",
+    "stage": "evo1",
+    "evolvesFrom": "Triks du Futur",
+    "hp": 190,
+    "retreat": 2,
+    "rarity": "SR",
+    "attacks": [
+      {
+        "name": "Lame fulgurante",
+        "damage": 80,
+        "cost": 2
+      },
+      {
+        "name": "Colère du futur",
+        "damage": 150,
+        "cost": 3
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "dbz:015:triks_du_futur_super_saiyan:v1",
+        "fullPath": "cards/full/dbz_015_triks_du_futur_super_saiyan__v1.webp",
+        "thumbPath": "cards/thumb/dbz_015_triks_du_futur_super_saiyan__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:016:le_tenshinhan",
+    "setId": "dbz",
+    "number": "016",
+    "name": "Le Tenshinhan",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 130,
+    "retreat": 2,
+    "rarity": "R",
+    "attacks": [
+      {
+        "name": "Kikoho",
+        "damage": 80,
+        "cost": 2
+      },
+      {
+        "name": "Shin Kikoho",
+        "damage": 120,
+        "cost": 3
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "dbz:016:le_tenshinhan:v1",
+        "fullPath": "cards/full/dbz_016_le_tenshinhan__v1.webp",
+        "thumbPath": "cards/thumb/dbz_016_le_tenshinhan__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:017:le_t_roshi",
+    "setId": "dbz",
+    "number": "017",
+    "name": "Le T Roshi",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 110,
+    "retreat": 1,
+    "rarity": "U",
+    "attacks": [
+      {
+        "name": "Kamehameha… en vacances",
+        "damage": 30,
+        "cost": 1
+      },
+      {
+        "name": "Détermination du Tortueux",
+        "damage": 70,
+        "cost": 2
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "dbz:017:le_t_roshi:v1",
+        "fullPath": "cards/full/dbz_017_le_t_roshi__v1.webp",
+        "thumbPath": "cards/thumb/dbz_017_le_t_roshi__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:018:trika_genkidama",
+    "setId": "dbz",
+    "number": "018",
+    "name": "Trika Genkidama",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 220,
+    "retreat": 3,
+    "rarity": "UR",
+    "attacks": [
+      {
+        "name": "Genkidama Ultime",
+        "damage": 350,
+        "cost": 4
+      },
+      {
+        "name": "Explosion de l’Espoir",
+        "damage": 500,
+        "cost": 5
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "dbz:018:trika_genkidama:v1",
+        "fullPath": "cards/full/dbz_018_trika_genkidama__v1.webp",
+        "thumbPath": "cards/thumb/dbz_018_trika_genkidama__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:019:haricot_senzu",
+    "setId": "dbz",
+    "number": "019",
+    "name": "Haricot Senzu",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "U",
+    "attacks": [],
+    "effect": "heal90",
+    "variants": [
+      {
+        "variantId": "dbz:019:haricot_senzu:v1",
+        "fullPath": "cards/full/dbz_019_haricot_senzu__v1.webp",
+        "thumbPath": "cards/thumb/dbz_019_haricot_senzu__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:020:detecteur_de_puissance",
+    "setId": "dbz",
+    "number": "020",
+    "name": "Détecteur de puissance",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "U",
+    "attacks": [],
+    "effect": "searchPokemon",
+    "variants": [
+      {
+        "variantId": "dbz:020:detecteur_de_puissance:v1",
+        "fullPath": "cards/full/dbz_020_detecteur_de_puissance__v1.webp",
+        "thumbPath": "cards/thumb/dbz_020_detecteur_de_puissance__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:021:capsule",
+    "setId": "dbz",
+    "number": "021",
+    "name": "Capsule !",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "U",
+    "attacks": [],
+    "effect": "effectEnergy",
+    "variants": [
+      {
+        "variantId": "dbz:021:capsule:v1",
+        "fullPath": "cards/full/dbz_021_capsule__v1.webp",
+        "thumbPath": "cards/thumb/dbz_021_capsule__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:022:entrainement_sous_gravite",
+    "setId": "dbz",
+    "number": "022",
+    "name": "Entraînement sous gravité",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "R",
+    "attacks": [],
+    "effect": "buff30Self10",
+    "variants": [
+      {
+        "variantId": "dbz:022:entrainement_sous_gravite:v1",
+        "fullPath": "cards/full/dbz_022_entrainement_sous_gravite__v1.webp",
+        "thumbPath": "cards/thumb/dbz_022_entrainement_sous_gravite__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:023:chambre_de_l_esprit_et_du_temps",
+    "setId": "dbz",
+    "number": "023",
+    "name": "Chambre de l’Esprit et du Temps",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "R",
+    "attacks": [],
+    "effect": "instantEvolve",
+    "variants": [
+      {
+        "variantId": "dbz:023:chambre_de_l_esprit_et_du_temps:v1",
+        "fullPath": "cards/full/dbz_023_chambre_de_l_esprit_et_du_temps__v1.webp",
+        "thumbPath": "cards/thumb/dbz_023_chambre_de_l_esprit_et_du_temps__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:024:fusion",
+    "setId": "dbz",
+    "number": "024",
+    "name": "Fusion !",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "SR",
+    "attacks": [],
+    "effect": "buff50",
+    "variants": [
+      {
+        "variantId": "dbz:024:fusion:v1",
+        "fullPath": "cards/full/dbz_024_fusion__v1.webp",
+        "thumbPath": "cards/thumb/dbz_024_fusion__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:025:teleportation",
+    "setId": "dbz",
+    "number": "025",
+    "name": "Téléportation !",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "R",
+    "attacks": [],
+    "effect": "switchBeforeHit",
+    "variants": [
+      {
+        "variantId": "dbz:025:teleportation:v1",
+        "fullPath": "cards/full/dbz_025_teleportation__v1.webp",
+        "thumbPath": "cards/thumb/dbz_025_teleportation__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:026:meme_pas_ma_forme_finale",
+    "setId": "dbz",
+    "number": "026",
+    "name": "Même pas ma forme finale",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "SR",
+    "attacks": [],
+    "effect": "evolveSurvive30",
+    "variants": [
+      {
+        "variantId": "dbz:026:meme_pas_ma_forme_finale:v1",
+        "fullPath": "cards/full/dbz_026_meme_pas_ma_forme_finale__v1.webp",
+        "thumbPath": "cards/thumb/dbz_026_meme_pas_ma_forme_finale__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:027:le_detecteur_explose",
+    "setId": "dbz",
+    "number": "027",
+    "name": "Le détecteur explose !",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "R",
+    "attacks": [],
+    "effect": "cancelBonus",
+    "variants": [
+      {
+        "variantId": "dbz:027:le_detecteur_explose:v1",
+        "fullPath": "cards/full/dbz_027_le_detecteur_explose__v1.webp",
+        "thumbPath": "cards/thumb/dbz_027_le_detecteur_explose__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:028:encore_plus_de_puissance",
+    "setId": "dbz",
+    "number": "028",
+    "name": "Encore plus de puissance ?!",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "SR",
+    "attacks": [],
+    "effect": "draw2ExtraEnergy",
+    "variants": [
+      {
+        "variantId": "dbz:028:encore_plus_de_puissance:v1",
+        "fullPath": "cards/full/dbz_028_encore_plus_de_puissance__v1.webp",
+        "thumbPath": "cards/thumb/dbz_028_encore_plus_de_puissance__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:029:les_sept_boules_sont_reunies",
+    "setId": "dbz",
+    "number": "029",
+    "name": "Les sept boules sont réunies",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "SR",
+    "attacks": [],
+    "effect": "recover2",
+    "variants": [
+      {
+        "variantId": "dbz:029:les_sept_boules_sont_reunies:v1",
+        "fullPath": "cards/full/dbz_029_les_sept_boules_sont_reunies__v1.webp",
+        "thumbPath": "cards/thumb/dbz_029_les_sept_boules_sont_reunies__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "dbz:030:cinq_minutes_avant_l_explosion",
+    "setId": "dbz",
+    "number": "030",
+    "name": "Cinq minutes avant l’explosion",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "UR",
+    "attacks": [],
+    "effect": "survive10Buff50",
+    "variants": [
+      {
+        "variantId": "dbz:030:cinq_minutes_avant_l_explosion:v1",
+        "fullPath": "cards/full/dbz_030_cinq_minutes_avant_l_explosion__v1.webp",
+        "thumbPath": "cards/thumb/dbz_030_cinq_minutes_avant_l_explosion__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "emerald:001:bafolight",
+    "setId": "emerald",
+    "number": "001",
+    "name": "Bafolight",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 70,
+    "retreat": 1,
+    "rarity": "C",
+    "attacks": [
+      {
+        "name": "Petite lueur",
+        "damage": 10,
+        "cost": 1
+      },
+      {
+        "name": "Construction douteuse",
+        "damage": 20,
+        "cost": 1
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "emerald:001:bafolight:v1",
+        "fullPath": "cards/full/emerald_001_bafolight__v1.webp",
+        "thumbPath": "cards/thumb/emerald_001_bafolight__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "emerald:002:bafolantern",
+    "setId": "emerald",
+    "number": "002",
+    "name": "Bafolantern",
+    "kind": "pokemon",
+    "stage": "evo1",
+    "evolvesFrom": "Bafolight",
+    "hp": 150,
+    "retreat": 2,
+    "rarity": "R",
+    "attacks": [
+      {
+        "name": "Poing de volonté",
+        "damage": 60,
+        "cost": 1
+      },
+      {
+        "name": "Construction totale",
+        "damage": 110,
+        "cost": 3
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "emerald:002:bafolantern:v1",
+        "fullPath": "cards/full/emerald_002_bafolantern__v1.webp",
+        "thumbPath": "cards/thumb/emerald_002_bafolantern__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "emerald:003:djako_recrue",
+    "setId": "emerald",
+    "number": "003",
+    "name": "Djako Recrue",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 60,
+    "retreat": 1,
+    "rarity": "C",
+    "attacks": [
+      {
+        "name": "Premier vol",
+        "damage": 10,
+        "cost": 1
+      },
+      {
+        "name": "Décollage approximatif",
+        "damage": 20,
+        "cost": 1
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "emerald:003:djako_recrue:v1",
+        "fullPath": "cards/full/emerald_003_djako_recrue__v1.webp",
+        "thumbPath": "cards/thumb/emerald_003_djako_recrue__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "emerald:004:jack_o_lanterne",
+    "setId": "emerald",
+    "number": "004",
+    "name": "Jack-o’-Lanterne",
+    "kind": "pokemon",
+    "stage": "evo1",
+    "evolvesFrom": "Djako Recrue",
+    "hp": 120,
+    "retreat": 1,
+    "rarity": "R",
+    "attacks": [
+      {
+        "name": "Patrouille orbitale",
+        "damage": 50,
+        "cost": 1
+      },
+      {
+        "name": "Canon lumineux",
+        "damage": 80,
+        "cost": 2
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "emerald:004:jack_o_lanterne:v1",
+        "fullPath": "cards/full/emerald_004_jack_o_lanterne__v1.webp",
+        "thumbPath": "cards/thumb/emerald_004_jack_o_lanterne__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "emerald:005:dj_nova",
+    "setId": "emerald",
+    "number": "005",
+    "name": "DJ Nova",
+    "kind": "pokemon",
+    "stage": "evo2",
+    "evolvesFrom": "Jack-o’-Lanterne",
+    "hp": 200,
+    "retreat": 2,
+    "rarity": "UR",
+    "attacks": [
+      {
+        "name": "Supernova de volonté",
+        "damage": 90,
+        "cost": 2
+      },
+      {
+        "name": "NOVA ABSOLUE",
+        "damage": 160,
+        "cost": 4
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "emerald:005:dj_nova:v1",
+        "fullPath": "cards/full/emerald_005_dj_nova__v1.webp",
+        "thumbPath": "cards/thumb/emerald_005_dj_nova__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "emerald:006:jai_projection",
+    "setId": "emerald",
+    "number": "006",
+    "name": "Jaï Projection",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 70,
+    "retreat": 1,
+    "rarity": "C",
+    "attacks": [
+      {
+        "name": "Petit dessin",
+        "damage": 10,
+        "cost": 1
+      },
+      {
+        "name": "Prototype",
+        "damage": 30,
+        "cost": 1
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "emerald:006:jai_projection:v1",
+        "fullPath": "cards/full/emerald_006_jai_projection__v1.webp",
+        "thumbPath": "cards/thumb/emerald_006_jai_projection__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "emerald:007:jai_constructeur",
+    "setId": "emerald",
+    "number": "007",
+    "name": "Jaï Constructeur",
+    "kind": "pokemon",
+    "stage": "evo1",
+    "evolvesFrom": "Jaï Projection",
+    "hp": 150,
+    "retreat": 2,
+    "rarity": "SR",
+    "attacks": [
+      {
+        "name": "Architecture de volonté",
+        "damage": 60,
+        "cost": 1
+      },
+      {
+        "name": "Cité d’émeraude",
+        "damage": 110,
+        "cost": 3
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "emerald:007:jai_constructeur:v1",
+        "fullPath": "cards/full/emerald_007_jai_constructeur__v1.webp",
+        "thumbPath": "cards/thumb/emerald_007_jai_constructeur__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "emerald:008:bafo_des_patrouilles",
+    "setId": "emerald",
+    "number": "008",
+    "name": "Bafo des Patrouilles",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 90,
+    "retreat": 1,
+    "rarity": "C",
+    "attacks": [
+      {
+        "name": "Mauvais secteur",
+        "damage": 20,
+        "cost": 1
+      },
+      {
+        "name": "Petite patrouille",
+        "damage": 30,
+        "cost": 1
+      }
+    ],
+    "effect": null,
+    "variants": []
+  },
+  {
+    "canonicalId": "emerald:009:bafo_sentinel",
+    "setId": "emerald",
+    "number": "009",
+    "name": "Bafo Sentinel",
+    "kind": "pokemon",
+    "stage": "evo1",
+    "evolvesFrom": "Bafo des Patrouilles",
+    "hp": 140,
+    "retreat": 1,
+    "rarity": "SR",
+    "attacks": [
+      {
+        "name": "Veille du secteur",
+        "damage": 60,
+        "cost": 1
+      },
+      {
+        "name": "Barrière orbitale",
+        "damage": 90,
+        "cost": 2
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "emerald:009:bafo_sentinel:v1",
+        "fullPath": "cards/full/emerald_009_bafo_sentinel__v1.webp",
+        "thumbPath": "cards/thumb/emerald_009_bafo_sentinel__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "emerald:010:bafo_centurion",
+    "setId": "emerald",
+    "number": "010",
+    "name": "Bafo Centurion",
+    "kind": "pokemon",
+    "stage": "evo2",
+    "evolvesFrom": "Bafo Sentinel",
+    "hp": 200,
+    "retreat": 2,
+    "rarity": "UR",
+    "attacks": [
+      {
+        "name": "Commandement galactique",
+        "damage": 90,
+        "cost": 2
+      },
+      {
+        "name": "Dernière frontière",
+        "damage": 160,
+        "cost": 4
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "emerald:010:bafo_centurion:v1",
+        "fullPath": "cards/full/emerald_010_bafo_centurion__v1.webp",
+        "thumbPath": "cards/thumb/emerald_010_bafo_centurion__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "emerald:013:bafo_sinestro",
+    "setId": "emerald",
+    "number": "013",
+    "name": "Bafo Sinestro",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 80,
+    "retreat": 1,
+    "rarity": "U",
+    "attacks": [
+      {
+        "name": "Peur naissante",
+        "damage": 20,
+        "cost": 1
+      },
+      {
+        "name": "Construction jaune",
+        "damage": 40,
+        "cost": 1
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "emerald:013:bafo_sinestro:v1",
+        "fullPath": "cards/full/emerald_013_bafo_sinestro__v1.webp",
+        "thumbPath": "cards/thumb/emerald_013_bafo_sinestro__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "emerald:014:baforallax",
+    "setId": "emerald",
+    "number": "014",
+    "name": "Baforallax",
+    "kind": "pokemon",
+    "stage": "evo1",
+    "evolvesFrom": "Bafo Sinestro",
+    "hp": 180,
+    "retreat": 2,
+    "rarity": "UR",
+    "attacks": [
+      {
+        "name": "Terreur incarnée",
+        "damage": 80,
+        "cost": 2
+      },
+      {
+        "name": "Peur cosmique",
+        "damage": 140,
+        "cost": 3
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "emerald:014:baforallax:v1",
+        "fullPath": "cards/full/emerald_014_baforallax__v1.webp",
+        "thumbPath": "cards/thumb/emerald_014_baforallax__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "emerald:015:djako_batterie",
+    "setId": "emerald",
+    "number": "015",
+    "name": "Djako Batterie",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 70,
+    "retreat": 1,
+    "rarity": "C",
+    "attacks": [
+      {
+        "name": "Batterie faible",
+        "damage": 10,
+        "cost": 1
+      },
+      {
+        "name": "Recharge",
+        "damage": 20,
+        "cost": 1
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "emerald:015:djako_batterie:v1",
+        "fullPath": "cards/full/emerald_015_djako_batterie__v1.webp",
+        "thumbPath": "cards/thumb/emerald_015_djako_batterie__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "emerald:016:djako_surcharge",
+    "setId": "emerald",
+    "number": "016",
+    "name": "Djako Surchargé",
+    "kind": "pokemon",
+    "stage": "evo1",
+    "evolvesFrom": "Djako Batterie",
+    "hp": 170,
+    "retreat": 2,
+    "rarity": "SR",
+    "attacks": [
+      {
+        "name": "Charge maximale",
+        "damage": 70,
+        "cost": 2
+      },
+      {
+        "name": "Surcharge émeraude",
+        "damage": 130,
+        "cost": 3
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "emerald:016:djako_surcharge:v1",
+        "fullPath": "cards/full/emerald_016_djako_surcharge__v1.webp",
+        "thumbPath": "cards/thumb/emerald_016_djako_surcharge__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "emerald:018:jacolossus",
+    "setId": "emerald",
+    "number": "018",
+    "name": "Jacolossus",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 140,
+    "retreat": 2,
+    "rarity": "R",
+    "attacks": [
+      {
+        "name": "Poigne colossale",
+        "damage": 60,
+        "cost": 1
+      },
+      {
+        "name": "Jacolossus",
+        "damage": 110,
+        "cost": 3
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "emerald:018:jacolossus:v1",
+        "fullPath": "cards/full/emerald_018_jacolossus__v1.webp",
+        "thumbPath": "cards/thumb/emerald_018_jacolossus__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "emerald:020:recharge_de_la_batterie",
+    "setId": "emerald",
+    "number": "020",
+    "name": "Recharge de la batterie",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "U",
+    "attacks": [],
+    "effect": "effectEnergy",
+    "variants": [
+      {
+        "variantId": "emerald:020:recharge_de_la_batterie:v1",
+        "fullPath": "cards/full/emerald_020_recharge_de_la_batterie__v1.webp",
+        "thumbPath": "cards/thumb/emerald_020_recharge_de_la_batterie__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "emerald:022:construction_impossible",
+    "setId": "emerald",
+    "number": "022",
+    "name": "Construction impossible",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "R",
+    "attacks": [],
+    "effect": "searchTrainerDraw",
+    "variants": [
+      {
+        "variantId": "emerald:022:construction_impossible:v1",
+        "fullPath": "cards/full/emerald_022_construction_impossible__v1.webp",
+        "thumbPath": "cards/thumb/emerald_022_construction_impossible__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "emerald:027:construction_surprise",
+    "setId": "emerald",
+    "number": "027",
+    "name": "Construction surprise",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "SR",
+    "attacks": [],
+    "effect": "counter30",
+    "variants": [
+      {
+        "variantId": "emerald:027:construction_surprise:v1",
+        "fullPath": "cards/full/emerald_027_construction_surprise__v1.webp",
+        "thumbPath": "cards/thumb/emerald_027_construction_surprise__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "emerald:028:volonte_inebranlable",
+    "setId": "emerald",
+    "number": "028",
+    "name": "Volonté inébranlable",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "SR",
+    "attacks": [],
+    "effect": "survive10",
+    "variants": [
+      {
+        "variantId": "emerald:028:volonte_inebranlable:v1",
+        "fullPath": "cards/full/emerald_028_volonte_inebranlable__v1.webp",
+        "thumbPath": "cards/thumb/emerald_028_volonte_inebranlable__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "ninja:001:zaim_sinja",
+    "setId": "ninja",
+    "number": "001",
+    "name": "Zaim Sinja",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 90,
+    "retreat": 1,
+    "rarity": "C",
+    "attacks": [
+      {
+        "name": "Kunaï précis",
+        "damage": 20,
+        "cost": 1
+      },
+      {
+        "name": "Spirale de chakra",
+        "damage": 50,
+        "cost": 2
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "ninja:001:zaim_sinja:v1",
+        "fullPath": "cards/full/ninja_001_zaim_sinja__v1.webp",
+        "thumbPath": "cards/thumb/ninja_001_zaim_sinja__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "ninja:002:rubinobi",
+    "setId": "ninja",
+    "number": "002",
+    "name": "Rubinobi",
+    "kind": "pokemon",
+    "stage": "evo1",
+    "evolvesFrom": "Zaim Sinja",
+    "hp": 130,
+    "retreat": 1,
+    "rarity": "R",
+    "attacks": [
+      {
+        "name": "Pas du Shinobi",
+        "damage": 40,
+        "cost": 1
+      },
+      {
+        "name": "Chakra concentré",
+        "damage": 80,
+        "cost": 2
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "ninja:002:rubinobi:v1",
+        "fullPath": "cards/full/ninja_002_rubinobi__v1.webp",
+        "thumbPath": "cards/thumb/ninja_002_rubinobi__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "ninja:003:roobkage",
+    "setId": "ninja",
+    "number": "003",
+    "name": "Roobkage",
+    "kind": "pokemon",
+    "stage": "evo2",
+    "evolvesFrom": "Rubinobi",
+    "hp": 180,
+    "retreat": 2,
+    "rarity": "UR",
+    "attacks": [
+      {
+        "name": "Ordre du Kage",
+        "damage": 70,
+        "cost": 2
+      },
+      {
+        "name": "Spirale souveraine",
+        "damage": 140,
+        "cost": 3
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "ninja:003:roobkage:v1",
+        "fullPath": "cards/full/ninja_003_roobkage__v1.webp",
+        "thumbPath": "cards/thumb/ninja_003_roobkage__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "ninja:004:zaimbun",
+    "setId": "ninja",
+    "number": "004",
+    "name": "Zaimbun",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 70,
+    "retreat": 1,
+    "rarity": "C",
+    "attacks": [
+      {
+        "name": "Petit clone",
+        "damage": 10,
+        "cost": 1
+      },
+      {
+        "name": "Frappe surprise",
+        "damage": 30,
+        "cost": 1
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "ninja:004:zaimbun:v1",
+        "fullPath": "cards/full/ninja_004_zaimbun__v1.webp",
+        "thumbPath": "cards/thumb/ninja_004_zaimbun__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "ninja:005:roobunshin",
+    "setId": "ninja",
+    "number": "005",
+    "name": "Roobunshin",
+    "kind": "pokemon",
+    "stage": "evo1",
+    "evolvesFrom": "Zaimbun",
+    "hp": 120,
+    "retreat": 1,
+    "rarity": "R",
+    "attacks": [
+      {
+        "name": "Double apparition",
+        "damage": 50,
+        "cost": 1
+      },
+      {
+        "name": "Permutation",
+        "damage": 60,
+        "cost": 2
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "ninja:005:roobunshin:v1",
+        "fullPath": "cards/full/ninja_005_roobunshin__v1.webp",
+        "thumbPath": "cards/thumb/ninja_005_roobunshin__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "ninja:010:sinanbu",
+    "setId": "ninja",
+    "number": "010",
+    "name": "SinANBU",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 80,
+    "retreat": 1,
+    "rarity": "U",
+    "attacks": [
+      {
+        "name": "Filature",
+        "damage": 20,
+        "cost": 1
+      },
+      {
+        "name": "Lame silencieuse",
+        "damage": 40,
+        "cost": 1
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "ninja:010:sinanbu:v1",
+        "fullPath": "cards/full/ninja_010_sinanbu__v1.webp",
+        "thumbPath": "cards/thumb/ninja_010_sinanbu__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "ninja:011:roobanbu",
+    "setId": "ninja",
+    "number": "011",
+    "name": "RoobANBU",
+    "kind": "pokemon",
+    "stage": "evo1",
+    "evolvesFrom": "SinANBU",
+    "hp": 130,
+    "retreat": 1,
+    "rarity": "SR",
+    "attacks": [
+      {
+        "name": "Assaut masqué",
+        "damage": 60,
+        "cost": 1
+      },
+      {
+        "name": "Disparition",
+        "damage": 70,
+        "cost": 2
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "ninja:011:roobanbu:v1",
+        "fullPath": "cards/full/ninja_011_roobanbu__v1.webp",
+        "thumbPath": "cards/thumb/ninja_011_roobanbu__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "ninja:012:roobkatsuki",
+    "setId": "ninja",
+    "number": "012",
+    "name": "Roobkatsuki",
+    "kind": "pokemon",
+    "stage": "evo2",
+    "evolvesFrom": "RoobANBU",
+    "hp": 180,
+    "retreat": 2,
+    "rarity": "UR",
+    "attacks": [
+      {
+        "name": "Nuage interdit",
+        "damage": 80,
+        "cost": 2
+      },
+      {
+        "name": "Sentence écarlate",
+        "damage": 140,
+        "cost": 3
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "ninja:012:roobkatsuki:v1",
+        "fullPath": "cards/full/ninja_012_roobkatsuki__v1.webp",
+        "thumbPath": "cards/thumb/ninja_012_roobkatsuki__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "ninja:013:zaimchu",
+    "setId": "ninja",
+    "number": "013",
+    "name": "Zaimchū",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 100,
+    "retreat": 1,
+    "rarity": "C",
+    "attacks": [
+      {
+        "name": "Chakra instable",
+        "damage": 30,
+        "cost": 1
+      },
+      {
+        "name": "Débordement",
+        "damage": 50,
+        "cost": 2
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "ninja:013:zaimchu:v1",
+        "fullPath": "cards/full/ninja_013_zaimchu__v1.webp",
+        "thumbPath": "cards/thumb/ninja_013_zaimchu__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "ninja:014:sinnchuriki",
+    "setId": "ninja",
+    "number": "014",
+    "name": "Sinnchūriki",
+    "kind": "pokemon",
+    "stage": "evo1",
+    "evolvesFrom": "Zaimchū",
+    "hp": 160,
+    "retreat": 2,
+    "rarity": "SR",
+    "attacks": [
+      {
+        "name": "Manteau de chakra",
+        "damage": 70,
+        "cost": 2
+      },
+      {
+        "name": "Rage contenue",
+        "damage": 110,
+        "cost": 3
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "ninja:014:sinnchuriki:v1",
+        "fullPath": "cards/full/ninja_014_sinnchuriki__v1.webp",
+        "thumbPath": "cards/thumb/ninja_014_sinnchuriki__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "ninja:015:roobjutsu",
+    "setId": "ninja",
+    "number": "015",
+    "name": "Roobjutsu",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 100,
+    "retreat": 1,
+    "rarity": "U",
+    "attacks": [
+      {
+        "name": "Technique improvisée",
+        "damage": 30,
+        "cost": 1
+      },
+      {
+        "name": "Jutsu combiné",
+        "damage": 70,
+        "cost": 2
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "ninja:015:roobjutsu:v1",
+        "fullPath": "cards/full/ninja_015_roobjutsu__v1.webp",
+        "thumbPath": "cards/thumb/ninja_015_roobjutsu__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "ninja:016:zaimsei",
+    "setId": "ninja",
+    "number": "016",
+    "name": "Zaimsei",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 110,
+    "retreat": 1,
+    "rarity": "U",
+    "attacks": [
+      {
+        "name": "Transmission",
+        "damage": 30,
+        "cost": 1
+      },
+      {
+        "name": "Leçon sévère",
+        "damage": 70,
+        "cost": 2
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "ninja:016:zaimsei:v1",
+        "fullPath": "cards/full/ninja_016_zaimsei__v1.webp",
+        "thumbPath": "cards/thumb/ninja_016_zaimsei__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "ninja:017:sinnobi",
+    "setId": "ninja",
+    "number": "017",
+    "name": "Sinnobi",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 100,
+    "retreat": 1,
+    "rarity": "R",
+    "attacks": [
+      {
+        "name": "Pas furtif",
+        "damage": 30,
+        "cost": 1
+      },
+      {
+        "name": "Assaut invisible",
+        "damage": 60,
+        "cost": 2
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "ninja:017:sinnobi:v1",
+        "fullPath": "cards/full/ninja_017_sinnobi__v1.webp",
+        "thumbPath": "cards/thumb/ninja_017_sinnobi__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "ninja:018:roobgan",
+    "setId": "ninja",
+    "number": "018",
+    "name": "Roobgan",
+    "kind": "pokemon",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 120,
+    "retreat": 1,
+    "rarity": "R",
+    "attacks": [
+      {
+        "name": "Lecture du mouvement",
+        "damage": 40,
+        "cost": 1
+      },
+      {
+        "name": "Copie tactique",
+        "damage": 80,
+        "cost": 2
+      }
+    ],
+    "effect": null,
+    "variants": [
+      {
+        "variantId": "ninja:018:roobgan:v1",
+        "fullPath": "cards/full/ninja_018_roobgan__v1.webp",
+        "thumbPath": "cards/thumb/ninja_018_roobgan__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "ninja:019:entrainement_au_chakra",
+    "setId": "ninja",
+    "number": "019",
+    "name": "Entraînement au chakra",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "C",
+    "attacks": [],
+    "effect": "effectEnergy",
+    "variants": [
+      {
+        "variantId": "ninja:019:entrainement_au_chakra:v1",
+        "fullPath": "cards/full/ninja_019_entrainement_au_chakra__v1.webp",
+        "thumbPath": "cards/thumb/ninja_019_entrainement_au_chakra__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "ninja:020:course_sur_les_murs",
+    "setId": "ninja",
+    "number": "020",
+    "name": "Course sur les murs",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "U",
+    "attacks": [],
+    "effect": "switch",
+    "variants": [
+      {
+        "variantId": "ninja:020:course_sur_les_murs:v1",
+        "fullPath": "cards/full/ninja_020_course_sur_les_murs__v1.webp",
+        "thumbPath": "cards/thumb/ninja_020_course_sur_les_murs__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "ninja:021:parchemin_interdit",
+    "setId": "ninja",
+    "number": "021",
+    "name": "Parchemin interdit",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "U",
+    "attacks": [],
+    "effect": "searchEvolution",
+    "variants": [
+      {
+        "variantId": "ninja:021:parchemin_interdit:v1",
+        "fullPath": "cards/full/ninja_021_parchemin_interdit__v1.webp",
+        "thumbPath": "cards/thumb/ninja_021_parchemin_interdit__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "ninja:023:concentration_du_chakra",
+    "setId": "ninja",
+    "number": "023",
+    "name": "Concentration du chakra",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "R",
+    "attacks": [],
+    "effect": "moveEnergy",
+    "variants": [
+      {
+        "variantId": "ninja:023:concentration_du_chakra:v1",
+        "fullPath": "cards/full/ninja_023_concentration_du_chakra__v1.webp",
+        "thumbPath": "cards/thumb/ninja_023_concentration_du_chakra__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "ninja:024:mission_de_rang_s",
+    "setId": "ninja",
+    "number": "024",
+    "name": "Mission de rang S",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "R",
+    "attacks": [],
+    "effect": "draw3discard1",
+    "variants": [
+      {
+        "variantId": "ninja:024:mission_de_rang_s:v1",
+        "fullPath": "cards/full/ninja_024_mission_de_rang_s__v1.webp",
+        "thumbPath": "cards/thumb/ninja_024_mission_de_rang_s__v1.webp"
+      }
+    ]
+  },
+  {
+    "canonicalId": "ninja:026:c_etait_un_clone",
+    "setId": "ninja",
+    "number": "026",
+    "name": "C’était un clone",
+    "kind": "trainer",
+    "stage": "base",
+    "evolvesFrom": null,
+    "hp": 0,
+    "retreat": 0,
+    "rarity": "SR",
+    "attacks": [],
+    "effect": "shield40",
+    "variants": [
+      {
+        "variantId": "ninja:026:c_etait_un_clone:v1",
+        "fullPath": "cards/full/ninja_026_c_etait_un_clone__v1.webp",
+        "thumbPath": "cards/thumb/ninja_026_c_etait_un_clone__v1.webp"
+      }
+    ]
+  }
+]

@@ -1,0 +1,1 @@
+{"src/test/java/com/zeubicardgames/app/GameRulesTest.kt":["GameRulesTest:com.zeubicardgames.app","card:com.zeubicardgames.app.GameRulesTest","attackDealsDamageAfterEnergy:com.zeubicardgames.app.GameRulesTest","attackRequiresEnergy:com.zeubicardgames.app.GameRulesTest","deterministicSeedCreatesSameInstances:com.zeubicardgames.app.GameRulesTest"]}

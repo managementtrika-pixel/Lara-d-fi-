@@ -1,0 +1,2 @@
+-keep class com.zeubicardgames.app.core.model.** { *; }
+-keepattributes *Annotation*

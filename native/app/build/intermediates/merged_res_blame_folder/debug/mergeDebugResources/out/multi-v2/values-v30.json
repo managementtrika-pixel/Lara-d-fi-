@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.zeubicardgames.app-mergeDebugResources-45:/values-v30/values-v30.xml",
+            "map": [
+                {
+                    "source": "/home/runner/.gradle/caches/9.5.0/transforms/8a1c1e35e2fc7e4236176b950925d79a/transformed/material3/res/values-v30/values-v30.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "72",
+                        "endOffsets": "123"
+                    }
+                }
+            ]
+        }
+    ]
+}
