@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Déployer la source native
+      - name: Déployer et corriger la source native
         run: |
           test -f ZeubiCardGames_Native_Source.zip || {
             echo 'Ajoute ZeubiCardGames_Native_Source.zip à la racine du dépôt.'
@@ -31,7 +31,14 @@ jobs:
           # API 36 est la plateforme Android stable disponible sur le runner.
           sed -i 's/compileSdk = 37/compileSdk = 36/' native/app/build.gradle.kts
           sed -i 's/targetSdk = 37/targetSdk = 36/' native/app/build.gradle.kts
+
+          # AGP 9 intègre Kotlin nativement : l’ancien plugin Android Kotlin ferait doublon.
+          sed -i '/alias(libs.plugins.kotlin.android)/d' native/app/build.gradle.kts
+
+          echo '--- Configuration Android ---'
           grep -E 'compileSdk|targetSdk|minSdk' native/app/build.gradle.kts
+          echo '--- Plugins application ---'
+          sed -n '1,12p' native/app/build.gradle.kts
 
       - uses: actions/setup-node@v4
         with:
