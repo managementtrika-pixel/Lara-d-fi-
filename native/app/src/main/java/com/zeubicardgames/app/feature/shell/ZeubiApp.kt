@@ -40,17 +40,44 @@ fun ZeubiApp(vm: GameViewModel = hiltViewModel()) {
     }
 }
 
-@Composable private fun ZeubiHeader(state: GameUiState) {
-    Surface(tonalElevation = 2.dp) { Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-        Column { Text("ZEUBICARDGAMES", style = MaterialTheme.typography.titleMedium); Text("Niveau 1 · PLAYER", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { AssistChip(onClick = {}, label = { Text("◈ ${state.owned.values.sumOf { it.quantity }}") }); AssistChip(onClick = {}, label = { Text("✦ 0") }) }
-    } }
+@Composable
+private fun ZeubiHeader(state: GameUiState) {
+    Surface(tonalElevation = 2.dp) {
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Column {
+                Text("ZEUBICARDGAMES", style = MaterialTheme.typography.titleMedium)
+                Text("PLAYER", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Surface(shape = MaterialTheme.shapes.large, tonalElevation = 1.dp) {
+                Text(
+                    "◈ ${state.owned.values.sumOf { it.quantity }} cartes",
+                    Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                    style = MaterialTheme.typography.labelLarge,
+                )
+            }
+        }
+    }
 }
 
-@Composable private fun ZeubiBottomBar(selected: MainTab, onSelect: (MainTab) -> Unit) {
+@Composable
+private fun ZeubiBottomBar(selected: MainTab, onSelect: (MainTab) -> Unit) {
     NavigationBar {
-        listOf(MainTab.HOME to "Accueil", MainTab.COLLECTION to "Collection", MainTab.OPEN to "Ouvrir", MainTab.BATTLE to "Combat", MainTab.MENU to "Menu").forEach { (tab, label) ->
-            NavigationBarItem(selected = selected == tab, onClick = { onSelect(tab) }, icon = { Text(if (tab == MainTab.OPEN) "✦" else "•") }, label = { Text(label) })
+        listOf(
+            MainTab.HOME to "Accueil",
+            MainTab.COLLECTION to "Collection",
+            MainTab.OPEN to "Ouvrir",
+            MainTab.BATTLE to "Combat",
+            MainTab.MENU to "Menu",
+        ).forEach { (tab, label) ->
+            NavigationBarItem(
+                selected = selected == tab,
+                onClick = { onSelect(tab) },
+                icon = { Text(if (tab == MainTab.OPEN) "✦" else "•") },
+                label = { Text(label) },
+            )
         }
     }
 }
