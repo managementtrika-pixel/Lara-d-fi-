@@ -1,6 +1,7 @@
 package com.zeubicardgames.app.core.data
 
 import android.content.Context
+import com.zeubicardgames.app.core.effects.KnownCardEffect
 import com.zeubicardgames.app.core.model.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.json.JSONArray
@@ -24,15 +25,30 @@ class CatalogLoader @Inject constructor(@ApplicationContext private val context:
             val o = root.getJSONObject(i)
             val attacks = o.optJSONArray("attacks") ?: JSONArray()
             val variants = o.optJSONArray("variants") ?: JSONArray()
-            val typeRaw = o.optString("type").takeIf { it.isNotBlank() }
-                ?: o.optString("kind", "personnage")
+            val number = o.optString("number")
+            val explicitType = o.optString("type").takeIf { it.isNotBlank() }
+            val legacyKind = o.optString("kind", "personnage")
+            val legacyNumber = number.toIntOrNull()
+            val typeRaw = explicitType ?: if (
+                legacyKind.lowercase() in setOf("trainer", "action", "support") &&
+                legacyNumber != null && legacyNumber in 25..30
+            ) {
+                "replique"
+            } else {
+                legacyKind
+            }
             val stageRaw = o.optString("evolutionStage").takeIf { it.isNotBlank() }
                 ?: o.optString("stage", "base")
+            val effect = o.optString("effect").takeIf { it.isNotBlank() }
+
+            require(KnownCardEffect.isKnown(effect)) {
+                "Effet inconnu dans le catalogue: ${o.optString("canonicalId")} -> $effect"
+            }
 
             CardDefinition(
                 canonicalId = o.getString("canonicalId"),
                 setId = o.getString("setId"),
-                number = o.optString("number"),
+                number = number,
                 name = o.getString("name"),
                 kind = typeRaw,
                 stage = stageRaw,
@@ -45,7 +61,7 @@ class CatalogLoader @Inject constructor(@ApplicationContext private val context:
                         Attack(getString("name"), optInt("damage"), optInt("cost"))
                     }
                 },
-                effect = o.optString("effect").takeIf { it.isNotBlank() },
+                effect = effect,
                 variants = (0 until variants.length()).map { j ->
                     variants.getJSONObject(j).run {
                         CardVariant(getString("variantId"), getString("fullPath"), getString("thumbPath"))
