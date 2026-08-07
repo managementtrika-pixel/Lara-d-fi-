@@ -94,7 +94,8 @@ class GameViewModel @Inject constructor(
     }
 
     private suspend fun acknowledgeCurrentPack() {
-        local.value.pendingPackId?.let(repository::acknowledgePack)
+        val pendingId = local.value.pendingPackId
+        if (pendingId != null) repository.acknowledgePack(pendingId)
         local.update { it.copy(pendingPackId = null, packResult = emptyList(), packRecovered = false) }
     }
 
