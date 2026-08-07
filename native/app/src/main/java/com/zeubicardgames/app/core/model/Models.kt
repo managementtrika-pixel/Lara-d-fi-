@@ -99,6 +99,7 @@ data class ExtensionDefinition(
     val schemaVersion: Int = 1,
     val order: Int = 0,
     val status: ContentStatus = ContentStatus.ACTIVE,
+    val code: String = id.uppercase(),
 )
 
 @Immutable
