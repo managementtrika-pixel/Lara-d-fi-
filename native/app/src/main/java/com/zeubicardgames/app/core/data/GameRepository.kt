@@ -25,12 +25,15 @@ class GameRepository @Inject constructor(
 ) {
     val catalog get() = loader.load().first
     val extensions get() = loader.load().second
+
     val owned: Flow<Map<String, OwnedCard>> = dao.observeOwned().map { rows ->
         rows.associate { it.canonicalId to OwnedCard(it.canonicalId, it.quantity, it.selectedVariantId) }
     }
+
     val decks: Flow<List<Deck>> = dao.observeDecks().map { rows ->
         rows.map { Deck(it.id, it.name, it.cardIdsCsv.split('|').filter(String::isNotBlank)) }
     }
+
     val campaign: Flow<Map<String, CampaignEntity>> = dao.observeCampaign().map {
         it.associateBy(CampaignEntity::opponentId)
     }
@@ -97,7 +100,12 @@ class GameRepository @Inject constructor(
         if (ids.size != 20) return "${ids.size}/20 cartes"
         if (ids.groupingBy { it }.eachCount().values.any { it > 2 }) return "Plus de 2 exemplaires"
         val map = catalog.associateBy { it.canonicalId }
-        if (ids.none { map[it]?.kind == "pokemon" && map[it]?.stage == "base" }) return "Aucun personnage de base"
+        if (ids.none {
+                map[it]?.let { card ->
+                    card.type == CardType.PERSONNAGE && card.evolutionStage == EvolutionStage.BASE
+                } == true
+            }
+        ) return "Aucun personnage de base"
         return null
     }
 
