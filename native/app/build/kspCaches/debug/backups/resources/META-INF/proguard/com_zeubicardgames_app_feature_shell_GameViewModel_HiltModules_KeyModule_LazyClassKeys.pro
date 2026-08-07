@@ -1,1 +1,0 @@
--keep,allowobfuscation,allowshrinking class com.zeubicardgames.app.feature.shell.GameViewModel
