@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.zeubicardgames.app.core.data.*
 import com.zeubicardgames.app.core.database.CampaignEntity
+import com.zeubicardgames.app.core.deck.DeckValidationResult
 import com.zeubicardgames.app.core.gameengine.*
 import com.zeubicardgames.app.core.model.*
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -39,6 +40,8 @@ data class GameUiState(
     val selectedOpponent: CampaignOpponent? = null,
     val battle: BattleState? = null,
     val notice: String? = null,
+    val deckNotice: String? = null,
+    val deckBusy: Boolean = false,
 )
 
 @HiltViewModel
@@ -81,8 +84,15 @@ class GameViewModel @Inject constructor(
         local.update { it.copy(tab = tab, overlay = OverlayScreen.None, selectedCard = null) }
     }
 
-    fun overlay(screen: OverlayScreen) { local.update { it.copy(overlay = screen) } }
-    fun dismissOverlay() { local.update { it.copy(overlay = OverlayScreen.None, selectedCard = null) } }
+    fun overlay(screen: OverlayScreen) {
+        local.update { it.copy(overlay = screen, deckNotice = null) }
+    }
+
+    fun dismissOverlay() {
+        local.update {
+            it.copy(overlay = OverlayScreen.None, selectedCard = null, deckNotice = null)
+        }
+    }
 
     fun chooseExtension(id: String) {
         if (local.value.pendingPackId != null) return
@@ -93,6 +103,58 @@ class GameViewModel @Inject constructor(
 
     fun toggleFavorite(cardId: String) = viewModelScope.launch {
         preferences.toggleFavorite(cardId)
+    }
+
+    fun deckValidation(ids: List<String>): DeckValidationResult {
+        val ownedQuantities = state.value.owned.mapValues { it.value.quantity }
+        return repository.validateDeckDetailed(ids, ownedQuantities)
+    }
+
+    fun clearDeckNotice() {
+        local.update { it.copy(deckNotice = null) }
+    }
+
+    fun saveDeck(id: Long, name: String, ids: List<String>) = viewModelScope.launch {
+        if (local.value.deckBusy) return@launch
+        local.update { it.copy(deckBusy = true, deckNotice = null) }
+        repository.saveDeck(id, name, ids)
+            .onSuccess {
+                local.update { state ->
+                    state.copy(deckBusy = false, deckNotice = "Deck enregistré.")
+                }
+            }
+            .onFailure { error ->
+                local.update { state ->
+                    state.copy(
+                        deckBusy = false,
+                        deckNotice = error.message ?: "Impossible d’enregistrer le deck.",
+                    )
+                }
+            }
+    }
+
+    fun deleteDeck(id: Long) = viewModelScope.launch {
+        repository.deleteDeck(id)
+        local.update { it.copy(deckNotice = "Deck supprimé.") }
+    }
+
+    fun duplicateDeck(deck: Deck) = viewModelScope.launch {
+        if (local.value.deckBusy) return@launch
+        local.update { it.copy(deckBusy = true, deckNotice = null) }
+        repository.duplicateDeck(deck)
+            .onSuccess {
+                local.update { state ->
+                    state.copy(deckBusy = false, deckNotice = "Copie du deck créée.")
+                }
+            }
+            .onFailure { error ->
+                local.update { state ->
+                    state.copy(
+                        deckBusy = false,
+                        deckNotice = error.message ?: "Impossible de dupliquer ce deck.",
+                    )
+                }
+            }
     }
 
     fun openPack() = viewModelScope.launch { openPackInternal() }
