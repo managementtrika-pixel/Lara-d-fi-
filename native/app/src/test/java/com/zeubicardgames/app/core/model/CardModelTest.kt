@@ -29,4 +29,20 @@ class CardModelTest {
     fun `supra rarity is above ultra rare`() {
         assertTrue(Rarity.SUPRA.rank > Rarity.UR.rank)
     }
+
+    @Test
+    fun `extension code defaults to permanent upper case id`() {
+        val extension = ExtensionDefinition(
+            id = "dbz",
+            name = "Trika Ball Z",
+            subtitle = "Puissance sans limite",
+            accent = 0L,
+            boosterPath = "boosters/dbz.webp",
+            cardCount = 30,
+        )
+
+        assertEquals("DBZ", extension.code)
+        assertEquals(ContentStatus.ACTIVE, extension.status)
+        assertEquals(1, extension.schemaVersion)
+    }
 }
