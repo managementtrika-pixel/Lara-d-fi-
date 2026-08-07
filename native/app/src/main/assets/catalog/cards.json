@@ -1,12 +1,14 @@
 [
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:001:lara_recrue",
     "setId": "cod",
     "number": "001",
     "name": "Lara Recrue",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 70,
     "retreat": 1,
     "rarity": "C",
@@ -29,16 +31,20 @@
         "fullPath": "cards/full/cod_001_lara_recrue__v1.webp",
         "thumbPath": "cards/thumb/cod_001_lara_recrue__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:002:larafale",
     "setId": "cod",
     "number": "002",
     "name": "Larafale",
-    "kind": "pokemon",
-    "stage": "evo1",
+    "type": "personnage",
+    "evolutionStage": "evolution",
     "evolvesFrom": "Lara Recrue",
+    "evolvesFromId": "cod:001:lara_recrue",
     "hp": 150,
     "retreat": 2,
     "rarity": "R",
@@ -66,16 +72,20 @@
         "fullPath": "cards/full/cod_002_larafale__v2.webp",
         "thumbPath": "cards/thumb/cod_002_larafale__v2.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo1"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:003:trikuss_no_scope",
     "setId": "cod",
     "number": "003",
     "name": "Trikuss No-Scope",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 60,
     "retreat": 1,
     "rarity": "C",
@@ -113,16 +123,20 @@
         "fullPath": "cards/full/cod_003_trikuss_no_scope__v4.webp",
         "thumbPath": "cards/thumb/cod_003_trikuss_no_scope__v4.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:004:croft_quickscope",
     "setId": "cod",
     "number": "004",
     "name": "Croft Quickscope",
-    "kind": "pokemon",
-    "stage": "evo1",
+    "type": "personnage",
+    "evolutionStage": "evolution",
     "evolvesFrom": "Trikuss No-Scope",
+    "evolvesFromId": "cod:003:trikuss_no_scope",
     "hp": 120,
     "retreat": 1,
     "rarity": "R",
@@ -160,16 +174,20 @@
         "fullPath": "cards/full/cod_004_croft_quickscope__v4.webp",
         "thumbPath": "cards/thumb/cod_004_croft_quickscope__v4.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo1"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:005:lara_360",
     "setId": "cod",
     "number": "005",
     "name": "Lara 360",
-    "kind": "pokemon",
-    "stage": "evo2",
+    "type": "personnage",
+    "evolutionStage": "surevolution",
     "evolvesFrom": "Croft Quickscope",
+    "evolvesFromId": "cod:004:croft_quickscope",
     "hp": 190,
     "retreat": 2,
     "rarity": "UR",
@@ -197,16 +215,20 @@
         "fullPath": "cards/full/cod_005_lara_360__v2.webp",
         "thumbPath": "cards/thumb/cod_005_lara_360__v2.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo2"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:006:trikuss_gun",
     "setId": "cod",
     "number": "006",
     "name": "Trikuss Gun",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 100,
     "retreat": 1,
     "rarity": "U",
@@ -234,16 +256,20 @@
         "fullPath": "cards/full/cod_006_trikuss_gun__v2.webp",
         "thumbPath": "cards/thumb/cod_006_trikuss_gun__v2.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:007:laradar",
     "setId": "cod",
     "number": "007",
     "name": "Laradar",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 110,
     "retreat": 1,
     "rarity": "U",
@@ -276,16 +302,20 @@
         "fullPath": "cards/full/cod_007_laradar__v3.webp",
         "thumbPath": "cards/thumb/cod_007_laradar__v3.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:008:gains_fantome",
     "setId": "cod",
     "number": "008",
     "name": "Gains Fantôme",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 80,
     "retreat": 1,
     "rarity": "C",
@@ -308,16 +338,20 @@
         "fullPath": "cards/full/cod_008_gains_fantome__v1.webp",
         "thumbPath": "cards/thumb/cod_008_gains_fantome__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:009:gains_silence_de_mort",
     "setId": "cod",
     "number": "009",
     "name": "Gains Silence de Mort",
-    "kind": "pokemon",
-    "stage": "evo1",
+    "type": "personnage",
+    "evolutionStage": "evolution",
     "evolvesFrom": "Gains Fantôme",
+    "evolvesFromId": "cod:008:gains_fantome",
     "hp": 160,
     "retreat": 2,
     "rarity": "SR",
@@ -340,16 +374,20 @@
         "fullPath": "cards/full/cod_009_gains_silence_de_mort__v1.webp",
         "thumbPath": "cards/thumb/cod_009_gains_silence_de_mort__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo1"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:010:lara_campeuse",
     "setId": "cod",
     "number": "010",
     "name": "Lara Campeuse",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 60,
     "retreat": 1,
     "rarity": "C",
@@ -377,16 +415,20 @@
         "fullPath": "cards/full/cod_010_lara_campeuse__v2.webp",
         "thumbPath": "cards/thumb/cod_010_lara_campeuse__v2.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:011:lara_predator",
     "setId": "cod",
     "number": "011",
     "name": "Lara Predator",
-    "kind": "pokemon",
-    "stage": "evo1",
+    "type": "personnage",
+    "evolutionStage": "evolution",
     "evolvesFrom": "Lara Campeuse",
+    "evolvesFromId": "cod:010:lara_campeuse",
     "hp": 160,
     "retreat": 2,
     "rarity": "SR",
@@ -409,16 +451,20 @@
         "fullPath": "cards/full/cod_011_lara_predator__v1.webp",
         "thumbPath": "cards/thumb/cod_011_lara_predator__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo1"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:012:croft_akimbo_gains",
     "setId": "cod",
     "number": "012",
     "name": "Croft Akimbo Gains",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 120,
     "retreat": 1,
     "rarity": "R",
@@ -446,16 +492,20 @@
         "fullPath": "cards/full/cod_012_croft_akimbo_gains__v2.webp",
         "thumbPath": "cards/thumb/cod_012_croft_akimbo_gains__v2.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:013:croft_rpg_gains",
     "setId": "cod",
     "number": "013",
     "name": "Croft RPG Gains",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 140,
     "retreat": 2,
     "rarity": "R",
@@ -478,16 +528,20 @@
         "fullPath": "cards/full/cod_013_croft_rpg_gains__v1.webp",
         "thumbPath": "cards/thumb/cod_013_croft_rpg_gains__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:014:lara_niveau_1",
     "setId": "cod",
     "number": "014",
     "name": "Lara Niveau 1",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 60,
     "retreat": 1,
     "rarity": "C",
@@ -515,16 +569,20 @@
         "fullPath": "cards/full/cod_014_lara_niveau_1__v2.webp",
         "thumbPath": "cards/thumb/cod_014_lara_niveau_1__v2.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:015:lara_prestige_master",
     "setId": "cod",
     "number": "015",
     "name": "Lara Prestige Master",
-    "kind": "pokemon",
-    "stage": "evo1",
+    "type": "personnage",
+    "evolutionStage": "evolution",
     "evolvesFrom": "Lara Niveau 1",
+    "evolvesFromId": "cod:014:lara_niveau_1",
     "hp": 180,
     "retreat": 2,
     "rarity": "UR",
@@ -552,16 +610,20 @@
         "fullPath": "cards/full/cod_015_lara_prestige_master__v2.webp",
         "thumbPath": "cards/thumb/cod_015_lara_prestige_master__v2.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo1"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:016:lara_950",
     "setId": "cod",
     "number": "016",
     "name": "Lara 950",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 70,
     "retreat": 1,
     "rarity": "C",
@@ -584,16 +646,20 @@
         "fullPath": "cards/full/cod_016_lara_950__v1.webp",
         "thumbPath": "cards/thumb/cod_016_lara_950__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:017:trikuss_wonder",
     "setId": "cod",
     "number": "017",
     "name": "Trikuss Wonder",
-    "kind": "pokemon",
-    "stage": "evo1",
+    "type": "personnage",
+    "evolutionStage": "evolution",
     "evolvesFrom": "Lara 950",
+    "evolvesFromId": "cod:016:lara_950",
     "hp": 180,
     "retreat": 2,
     "rarity": "SR",
@@ -616,16 +682,20 @@
         "fullPath": "cards/full/cod_017_trikuss_wonder__v1.webp",
         "thumbPath": "cards/thumb/cod_017_trikuss_wonder__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo1"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:018:lara_warfare",
     "setId": "cod",
     "number": "018",
     "name": "Lara Warfare",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 140,
     "retreat": 2,
     "rarity": "R",
@@ -648,16 +718,20 @@
         "fullPath": "cards/full/cod_018_lara_warfare__v1.webp",
         "thumbPath": "cards/thumb/cod_018_lara_warfare__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:019:uav_en_ligne",
     "setId": "cod",
     "number": "019",
     "name": "UAV en ligne",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "U",
@@ -669,16 +743,20 @@
         "fullPath": "cards/full/cod_019_uav_en_ligne__v1.webp",
         "thumbPath": "cards/thumb/cod_019_uav_en_ligne__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:020:largage_tactique",
     "setId": "cod",
     "number": "020",
     "name": "Largage tactique",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "U",
@@ -690,16 +768,20 @@
         "fullPath": "cards/full/cod_020_largage_tactique__v1.webp",
         "thumbPath": "cards/thumb/cod_020_largage_tactique__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:021:changement_de_classe",
     "setId": "cod",
     "number": "021",
     "name": "Changement de classe",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "U",
@@ -711,16 +793,20 @@
         "fullPath": "cards/full/cod_021_changement_de_classe__v1.webp",
         "thumbPath": "cards/thumb/cod_021_changement_de_classe__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:022:drone_de_reconnaissance",
     "setId": "cod",
     "number": "022",
     "name": "Drone de reconnaissance",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "U",
@@ -732,16 +818,20 @@
         "fullPath": "cards/full/cod_022_drone_de_reconnaissance__v1.webp",
         "thumbPath": "cards/thumb/cod_022_drone_de_reconnaissance__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:023:serie_d_eliminations",
     "setId": "cod",
     "number": "023",
     "name": "Série d’éliminations",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "R",
@@ -753,16 +843,20 @@
         "fullPath": "cards/full/cod_023_serie_d_eliminations__v1.webp",
         "thumbPath": "cards/thumb/cod_023_serie_d_eliminations__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:024:extraction",
     "setId": "cod",
     "number": "024",
     "name": "Extraction !",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "R",
@@ -774,16 +868,20 @@
         "fullPath": "cards/full/cod_024_extraction__v1.webp",
         "thumbPath": "cards/thumb/cod_024_extraction__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:025:plaque_d_armure",
     "setId": "cod",
     "number": "025",
     "name": "Plaque d’armure",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "R",
@@ -795,16 +893,20 @@
         "fullPath": "cards/full/cod_025_plaque_d_armure__v1.webp",
         "thumbPath": "cards/thumb/cod_025_plaque_d_armure__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:026:flash",
     "setId": "cod",
     "number": "026",
     "name": "Flash !",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "SR",
@@ -816,16 +918,20 @@
         "fullPath": "cards/full/cod_026_flash__v1.webp",
         "thumbPath": "cards/thumb/cod_026_flash__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:027:mine_surprise",
     "setId": "cod",
     "number": "027",
     "name": "Mine surprise",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "R",
@@ -837,16 +943,20 @@
         "fullPath": "cards/full/cod_027_mine_surprise__v1.webp",
         "thumbPath": "cards/thumb/cod_027_mine_surprise__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:028:derniere_chance",
     "setId": "cod",
     "number": "028",
     "name": "Dernière chance",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "SR",
@@ -858,16 +968,20 @@
         "fullPath": "cards/full/cod_028_derniere_chance__v1.webp",
         "thumbPath": "cards/thumb/cod_028_derniere_chance__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:029:brouillage_radar",
     "setId": "cod",
     "number": "029",
     "name": "Brouillage radar",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "SR",
@@ -879,16 +993,20 @@
         "fullPath": "cards/full/cod_029_brouillage_radar__v1.webp",
         "thumbPath": "cards/thumb/cod_029_brouillage_radar__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "cod:030:on_a_encore_une_partie",
     "setId": "cod",
     "number": "030",
     "name": "On a encore une partie",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "UR",
@@ -900,16 +1018,20 @@
         "fullPath": "cards/full/cod_030_on_a_encore_une_partie__v1.webp",
         "thumbPath": "cards/thumb/cod_030_on_a_encore_une_partie__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:001:trikrillin",
     "setId": "dbz",
     "number": "001",
     "name": "Trikrillin",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 60,
     "retreat": 1,
     "rarity": "C",
@@ -932,16 +1054,20 @@
         "fullPath": "cards/full/dbz_001_trikrillin__v1.webp",
         "thumbPath": "cards/thumb/dbz_001_trikrillin__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:002:trikamehameha",
     "setId": "dbz",
     "number": "002",
     "name": "Trikamehameha",
-    "kind": "pokemon",
-    "stage": "evo1",
+    "type": "personnage",
+    "evolutionStage": "evolution",
     "evolvesFrom": "Trikrillin",
+    "evolvesFromId": "dbz:001:trikrillin",
     "hp": 150,
     "retreat": 2,
     "rarity": "R",
@@ -964,16 +1090,20 @@
         "fullPath": "cards/full/dbz_002_trikamehameha__v1.webp",
         "thumbPath": "cards/thumb/dbz_002_trikamehameha__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo1"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:003:trikaioken",
     "setId": "dbz",
     "number": "003",
     "name": "Trikaioken",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 90,
     "retreat": 1,
     "rarity": "U",
@@ -996,16 +1126,20 @@
         "fullPath": "cards/full/dbz_003_trikaioken__v1.webp",
         "thumbPath": "cards/thumb/dbz_003_trikaioken__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:004:trikaioken_20",
     "setId": "dbz",
     "number": "004",
     "name": "Trikaioken ×20",
-    "kind": "pokemon",
-    "stage": "evo1",
+    "type": "personnage",
+    "evolutionStage": "evolution",
     "evolvesFrom": "Trikaioken",
+    "evolvesFromId": "dbz:003:trikaioken",
     "hp": 190,
     "retreat": 2,
     "rarity": "SR",
@@ -1028,16 +1162,20 @@
         "fullPath": "cards/full/dbz_004_trikaioken_20__v1.webp",
         "thumbPath": "cards/thumb/dbz_004_trikaioken_20__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo1"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:005:rayanjin",
     "setId": "dbz",
     "number": "005",
     "name": "Rayanjin",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 70,
     "retreat": 1,
     "rarity": "C",
@@ -1060,16 +1198,20 @@
         "fullPath": "cards/full/dbz_005_rayanjin__v1.webp",
         "thumbPath": "cards/thumb/dbz_005_rayanjin__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:006:super_rayanjin",
     "setId": "dbz",
     "number": "006",
     "name": "Super Rayanjin",
-    "kind": "pokemon",
-    "stage": "evo1",
+    "type": "personnage",
+    "evolutionStage": "evolution",
     "evolvesFrom": "Rayanjin",
+    "evolvesFromId": "dbz:005:rayanjin",
     "hp": 150,
     "retreat": 2,
     "rarity": "R",
@@ -1092,16 +1234,20 @@
         "fullPath": "cards/full/dbz_006_super_rayanjin__v1.webp",
         "thumbPath": "cards/thumb/dbz_006_super_rayanjin__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo1"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:007:rayanjin_3",
     "setId": "dbz",
     "number": "007",
     "name": "Rayanjin 3",
-    "kind": "pokemon",
-    "stage": "evo2",
+    "type": "personnage",
+    "evolutionStage": "surevolution",
     "evolvesFrom": "Super Rayanjin",
+    "evolvesFromId": "dbz:006:super_rayanjin",
     "hp": 230,
     "retreat": 3,
     "rarity": "UR",
@@ -1124,16 +1270,20 @@
         "fullPath": "cards/full/dbz_007_rayanjin_3__v1.webp",
         "thumbPath": "cards/thumb/dbz_007_rayanjin_3__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo2"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:008:trigeta",
     "setId": "dbz",
     "number": "008",
     "name": "Trigeta",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 100,
     "retreat": 1,
     "rarity": "U",
@@ -1156,16 +1306,20 @@
         "fullPath": "cards/full/dbz_008_trigeta__v1.webp",
         "thumbPath": "cards/thumb/dbz_008_trigeta__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:009:majin_trigeta",
     "setId": "dbz",
     "number": "009",
     "name": "Majin Trigeta",
-    "kind": "pokemon",
-    "stage": "evo1",
+    "type": "personnage",
+    "evolutionStage": "evolution",
     "evolvesFrom": "Trigeta",
+    "evolvesFromId": "dbz:008:trigeta",
     "hp": 200,
     "retreat": 2,
     "rarity": "SR",
@@ -1188,16 +1342,20 @@
         "fullPath": "cards/full/dbz_009_majin_trigeta__v1.webp",
         "thumbPath": "cards/thumb/dbz_009_majin_trigeta__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo1"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:010:trikan",
     "setId": "dbz",
     "number": "010",
     "name": "Trikan",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 80,
     "retreat": 1,
     "rarity": "C",
@@ -1220,16 +1378,20 @@
         "fullPath": "cards/full/dbz_010_trikan__v1.webp",
         "thumbPath": "cards/thumb/dbz_010_trikan__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:011:trikan_ultime",
     "setId": "dbz",
     "number": "011",
     "name": "Trikan Ultime",
-    "kind": "pokemon",
-    "stage": "evo1",
+    "type": "personnage",
+    "evolutionStage": "evolution",
     "evolvesFrom": "Trikan",
+    "evolvesFromId": "dbz:010:trikan",
     "hp": 190,
     "retreat": 2,
     "rarity": "SR",
@@ -1252,16 +1414,20 @@
         "fullPath": "cards/full/dbz_011_trikan_ultime__v1.webp",
         "thumbPath": "cards/thumb/dbz_011_trikan_ultime__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo1"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:012:trikolo",
     "setId": "dbz",
     "number": "012",
     "name": "Trikolo",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 90,
     "retreat": 1,
     "rarity": "C",
@@ -1284,16 +1450,20 @@
         "fullPath": "cards/full/dbz_012_trikolo__v1.webp",
         "thumbPath": "cards/thumb/dbz_012_trikolo__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:013:trikolo_fusionne",
     "setId": "dbz",
     "number": "013",
     "name": "Trikolo Fusionné",
-    "kind": "pokemon",
-    "stage": "evo1",
+    "type": "personnage",
+    "evolutionStage": "evolution",
     "evolvesFrom": "Trikolo",
+    "evolvesFromId": "dbz:012:trikolo",
     "hp": 180,
     "retreat": 2,
     "rarity": "R",
@@ -1316,16 +1486,20 @@
         "fullPath": "cards/full/dbz_013_trikolo_fusionne__v1.webp",
         "thumbPath": "cards/thumb/dbz_013_trikolo_fusionne__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo1"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:014:triks_du_futur",
     "setId": "dbz",
     "number": "014",
     "name": "Triks du Futur",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 90,
     "retreat": 1,
     "rarity": "U",
@@ -1348,16 +1522,20 @@
         "fullPath": "cards/full/dbz_014_triks_du_futur__v1.webp",
         "thumbPath": "cards/thumb/dbz_014_triks_du_futur__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:015:triks_du_futur_super_saiyan",
     "setId": "dbz",
     "number": "015",
     "name": "Triks du Futur Super Saiyan",
-    "kind": "pokemon",
-    "stage": "evo1",
+    "type": "personnage",
+    "evolutionStage": "evolution",
     "evolvesFrom": "Triks du Futur",
+    "evolvesFromId": "dbz:014:triks_du_futur",
     "hp": 190,
     "retreat": 2,
     "rarity": "SR",
@@ -1380,16 +1558,20 @@
         "fullPath": "cards/full/dbz_015_triks_du_futur_super_saiyan__v1.webp",
         "thumbPath": "cards/thumb/dbz_015_triks_du_futur_super_saiyan__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo1"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:016:le_tenshinhan",
     "setId": "dbz",
     "number": "016",
     "name": "Le Tenshinhan",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 130,
     "retreat": 2,
     "rarity": "R",
@@ -1412,16 +1594,20 @@
         "fullPath": "cards/full/dbz_016_le_tenshinhan__v1.webp",
         "thumbPath": "cards/thumb/dbz_016_le_tenshinhan__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:017:le_t_roshi",
     "setId": "dbz",
     "number": "017",
     "name": "Le T Roshi",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 110,
     "retreat": 1,
     "rarity": "U",
@@ -1444,16 +1630,20 @@
         "fullPath": "cards/full/dbz_017_le_t_roshi__v1.webp",
         "thumbPath": "cards/thumb/dbz_017_le_t_roshi__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:018:trika_genkidama",
     "setId": "dbz",
     "number": "018",
     "name": "Trika Genkidama",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 220,
     "retreat": 3,
     "rarity": "UR",
@@ -1476,16 +1666,20 @@
         "fullPath": "cards/full/dbz_018_trika_genkidama__v1.webp",
         "thumbPath": "cards/thumb/dbz_018_trika_genkidama__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:019:haricot_senzu",
     "setId": "dbz",
     "number": "019",
     "name": "Haricot Senzu",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "U",
@@ -1497,16 +1691,20 @@
         "fullPath": "cards/full/dbz_019_haricot_senzu__v1.webp",
         "thumbPath": "cards/thumb/dbz_019_haricot_senzu__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:020:detecteur_de_puissance",
     "setId": "dbz",
     "number": "020",
     "name": "Détecteur de puissance",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "U",
@@ -1518,16 +1716,20 @@
         "fullPath": "cards/full/dbz_020_detecteur_de_puissance__v1.webp",
         "thumbPath": "cards/thumb/dbz_020_detecteur_de_puissance__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:021:capsule",
     "setId": "dbz",
     "number": "021",
     "name": "Capsule !",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "U",
@@ -1539,16 +1741,20 @@
         "fullPath": "cards/full/dbz_021_capsule__v1.webp",
         "thumbPath": "cards/thumb/dbz_021_capsule__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:022:entrainement_sous_gravite",
     "setId": "dbz",
     "number": "022",
     "name": "Entraînement sous gravité",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "R",
@@ -1560,16 +1766,20 @@
         "fullPath": "cards/full/dbz_022_entrainement_sous_gravite__v1.webp",
         "thumbPath": "cards/thumb/dbz_022_entrainement_sous_gravite__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:023:chambre_de_l_esprit_et_du_temps",
     "setId": "dbz",
     "number": "023",
     "name": "Chambre de l’Esprit et du Temps",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "R",
@@ -1581,16 +1791,20 @@
         "fullPath": "cards/full/dbz_023_chambre_de_l_esprit_et_du_temps__v1.webp",
         "thumbPath": "cards/thumb/dbz_023_chambre_de_l_esprit_et_du_temps__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:024:fusion",
     "setId": "dbz",
     "number": "024",
     "name": "Fusion !",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "SR",
@@ -1602,16 +1816,20 @@
         "fullPath": "cards/full/dbz_024_fusion__v1.webp",
         "thumbPath": "cards/thumb/dbz_024_fusion__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:025:teleportation",
     "setId": "dbz",
     "number": "025",
     "name": "Téléportation !",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "R",
@@ -1623,16 +1841,20 @@
         "fullPath": "cards/full/dbz_025_teleportation__v1.webp",
         "thumbPath": "cards/thumb/dbz_025_teleportation__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:026:meme_pas_ma_forme_finale",
     "setId": "dbz",
     "number": "026",
     "name": "Même pas ma forme finale",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "SR",
@@ -1644,16 +1866,20 @@
         "fullPath": "cards/full/dbz_026_meme_pas_ma_forme_finale__v1.webp",
         "thumbPath": "cards/thumb/dbz_026_meme_pas_ma_forme_finale__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:027:le_detecteur_explose",
     "setId": "dbz",
     "number": "027",
     "name": "Le détecteur explose !",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "R",
@@ -1665,16 +1891,20 @@
         "fullPath": "cards/full/dbz_027_le_detecteur_explose__v1.webp",
         "thumbPath": "cards/thumb/dbz_027_le_detecteur_explose__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:028:encore_plus_de_puissance",
     "setId": "dbz",
     "number": "028",
     "name": "Encore plus de puissance ?!",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "SR",
@@ -1686,16 +1916,20 @@
         "fullPath": "cards/full/dbz_028_encore_plus_de_puissance__v1.webp",
         "thumbPath": "cards/thumb/dbz_028_encore_plus_de_puissance__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:029:les_sept_boules_sont_reunies",
     "setId": "dbz",
     "number": "029",
     "name": "Les sept boules sont réunies",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "SR",
@@ -1707,16 +1941,20 @@
         "fullPath": "cards/full/dbz_029_les_sept_boules_sont_reunies__v1.webp",
         "thumbPath": "cards/thumb/dbz_029_les_sept_boules_sont_reunies__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "dbz:030:cinq_minutes_avant_l_explosion",
     "setId": "dbz",
     "number": "030",
     "name": "Cinq minutes avant l’explosion",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "UR",
@@ -1728,16 +1966,20 @@
         "fullPath": "cards/full/dbz_030_cinq_minutes_avant_l_explosion__v1.webp",
         "thumbPath": "cards/thumb/dbz_030_cinq_minutes_avant_l_explosion__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "emerald:001:bafolight",
     "setId": "emerald",
     "number": "001",
     "name": "Bafolight",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 70,
     "retreat": 1,
     "rarity": "C",
@@ -1760,16 +2002,20 @@
         "fullPath": "cards/full/emerald_001_bafolight__v1.webp",
         "thumbPath": "cards/thumb/emerald_001_bafolight__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "emerald:002:bafolantern",
     "setId": "emerald",
     "number": "002",
     "name": "Bafolantern",
-    "kind": "pokemon",
-    "stage": "evo1",
+    "type": "personnage",
+    "evolutionStage": "evolution",
     "evolvesFrom": "Bafolight",
+    "evolvesFromId": "emerald:001:bafolight",
     "hp": 150,
     "retreat": 2,
     "rarity": "R",
@@ -1792,16 +2038,20 @@
         "fullPath": "cards/full/emerald_002_bafolantern__v1.webp",
         "thumbPath": "cards/thumb/emerald_002_bafolantern__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo1"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "emerald:003:djako_recrue",
     "setId": "emerald",
     "number": "003",
     "name": "Djako Recrue",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 60,
     "retreat": 1,
     "rarity": "C",
@@ -1824,16 +2074,20 @@
         "fullPath": "cards/full/emerald_003_djako_recrue__v1.webp",
         "thumbPath": "cards/thumb/emerald_003_djako_recrue__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "emerald:004:jack_o_lanterne",
     "setId": "emerald",
     "number": "004",
     "name": "Jack-o’-Lanterne",
-    "kind": "pokemon",
-    "stage": "evo1",
+    "type": "personnage",
+    "evolutionStage": "evolution",
     "evolvesFrom": "Djako Recrue",
+    "evolvesFromId": "emerald:003:djako_recrue",
     "hp": 120,
     "retreat": 1,
     "rarity": "R",
@@ -1856,16 +2110,20 @@
         "fullPath": "cards/full/emerald_004_jack_o_lanterne__v1.webp",
         "thumbPath": "cards/thumb/emerald_004_jack_o_lanterne__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo1"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "emerald:005:dj_nova",
     "setId": "emerald",
     "number": "005",
     "name": "DJ Nova",
-    "kind": "pokemon",
-    "stage": "evo2",
+    "type": "personnage",
+    "evolutionStage": "surevolution",
     "evolvesFrom": "Jack-o’-Lanterne",
+    "evolvesFromId": "emerald:004:jack_o_lanterne",
     "hp": 200,
     "retreat": 2,
     "rarity": "UR",
@@ -1888,16 +2146,20 @@
         "fullPath": "cards/full/emerald_005_dj_nova__v1.webp",
         "thumbPath": "cards/thumb/emerald_005_dj_nova__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo2"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "emerald:006:jai_projection",
     "setId": "emerald",
     "number": "006",
     "name": "Jaï Projection",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 70,
     "retreat": 1,
     "rarity": "C",
@@ -1920,16 +2182,20 @@
         "fullPath": "cards/full/emerald_006_jai_projection__v1.webp",
         "thumbPath": "cards/thumb/emerald_006_jai_projection__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "emerald:007:jai_constructeur",
     "setId": "emerald",
     "number": "007",
     "name": "Jaï Constructeur",
-    "kind": "pokemon",
-    "stage": "evo1",
+    "type": "personnage",
+    "evolutionStage": "evolution",
     "evolvesFrom": "Jaï Projection",
+    "evolvesFromId": "emerald:006:jai_projection",
     "hp": 150,
     "retreat": 2,
     "rarity": "SR",
@@ -1952,16 +2218,20 @@
         "fullPath": "cards/full/emerald_007_jai_constructeur__v1.webp",
         "thumbPath": "cards/thumb/emerald_007_jai_constructeur__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo1"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "emerald:008:bafo_des_patrouilles",
     "setId": "emerald",
     "number": "008",
     "name": "Bafo des Patrouilles",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 90,
     "retreat": 1,
     "rarity": "C",
@@ -1978,16 +2248,20 @@
       }
     ],
     "effect": null,
-    "variants": []
+    "variants": [],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "emerald:009:bafo_sentinel",
     "setId": "emerald",
     "number": "009",
     "name": "Bafo Sentinel",
-    "kind": "pokemon",
-    "stage": "evo1",
+    "type": "personnage",
+    "evolutionStage": "evolution",
     "evolvesFrom": "Bafo des Patrouilles",
+    "evolvesFromId": "emerald:008:bafo_des_patrouilles",
     "hp": 140,
     "retreat": 1,
     "rarity": "SR",
@@ -2010,16 +2284,20 @@
         "fullPath": "cards/full/emerald_009_bafo_sentinel__v1.webp",
         "thumbPath": "cards/thumb/emerald_009_bafo_sentinel__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo1"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "emerald:010:bafo_centurion",
     "setId": "emerald",
     "number": "010",
     "name": "Bafo Centurion",
-    "kind": "pokemon",
-    "stage": "evo2",
+    "type": "personnage",
+    "evolutionStage": "surevolution",
     "evolvesFrom": "Bafo Sentinel",
+    "evolvesFromId": "emerald:009:bafo_sentinel",
     "hp": 200,
     "retreat": 2,
     "rarity": "UR",
@@ -2042,16 +2320,20 @@
         "fullPath": "cards/full/emerald_010_bafo_centurion__v1.webp",
         "thumbPath": "cards/thumb/emerald_010_bafo_centurion__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo2"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "emerald:013:bafo_sinestro",
     "setId": "emerald",
     "number": "013",
     "name": "Bafo Sinestro",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 80,
     "retreat": 1,
     "rarity": "U",
@@ -2074,16 +2356,20 @@
         "fullPath": "cards/full/emerald_013_bafo_sinestro__v1.webp",
         "thumbPath": "cards/thumb/emerald_013_bafo_sinestro__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "emerald:014:baforallax",
     "setId": "emerald",
     "number": "014",
     "name": "Baforallax",
-    "kind": "pokemon",
-    "stage": "evo1",
+    "type": "personnage",
+    "evolutionStage": "evolution",
     "evolvesFrom": "Bafo Sinestro",
+    "evolvesFromId": "emerald:013:bafo_sinestro",
     "hp": 180,
     "retreat": 2,
     "rarity": "UR",
@@ -2106,16 +2392,20 @@
         "fullPath": "cards/full/emerald_014_baforallax__v1.webp",
         "thumbPath": "cards/thumb/emerald_014_baforallax__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo1"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "emerald:015:djako_batterie",
     "setId": "emerald",
     "number": "015",
     "name": "Djako Batterie",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 70,
     "retreat": 1,
     "rarity": "C",
@@ -2138,16 +2428,20 @@
         "fullPath": "cards/full/emerald_015_djako_batterie__v1.webp",
         "thumbPath": "cards/thumb/emerald_015_djako_batterie__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "emerald:016:djako_surcharge",
     "setId": "emerald",
     "number": "016",
     "name": "Djako Surchargé",
-    "kind": "pokemon",
-    "stage": "evo1",
+    "type": "personnage",
+    "evolutionStage": "evolution",
     "evolvesFrom": "Djako Batterie",
+    "evolvesFromId": "emerald:015:djako_batterie",
     "hp": 170,
     "retreat": 2,
     "rarity": "SR",
@@ -2170,16 +2464,20 @@
         "fullPath": "cards/full/emerald_016_djako_surcharge__v1.webp",
         "thumbPath": "cards/thumb/emerald_016_djako_surcharge__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo1"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "emerald:018:jacolossus",
     "setId": "emerald",
     "number": "018",
     "name": "Jacolossus",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 140,
     "retreat": 2,
     "rarity": "R",
@@ -2202,16 +2500,20 @@
         "fullPath": "cards/full/emerald_018_jacolossus__v1.webp",
         "thumbPath": "cards/thumb/emerald_018_jacolossus__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "emerald:020:recharge_de_la_batterie",
     "setId": "emerald",
     "number": "020",
     "name": "Recharge de la batterie",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "U",
@@ -2223,16 +2525,20 @@
         "fullPath": "cards/full/emerald_020_recharge_de_la_batterie__v1.webp",
         "thumbPath": "cards/thumb/emerald_020_recharge_de_la_batterie__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "emerald:022:construction_impossible",
     "setId": "emerald",
     "number": "022",
     "name": "Construction impossible",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "R",
@@ -2244,16 +2550,20 @@
         "fullPath": "cards/full/emerald_022_construction_impossible__v1.webp",
         "thumbPath": "cards/thumb/emerald_022_construction_impossible__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "emerald:027:construction_surprise",
     "setId": "emerald",
     "number": "027",
     "name": "Construction surprise",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "SR",
@@ -2265,16 +2575,20 @@
         "fullPath": "cards/full/emerald_027_construction_surprise__v1.webp",
         "thumbPath": "cards/thumb/emerald_027_construction_surprise__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "emerald:028:volonte_inebranlable",
     "setId": "emerald",
     "number": "028",
     "name": "Volonté inébranlable",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "SR",
@@ -2286,16 +2600,20 @@
         "fullPath": "cards/full/emerald_028_volonte_inebranlable__v1.webp",
         "thumbPath": "cards/thumb/emerald_028_volonte_inebranlable__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "ninja:001:zaim_sinja",
     "setId": "ninja",
     "number": "001",
     "name": "Zaim Sinja",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 90,
     "retreat": 1,
     "rarity": "C",
@@ -2318,16 +2636,20 @@
         "fullPath": "cards/full/ninja_001_zaim_sinja__v1.webp",
         "thumbPath": "cards/thumb/ninja_001_zaim_sinja__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "ninja:002:rubinobi",
     "setId": "ninja",
     "number": "002",
     "name": "Rubinobi",
-    "kind": "pokemon",
-    "stage": "evo1",
+    "type": "personnage",
+    "evolutionStage": "evolution",
     "evolvesFrom": "Zaim Sinja",
+    "evolvesFromId": "ninja:001:zaim_sinja",
     "hp": 130,
     "retreat": 1,
     "rarity": "R",
@@ -2350,16 +2672,20 @@
         "fullPath": "cards/full/ninja_002_rubinobi__v1.webp",
         "thumbPath": "cards/thumb/ninja_002_rubinobi__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo1"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "ninja:003:roobkage",
     "setId": "ninja",
     "number": "003",
     "name": "Roobkage",
-    "kind": "pokemon",
-    "stage": "evo2",
+    "type": "personnage",
+    "evolutionStage": "surevolution",
     "evolvesFrom": "Rubinobi",
+    "evolvesFromId": "ninja:002:rubinobi",
     "hp": 180,
     "retreat": 2,
     "rarity": "UR",
@@ -2382,16 +2708,20 @@
         "fullPath": "cards/full/ninja_003_roobkage__v1.webp",
         "thumbPath": "cards/thumb/ninja_003_roobkage__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo2"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "ninja:004:zaimbun",
     "setId": "ninja",
     "number": "004",
     "name": "Zaimbun",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 70,
     "retreat": 1,
     "rarity": "C",
@@ -2414,16 +2744,20 @@
         "fullPath": "cards/full/ninja_004_zaimbun__v1.webp",
         "thumbPath": "cards/thumb/ninja_004_zaimbun__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "ninja:005:roobunshin",
     "setId": "ninja",
     "number": "005",
     "name": "Roobunshin",
-    "kind": "pokemon",
-    "stage": "evo1",
+    "type": "personnage",
+    "evolutionStage": "evolution",
     "evolvesFrom": "Zaimbun",
+    "evolvesFromId": "ninja:004:zaimbun",
     "hp": 120,
     "retreat": 1,
     "rarity": "R",
@@ -2446,16 +2780,20 @@
         "fullPath": "cards/full/ninja_005_roobunshin__v1.webp",
         "thumbPath": "cards/thumb/ninja_005_roobunshin__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo1"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "ninja:010:sinanbu",
     "setId": "ninja",
     "number": "010",
     "name": "SinANBU",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 80,
     "retreat": 1,
     "rarity": "U",
@@ -2478,16 +2816,20 @@
         "fullPath": "cards/full/ninja_010_sinanbu__v1.webp",
         "thumbPath": "cards/thumb/ninja_010_sinanbu__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "ninja:011:roobanbu",
     "setId": "ninja",
     "number": "011",
     "name": "RoobANBU",
-    "kind": "pokemon",
-    "stage": "evo1",
+    "type": "personnage",
+    "evolutionStage": "evolution",
     "evolvesFrom": "SinANBU",
+    "evolvesFromId": "ninja:010:sinanbu",
     "hp": 130,
     "retreat": 1,
     "rarity": "SR",
@@ -2510,16 +2852,20 @@
         "fullPath": "cards/full/ninja_011_roobanbu__v1.webp",
         "thumbPath": "cards/thumb/ninja_011_roobanbu__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo1"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "ninja:012:roobkatsuki",
     "setId": "ninja",
     "number": "012",
     "name": "Roobkatsuki",
-    "kind": "pokemon",
-    "stage": "evo2",
+    "type": "personnage",
+    "evolutionStage": "surevolution",
     "evolvesFrom": "RoobANBU",
+    "evolvesFromId": "ninja:011:roobanbu",
     "hp": 180,
     "retreat": 2,
     "rarity": "UR",
@@ -2542,16 +2888,20 @@
         "fullPath": "cards/full/ninja_012_roobkatsuki__v1.webp",
         "thumbPath": "cards/thumb/ninja_012_roobkatsuki__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo2"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "ninja:013:zaimchu",
     "setId": "ninja",
     "number": "013",
     "name": "Zaimchū",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 100,
     "retreat": 1,
     "rarity": "C",
@@ -2574,16 +2924,20 @@
         "fullPath": "cards/full/ninja_013_zaimchu__v1.webp",
         "thumbPath": "cards/thumb/ninja_013_zaimchu__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "ninja:014:sinnchuriki",
     "setId": "ninja",
     "number": "014",
     "name": "Sinnchūriki",
-    "kind": "pokemon",
-    "stage": "evo1",
+    "type": "personnage",
+    "evolutionStage": "evolution",
     "evolvesFrom": "Zaimchū",
+    "evolvesFromId": "ninja:013:zaimchu",
     "hp": 160,
     "retreat": 2,
     "rarity": "SR",
@@ -2606,16 +2960,20 @@
         "fullPath": "cards/full/ninja_014_sinnchuriki__v1.webp",
         "thumbPath": "cards/thumb/ninja_014_sinnchuriki__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "evo1"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "ninja:015:roobjutsu",
     "setId": "ninja",
     "number": "015",
     "name": "Roobjutsu",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 100,
     "retreat": 1,
     "rarity": "U",
@@ -2638,16 +2996,20 @@
         "fullPath": "cards/full/ninja_015_roobjutsu__v1.webp",
         "thumbPath": "cards/thumb/ninja_015_roobjutsu__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "ninja:016:zaimsei",
     "setId": "ninja",
     "number": "016",
     "name": "Zaimsei",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 110,
     "retreat": 1,
     "rarity": "U",
@@ -2670,16 +3032,20 @@
         "fullPath": "cards/full/ninja_016_zaimsei__v1.webp",
         "thumbPath": "cards/thumb/ninja_016_zaimsei__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "ninja:017:sinnobi",
     "setId": "ninja",
     "number": "017",
     "name": "Sinnobi",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 100,
     "retreat": 1,
     "rarity": "R",
@@ -2702,16 +3068,20 @@
         "fullPath": "cards/full/ninja_017_sinnobi__v1.webp",
         "thumbPath": "cards/thumb/ninja_017_sinnobi__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "ninja:018:roobgan",
     "setId": "ninja",
     "number": "018",
     "name": "Roobgan",
-    "kind": "pokemon",
-    "stage": "base",
+    "type": "personnage",
+    "evolutionStage": "base",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 120,
     "retreat": 1,
     "rarity": "R",
@@ -2734,16 +3104,20 @@
         "fullPath": "cards/full/ninja_018_roobgan__v1.webp",
         "thumbPath": "cards/thumb/ninja_018_roobgan__v1.webp"
       }
-    ]
+    ],
+    "kind": "pokemon",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "ninja:019:entrainement_au_chakra",
     "setId": "ninja",
     "number": "019",
     "name": "Entraînement au chakra",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "C",
@@ -2755,16 +3129,20 @@
         "fullPath": "cards/full/ninja_019_entrainement_au_chakra__v1.webp",
         "thumbPath": "cards/thumb/ninja_019_entrainement_au_chakra__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "ninja:020:course_sur_les_murs",
     "setId": "ninja",
     "number": "020",
     "name": "Course sur les murs",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "U",
@@ -2776,16 +3154,20 @@
         "fullPath": "cards/full/ninja_020_course_sur_les_murs__v1.webp",
         "thumbPath": "cards/thumb/ninja_020_course_sur_les_murs__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "ninja:021:parchemin_interdit",
     "setId": "ninja",
     "number": "021",
     "name": "Parchemin interdit",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "U",
@@ -2797,16 +3179,20 @@
         "fullPath": "cards/full/ninja_021_parchemin_interdit__v1.webp",
         "thumbPath": "cards/thumb/ninja_021_parchemin_interdit__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "ninja:023:concentration_du_chakra",
     "setId": "ninja",
     "number": "023",
     "name": "Concentration du chakra",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "R",
@@ -2818,16 +3204,20 @@
         "fullPath": "cards/full/ninja_023_concentration_du_chakra__v1.webp",
         "thumbPath": "cards/thumb/ninja_023_concentration_du_chakra__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "ninja:024:mission_de_rang_s",
     "setId": "ninja",
     "number": "024",
     "name": "Mission de rang S",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "R",
@@ -2839,16 +3229,20 @@
         "fullPath": "cards/full/ninja_024_mission_de_rang_s__v1.webp",
         "thumbPath": "cards/thumb/ninja_024_mission_de_rang_s__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   },
   {
+    "schemaVersion": 1,
     "canonicalId": "ninja:026:c_etait_un_clone",
     "setId": "ninja",
     "number": "026",
     "name": "C’était un clone",
-    "kind": "trainer",
-    "stage": "base",
+    "type": "action",
+    "evolutionStage": "aucune",
     "evolvesFrom": null,
+    "evolvesFromId": null,
     "hp": 0,
     "retreat": 0,
     "rarity": "SR",
@@ -2860,6 +3254,8 @@
         "fullPath": "cards/full/ninja_026_c_etait_un_clone__v1.webp",
         "thumbPath": "cards/thumb/ninja_026_c_etait_un_clone__v1.webp"
       }
-    ]
+    ],
+    "kind": "trainer",
+    "stage": "base"
   }
 ]
