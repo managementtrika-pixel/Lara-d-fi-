@@ -35,7 +35,16 @@ fun ZeubiApp(vm: GameViewModel = hiltViewModel()) {
                 OverlayScreen.Campaign -> CampaignScreen(state, vm)
                 OverlayScreen.Duel -> DuelScreen(state, vm)
             }
-            state.selectedCard?.let { CardDetailDialog(it, state.owned[it.canonicalId], vm::inspect, vm::selectVariant) }
+            state.selectedCard?.let { card ->
+                CardDetailDialog(
+                    card = card,
+                    owned = state.owned[card.canonicalId],
+                    favorite = card.canonicalId in state.preferences.favoriteCardIds,
+                    dismiss = vm::inspect,
+                    select = vm::selectVariant,
+                    toggleFavorite = vm::toggleFavorite,
+                )
+            }
         }
     }
 }
