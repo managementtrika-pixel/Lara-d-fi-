@@ -2,6 +2,40 @@ package com.zeubicardgames.app.core.model
 
 import androidx.compose.runtime.Immutable
 
+enum class CardType(val label: String) {
+    PERSONNAGE("Personnage"),
+    ACTION("Action"),
+    REPLIQUE("Réplique"),
+    RESSOURCE("Ressource"),
+    INCONNU("Autre");
+
+    companion object {
+        fun from(raw: String): CardType = when (raw.trim().lowercase()) {
+            "pokemon", "personnage", "character", "fighter" -> PERSONNAGE
+            "action", "trainer", "support" -> ACTION
+            "replique", "réplique", "reply", "trap" -> REPLIQUE
+            "ressource", "resource", "energy", "energie", "énergie" -> RESSOURCE
+            else -> INCONNU
+        }
+    }
+}
+
+enum class EvolutionStage(val label: String) {
+    BASE("Forme initiale"),
+    EVOLUTION("Évolution"),
+    SUREVOLUTION("Surévolution"),
+    AUCUNE("—");
+
+    companion object {
+        fun from(raw: String): EvolutionStage = when (raw.trim().lowercase()) {
+            "base", "basic" -> BASE
+            "evo1", "stage1", "evolution", "évolution" -> EVOLUTION
+            "evo2", "stage2", "over", "over_evolution", "surevolution", "surévolution" -> SUREVOLUTION
+            else -> AUCUNE
+        }
+    }
+}
+
 @Immutable
 data class CardDefinition(
     val canonicalId: String,
@@ -17,11 +51,42 @@ data class CardDefinition(
     val attacks: List<Attack>,
     val effect: String?,
     val variants: List<CardVariant>,
+    val evolvesFromId: String? = null,
+    val schemaVersion: Int = 1,
+) {
+    val type: CardType get() = CardType.from(kind)
+    val evolutionStage: EvolutionStage get() =
+        if (type == CardType.PERSONNAGE) EvolutionStage.from(stage) else EvolutionStage.AUCUNE
+}
+
+@Immutable
+data class CardVariant(
+    val variantId: String,
+    val fullPath: String,
+    val thumbPath: String,
 )
 
-@Immutable data class CardVariant(val variantId: String, val fullPath: String, val thumbPath: String)
-@Immutable data class Attack(val name: String, val damage: Int, val cost: Int)
-enum class Rarity(val rank: Int) { C(0), U(1), R(2), SR(3), UR(4); companion object { fun from(raw: String) = entries.firstOrNull { it.name == raw.uppercase() } ?: C } }
+@Immutable
+data class Attack(
+    val name: String,
+    val damage: Int,
+    val cost: Int,
+)
+
+enum class Rarity(val rank: Int, val label: String) {
+    C(0, "Commune"),
+    U(1, "Peu commune"),
+    R(2, "Rare"),
+    SR(3, "Super rare"),
+    UR(4, "Ultra rare"),
+    SUPRA(5, "Supra rare");
+
+    companion object {
+        fun from(raw: String): Rarity = entries.firstOrNull { it.name == raw.uppercase() } ?: C
+    }
+}
+
+enum class ContentStatus { ACTIVE, INACTIVE }
 
 @Immutable
 data class ExtensionDefinition(
@@ -31,10 +96,24 @@ data class ExtensionDefinition(
     val accent: Long,
     val boosterPath: String,
     val cardCount: Int,
+    val schemaVersion: Int = 1,
+    val order: Int = 0,
+    val status: ContentStatus = ContentStatus.ACTIVE,
 )
 
-@Immutable data class OwnedCard(val canonicalId: String, val quantity: Int, val selectedVariantId: String?)
-@Immutable data class Deck(val id: Long = 0, val name: String, val cardIds: List<String>)
+@Immutable
+data class OwnedCard(
+    val canonicalId: String,
+    val quantity: Int,
+    val selectedVariantId: String?,
+)
+
+@Immutable
+data class Deck(
+    val id: Long = 0,
+    val name: String,
+    val cardIds: List<String>,
+)
 
 @Immutable
 data class CampaignOpponent(
@@ -45,7 +124,9 @@ data class CampaignOpponent(
     val rewardCoins: Int,
     val description: String,
     val bossCardName: String,
+    val bossCardId: String? = null,
 )
+
 enum class Difficulty { FACILE, NORMAL, DIFFICILE, EXPERT }
 
 val OfficialOpponents = listOf(
