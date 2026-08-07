@@ -19,6 +19,38 @@ const extensionsPath = path.join(catalogDir, 'extensions.json');
 const manifestPath = path.join(catalogDir, 'manifest.json');
 const validationPath = path.join(catalogDir, 'validation_report.json');
 
+const KNOWN_EFFECTS = new Set([
+  'searchPokemon',
+  'recoverEnergy2',
+  'switchAndBuff',
+  'peekHandDraw',
+  'streakDraw',
+  'switchHeal30',
+  'reduce40',
+  'reduce30Lock',
+  'counter30',
+  'survive10',
+  'cancelTrainer',
+  'revive60',
+  'heal90',
+  'effectEnergy',
+  'buff30Self10',
+  'instantEvolve',
+  'buff50',
+  'switchBeforeHit',
+  'evolveSurvive30',
+  'cancelBonus',
+  'draw2ExtraEnergy',
+  'recover2',
+  'survive10Buff50',
+  'searchTrainerDraw',
+  'switch',
+  'searchEvolution',
+  'moveEnergy',
+  'draw3discard1',
+  'shield40',
+]);
+
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
@@ -27,8 +59,10 @@ function writeJson(file, value) {
   fs.writeFileSync(file, JSON.stringify(value, null, 2));
 }
 
-function normalizeType(raw) {
-  switch (String(raw || '').trim().toLowerCase()) {
+function normalizeType(raw, number) {
+  const source = String(raw || '').trim().toLowerCase();
+  const numeric = Number.parseInt(String(number || ''), 10);
+  switch (source) {
     case 'pokemon':
     case 'personnage':
     case 'character':
@@ -37,7 +71,10 @@ function normalizeType(raw) {
     case 'action':
     case 'trainer':
     case 'support':
-      return 'action';
+      // Convention de migration des extensions physiques actuelles :
+      // 019-024 = Actions, 025-030 = Répliques. Le nouveau Studio devra
+      // écrire explicitement le type et supprimera cette règle d’import legacy.
+      return numeric >= 25 && numeric <= 30 ? 'replique' : 'action';
     case 'replique':
     case 'réplique':
     case 'reply':
@@ -97,16 +134,23 @@ for (const card of cards) {
 }
 
 const normalizedCards = cards.map((card) => {
-  const type = normalizeType(card.type || card.kind);
+  const type = normalizeType(card.type || card.kind, card.number);
   const evolutionStage = normalizeStage(card.evolutionStage || card.stage, type);
   const evolvesFromId = card.evolvesFromId ||
     (card.evolvesFrom ? bySetAndName.get(card.setId)?.get(card.evolvesFrom) || null : null);
+  const effect = card.effect || null;
 
   if (card.evolvesFrom && !evolvesFromId) {
     throw new Error(`Évolution introuvable pour ${card.canonicalId}: ${card.evolvesFrom}`);
   }
   if (evolvesFromId && !canonicalIds.has(evolvesFromId)) {
     throw new Error(`evolvesFromId invalide pour ${card.canonicalId}: ${evolvesFromId}`);
+  }
+  if (effect && !KNOWN_EFFECTS.has(effect)) {
+    throw new Error(`Effet inconnu pour ${card.canonicalId}: ${effect}`);
+  }
+  if ((type === 'action' || type === 'replique') && !effect) {
+    throw new Error(`Carte ${type} sans effet exécutable: ${card.canonicalId}`);
   }
 
   return {
@@ -123,7 +167,7 @@ const normalizedCards = cards.map((card) => {
     retreat: Number(card.retreat || 0),
     rarity: card.rarity,
     attacks: Array.isArray(card.attacks) ? card.attacks : [],
-    effect: card.effect || null,
+    effect,
     variants: Array.isArray(card.variants) ? card.variants : [],
     // Champs hérités conservés pendant la migration des anciens outils.
     kind: card.kind || type,
@@ -158,6 +202,12 @@ for (const card of normalizedCards) {
   }
 }
 
+const typeCounts = normalizedCards.reduce((counts, card) => {
+  counts[card.type] = (counts[card.type] || 0) + 1;
+  return counts;
+}, {});
+const effectCodes = [...new Set(normalizedCards.map((card) => card.effect).filter(Boolean))].sort();
+
 writeJson(cardsPath, normalizedCards);
 writeJson(extensionsPath, normalizedExtensions);
 writeJson(manifestPath, {
@@ -167,11 +217,15 @@ writeJson(manifestPath, {
   cardCount: normalizedCards.length,
   variantCount: normalizedCards.reduce((count, card) => count + card.variants.length, 0),
   extensionIds: normalizedExtensions.map((extension) => extension.id),
+  typeCounts,
+  effectCodes,
 });
 writeJson(validationPath, {
   ...validation,
   schemaVersion: SCHEMA_VERSION,
   catalogNormalized: true,
+  typeCounts,
+  knownEffectCodes: effectCodes.length,
 });
 
 console.log(JSON.stringify({
@@ -179,4 +233,6 @@ console.log(JSON.stringify({
   cards: normalizedCards.length,
   extensions: normalizedExtensions.length,
   evolutionsResolved: normalizedCards.filter((card) => card.evolvesFromId).length,
+  typeCounts,
+  effectCodes,
 }, null, 2));
