@@ -29,7 +29,11 @@ jobs:
             echo 'Le générateur de catalogue est introuvable.'
             exit 1
           }
-          chmod +x native/gradlew native/tools/build_catalog.mjs
+          test -f native/tools/normalize_catalog.mjs || {
+            echo 'Le normaliseur de catalogue V1 est introuvable.'
+            exit 1
+          }
+          chmod +x native/gradlew native/tools/build_catalog.mjs native/tools/normalize_catalog.mjs
           grep -E 'compileSdk|targetSdk|minSdk' native/app/build.gradle.kts
 
       - uses: actions/setup-node@v4
@@ -38,6 +42,9 @@ jobs:
 
       - name: Auditer et synchroniser le catalogue V8.5
         run: node native/tools/build_catalog.mjs --html ZeubiCardGames_V8_5_CombatModes_BoosterDisplay.html --project native
+
+      - name: Normaliser le catalogue ZeubiCardGames V1
+        run: node native/tools/normalize_catalog.mjs --project native
 
       - uses: actions/setup-java@v4
         with:
