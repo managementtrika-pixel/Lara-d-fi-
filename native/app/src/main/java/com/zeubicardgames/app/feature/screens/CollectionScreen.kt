@@ -136,6 +136,7 @@ fun CollectionScreen(state: GameUiState, vm: GameViewModel) {
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
+            modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(vertical = 10.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
