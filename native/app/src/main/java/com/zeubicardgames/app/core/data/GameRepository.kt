@@ -3,6 +3,8 @@ package com.zeubicardgames.app.core.data
 import androidx.room.withTransaction
 import com.zeubicardgames.app.core.booster.PackGenerator
 import com.zeubicardgames.app.core.database.*
+import com.zeubicardgames.app.core.deck.DeckRules
+import com.zeubicardgames.app.core.deck.DeckValidationResult
 import com.zeubicardgames.app.core.model.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -82,32 +84,47 @@ class GameRepository @Inject constructor(
         dao.upsertOwned(current.copy(selectedVariantId = variantId))
     }
 
-    suspend fun saveDeck(name: String, ids: List<String>): Result<Long> {
-        val validation = validateDeck(ids)
-        if (validation != null) return Result.failure(IllegalArgumentException(validation))
-        return Result.success(
+    fun validateDeckDetailed(
+        ids: List<String>,
+        ownedQuantities: Map<String, Int>? = null,
+    ): DeckValidationResult = DeckRules.validate(ids, catalog, ownedQuantities)
+
+    fun validateDeck(ids: List<String>): String? =
+        validateDeckDetailed(ids).errors.firstOrNull()
+
+    suspend fun saveDeck(name: String, ids: List<String>): Result<Long> =
+        saveDeck(id = 0L, name = name, ids = ids)
+
+    suspend fun saveDeck(id: Long, name: String, ids: List<String>): Result<Long> {
+        val cleanName = name.trim()
+        if (cleanName.isBlank()) {
+            return Result.failure(IllegalArgumentException("Donne un nom au deck."))
+        }
+
+        val ownedQuantities = dao.ownedSnapshot().associate { it.canonicalId to it.quantity }
+        val validation = validateDeckDetailed(ids, ownedQuantities)
+        if (!validation.isValid) {
+            return Result.failure(IllegalArgumentException(validation.errors.joinToString("\n")))
+        }
+
+        return runCatching {
             dao.upsertDeck(
                 DeckEntity(
-                    name = name,
+                    id = id,
+                    name = cleanName,
                     cardIdsCsv = ids.joinToString("|"),
                     updatedAt = System.currentTimeMillis(),
                 )
             )
-        )
+        }
     }
 
-    fun validateDeck(ids: List<String>): String? {
-        if (ids.size != 20) return "${ids.size}/20 cartes"
-        if (ids.groupingBy { it }.eachCount().values.any { it > 2 }) return "Plus de 2 exemplaires"
-        val map = catalog.associateBy { it.canonicalId }
-        if (ids.none {
-                map[it]?.let { card ->
-                    card.type == CardType.PERSONNAGE && card.evolutionStage == EvolutionStage.BASE
-                } == true
-            }
-        ) return "Aucun personnage de base"
-        return null
+    suspend fun deleteDeck(id: Long) {
+        if (id > 0) dao.deleteDeck(id)
     }
+
+    suspend fun duplicateDeck(deck: Deck): Result<Long> =
+        saveDeck(id = 0L, name = "${deck.name} — Copie", ids = deck.cardIds)
 
     suspend fun completeOpponent(id: String) {
         val current = dao.campaign(id)
