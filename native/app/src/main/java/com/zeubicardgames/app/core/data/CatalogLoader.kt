@@ -70,8 +70,9 @@ class CatalogLoader @Inject constructor(@ApplicationContext private val context:
         val root = JSONArray(readText("catalog/extensions.json"))
         return (0 until root.length()).map { i ->
             root.getJSONObject(i).run {
+                val id = getString("id")
                 ExtensionDefinition(
-                    id = getString("id"),
+                    id = id,
                     name = getString("name"),
                     subtitle = getString("subtitle"),
                     accent = getLong("accent"),
@@ -81,8 +82,9 @@ class CatalogLoader @Inject constructor(@ApplicationContext private val context:
                     order = optInt("order", i),
                     status = runCatching { ContentStatus.valueOf(optString("status", "ACTIVE").uppercase()) }
                         .getOrDefault(ContentStatus.ACTIVE),
+                    code = optString("code", id.uppercase()),
                 )
             }
-        }.filter { it.status == ContentStatus.ACTIVE }
+        }.filter { it.status == ContentStatus.ACTIVE }.sortedBy { it.order }
     }
 }
