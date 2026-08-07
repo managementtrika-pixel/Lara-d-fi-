@@ -11,19 +11,86 @@ import androidx.compose.ui.unit.dp
 import com.zeubicardgames.app.core.designsystem.AssetImage
 import com.zeubicardgames.app.feature.shell.*
 
-@Composable fun PackOpeningScreen(state: GameUiState, vm: GameViewModel) {
+@Composable
+fun PackOpeningScreen(state: GameUiState, vm: GameViewModel) {
     val ext = state.extensions.firstOrNull { it.id == state.selectedExtension }
-    Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+
+    Column(
+        Modifier.fillMaxSize().padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
         Text("Ouvrir un booster", style = MaterialTheme.typography.headlineSmall)
-        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) { state.extensions.forEach { e -> FilterChip(e.id == state.selectedExtension, { vm.chooseExtension(e.id) }, { Text(e.name) }) } }
+
         if (state.packResult.isEmpty()) {
-            AssetImage(ext?.boosterPath, ext?.name, Modifier.fillMaxWidth().weight(1f), ContentScale.Fit)
-            Text("Maintiens le booster, déchire puis révèle les cartes.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Button(onClick = vm::openPack, Modifier.fillMaxWidth().height(58.dp)) { Text("MAINTENIR POUR OUVRIR") }
+            Row(
+                Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                state.extensions.forEach { extension ->
+                    FilterChip(
+                        selected = extension.id == state.selectedExtension,
+                        onClick = { vm.chooseExtension(extension.id) },
+                        label = { Text(extension.name) },
+                    )
+                }
+            }
+
+            AssetImage(
+                ext?.boosterPath,
+                ext?.name,
+                Modifier.fillMaxWidth().weight(1f),
+                ContentScale.Fit,
+            )
+            Text(
+                "Le contenu est attribué et sauvegardé avant l’affichage des cartes.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Button(
+                onClick = vm::openPack,
+                enabled = !state.openingPack,
+                modifier = Modifier.fillMaxWidth().height(58.dp),
+            ) {
+                if (state.openingPack) {
+                    CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
+                    Spacer(Modifier.width(10.dp))
+                    Text("ATTRIBUTION…")
+                } else {
+                    Text("OUVRIR LE BOOSTER")
+                }
+            }
+            state.notice?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         } else {
-            Text("Rare minimum garantie · doublons ajoutés à la collection")
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(7.dp)) { state.packResult.take(5).forEach { card -> CardTile(card, state.owned[card.canonicalId]?.quantity ?: 1, { vm.inspect(card) }, Modifier.weight(1f)) } }
-            Button(onClick = vm::openPack, Modifier.fillMaxWidth()) { Text("OUVRIR UN AUTRE") }
+            if (state.packRecovered) {
+                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
+                    Text(
+                        "Ouverture récupérée : ces cartes avaient déjà été ajoutées à ta collection avant la fermeture de l’application.",
+                        Modifier.padding(12.dp),
+                    )
+                }
+            } else {
+                Text("Booster attribué · doublons ajoutés à la collection")
+            }
+
+            Row(
+                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                state.packResult.forEach { card ->
+                    CardTile(
+                        card = card,
+                        quantity = state.owned[card.canonicalId]?.quantity ?: 1,
+                        onClick = { vm.inspect(card) },
+                        modifier = Modifier.width(120.dp),
+                    )
+                }
+            }
+
+            Button(onClick = vm::openAnotherPack, Modifier.fillMaxWidth()) {
+                Text("OUVRIR UN AUTRE")
+            }
+            OutlinedButton(onClick = vm::finishPack, Modifier.fillMaxWidth()) {
+                Text("TERMINER")
+            }
         }
     }
 }
