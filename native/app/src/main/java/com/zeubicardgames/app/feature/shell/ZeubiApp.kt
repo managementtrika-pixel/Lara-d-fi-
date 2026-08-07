@@ -29,7 +29,7 @@ fun ZeubiApp(vm: GameViewModel = hiltViewModel()) {
                     MainTab.BATTLE -> BattleHubScreen(state, vm)
                     MainTab.MENU -> MenuScreen(vm)
                 }
-                OverlayScreen.Decks -> DecksScreen(state, vm)
+                OverlayScreen.Decks -> DeckBuilderV1Screen(state, vm)
                 OverlayScreen.Missions -> MissionsScreen(state)
                 OverlayScreen.Settings -> SettingsScreen(state, vm)
                 OverlayScreen.Campaign -> CampaignScreen(state, vm)
