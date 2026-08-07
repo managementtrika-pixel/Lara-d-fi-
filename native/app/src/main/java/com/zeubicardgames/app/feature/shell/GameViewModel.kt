@@ -12,7 +12,14 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 enum class MainTab { HOME, COLLECTION, OPEN, BATTLE, MENU }
-sealed interface OverlayScreen { data object None : OverlayScreen; data object Decks : OverlayScreen; data object Missions : OverlayScreen; data object Settings : OverlayScreen; data object Campaign : OverlayScreen; data object Duel : OverlayScreen }
+sealed interface OverlayScreen {
+    data object None : OverlayScreen
+    data object Decks : OverlayScreen
+    data object Missions : OverlayScreen
+    data object Settings : OverlayScreen
+    data object Campaign : OverlayScreen
+    data object Duel : OverlayScreen
+}
 
 data class GameUiState(
     val tab: MainTab = MainTab.HOME,
@@ -39,7 +46,10 @@ class GameViewModel @Inject constructor(
     private val repository: GameRepository,
     private val preferences: PreferencesStore,
 ) : ViewModel() {
-    private val local = MutableStateFlow(GameUiState(cards = repository.catalog, extensions = repository.extensions))
+    private val local = MutableStateFlow(
+        GameUiState(cards = repository.catalog, extensions = repository.extensions)
+    )
+
     val state: StateFlow<GameUiState> = combine(
         local,
         repository.owned,
@@ -81,6 +91,10 @@ class GameViewModel @Inject constructor(
 
     fun inspect(card: CardDefinition?) { local.update { it.copy(selectedCard = card) } }
 
+    fun toggleFavorite(cardId: String) = viewModelScope.launch {
+        preferences.toggleFavorite(cardId)
+    }
+
     fun openPack() = viewModelScope.launch { openPackInternal() }
 
     fun openAnotherPack() = viewModelScope.launch {
@@ -104,7 +118,9 @@ class GameViewModel @Inject constructor(
         local.update { it.copy(openingPack = true, notice = null) }
         val opening = repository.openPack(local.value.selectedExtension)
         if (opening == null) {
-            local.update { it.copy(openingPack = false, notice = "Aucune carte disponible pour cette extension") }
+            local.update {
+                it.copy(openingPack = false, notice = "Aucune carte disponible pour cette extension")
+            }
             return
         }
         local.update {
@@ -122,17 +138,28 @@ class GameViewModel @Inject constructor(
         repository.selectVariant(cardId, variantId)
     }
 
-    fun chooseOpponent(opponent: CampaignOpponent) { local.update { it.copy(selectedOpponent = opponent) } }
+    fun chooseOpponent(opponent: CampaignOpponent) {
+        local.update { it.copy(selectedOpponent = opponent) }
+    }
 
     fun startDuel() {
         val s = local.value
         val opponent = s.selectedOpponent ?: return
         val ownedCard = s.cards.firstOrNull {
-            (s.owned[it.canonicalId]?.quantity ?: 0) > 0 && it.kind == "pokemon" && it.stage == "base"
-        } ?: s.cards.firstOrNull { it.kind == "pokemon" && it.stage == "base" }
-        val foe = s.cards.firstOrNull { it.name == opponent.bossCardName }
-            ?: s.cards.firstOrNull { it.setId == opponent.extensionId && it.kind == "pokemon" }
+            (s.owned[it.canonicalId]?.quantity ?: 0) > 0 &&
+                it.type == CardType.PERSONNAGE &&
+                it.evolutionStage == EvolutionStage.BASE
+        } ?: s.cards.firstOrNull {
+            it.type == CardType.PERSONNAGE && it.evolutionStage == EvolutionStage.BASE
+        }
+
+        val foe = opponent.bossCardId?.let { id -> s.cards.firstOrNull { it.canonicalId == id } }
+            ?: s.cards.firstOrNull { it.name == opponent.bossCardName }
+            ?: s.cards.firstOrNull {
+                it.setId == opponent.extensionId && it.type == CardType.PERSONNAGE
+            }
             ?: return
+
         if (ownedCard == null) return
         engine = BattleEngine(System.currentTimeMillis())
         local.update { it.copy(overlay = OverlayScreen.Duel, battle = engine!!.start(ownedCard, foe)) }
