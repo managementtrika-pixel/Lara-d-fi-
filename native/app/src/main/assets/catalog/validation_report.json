@@ -19,5 +19,11 @@
       }
     }
   ],
-  "catalogNormalized": true
+  "catalogNormalized": true,
+  "typeCounts": {
+    "personnage": 65,
+    "action": 19,
+    "replique": 15
+  },
+  "knownEffectCodes": 29
 }
