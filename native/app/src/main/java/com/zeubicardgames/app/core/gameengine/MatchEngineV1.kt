@@ -20,6 +20,7 @@ enum class MatchEventType {
     DECK_SHUFFLED,
     CARD_DRAWN,
     CHARACTER_PLAYED,
+    SETUP_COMPLETED,
     RESOURCE_ATTACHED,
     CARD_EVOLVED,
     ACTION_USED,
@@ -77,6 +78,8 @@ data class MatchStateV1(
     val phase: MatchPhase = MatchPhase.SETUP,
     val player: SideState,
     val opponent: SideState,
+    val playerSetupComplete: Boolean = false,
+    val opponentSetupComplete: Boolean = false,
     val flags: TurnFlags = TurnFlags(),
     val winner: MatchSide? = null,
     val events: List<MatchEvent> = emptyList(),
@@ -84,6 +87,7 @@ data class MatchStateV1(
 
 sealed interface MatchCommandV1 {
     data class PlayCharacter(val cardId: String, val zone: CharacterZone) : MatchCommandV1
+    data object CompleteSetup : MatchCommandV1
     data class AttachResource(val instanceId: String) : MatchCommandV1
     data class Evolve(val evolutionCardId: String, val targetInstanceId: String) : MatchCommandV1
     data class ArmReply(val cardId: String) : MatchCommandV1
@@ -114,7 +118,6 @@ class MatchEngineV1(
         append(baseEvents, MatchEventType.DECK_SHUFFLED, MatchSide.OPPONENT, null, "Deck adverse mélangé")
         player.hand.forEach { append(baseEvents, MatchEventType.CARD_DRAWN, MatchSide.PLAYER, it, "Carte piochée") }
         opponent.hand.forEach { append(baseEvents, MatchEventType.CARD_DRAWN, MatchSide.OPPONENT, it, "Carte adverse piochée") }
-        append(baseEvents, MatchEventType.TURN_STARTED, MatchSide.PLAYER, null, "Tour 1 — PLAYER")
         return MatchStateV1(
             seed = seed,
             phase = MatchPhase.SETUP,
@@ -128,6 +131,7 @@ class MatchEngineV1(
         if (state.phase == MatchPhase.FINISHED) return reject(state, "Le match est terminé.")
         return when (command) {
             is MatchCommandV1.PlayCharacter -> playCharacter(state, command)
+            MatchCommandV1.CompleteSetup -> completeSetup(state)
             is MatchCommandV1.AttachResource -> attachResource(state, command)
             is MatchCommandV1.Evolve -> evolve(state, command)
             is MatchCommandV1.ArmReply -> armReply(state, command)
@@ -161,13 +165,36 @@ class MatchEngineV1(
                 side.copy(reserves = side.reserves + fighter, hand = side.hand.removeOne(command.cardId))
             }
         }
-        val nextPhase = if (state.phase == MatchPhase.SETUP && updated.active != null) MatchPhase.MAIN else state.phase
         return replaceCurrentSide(state, updated).withEvent(
             MatchEventType.CHARACTER_PLAYED,
             state.activeSide,
             card.canonicalId,
             "${card.name} rejoint ${command.zone.name.lowercase()}.",
-        ).copy(phase = nextPhase)
+        )
+    }
+
+    private fun completeSetup(state: MatchStateV1): MatchStateV1 {
+        if (state.phase != MatchPhase.SETUP) return reject(state, "Le placement initial est déjà terminé.")
+        val side = currentSide(state)
+        if (side.active == null) return reject(state, "Choisis un Personnage actif avant de terminer le placement.")
+
+        var next = if (state.activeSide == MatchSide.PLAYER) {
+            state.copy(playerSetupComplete = true)
+        } else {
+            state.copy(opponentSetupComplete = true)
+        }.withEvent(MatchEventType.SETUP_COMPLETED, state.activeSide, side.active.cardId, "Placement initial terminé.")
+
+        if (next.playerSetupComplete && next.opponentSetupComplete) {
+            return next.copy(
+                activeSide = MatchSide.PLAYER,
+                phase = MatchPhase.MAIN,
+                turnNumber = 1,
+                flags = TurnFlags(),
+            ).withEvent(MatchEventType.TURN_STARTED, MatchSide.PLAYER, null, "Tour 1 — PLAYER")
+        }
+
+        next = next.copy(activeSide = opposite(state.activeSide))
+        return next
     }
 
     private fun attachResource(state: MatchStateV1, command: MatchCommandV1.AttachResource): MatchStateV1 {
