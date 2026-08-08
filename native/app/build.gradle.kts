@@ -11,11 +11,11 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.zeubicardgames.app"
+        applicationId = "com.zeubicardgames.native"
         minSdk = 26
         targetSdk = 36
-        versionCode = 2
-        versionName = "0.1.1-native"
+        versionCode = 3
+        versionName = "0.1.2-native"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
