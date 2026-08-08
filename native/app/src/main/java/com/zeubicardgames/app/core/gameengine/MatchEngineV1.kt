@@ -6,7 +6,8 @@ import com.zeubicardgames.app.core.model.CardType
 import com.zeubicardgames.app.core.model.EvolutionStage
 import kotlin.random.Random
 
-const val MATCH_STARTING_HAND = 7
+const val MATCH_STARTING_HAND = 5
+const val MATCH_MAX_HAND = 10
 const val MATCH_MAX_RESERVES = 2
 const val MATCH_MAX_SUPPORT_SLOTS = 3
 const val MATCH_POINTS_TO_WIN = 3
@@ -19,15 +20,18 @@ enum class MatchEventType {
     MATCH_STARTED,
     DECK_SHUFFLED,
     CARD_DRAWN,
+    DRAW_SKIPPED,
     CHARACTER_PLAYED,
     SETUP_COMPLETED,
     RESOURCE_ATTACHED,
+    CHARACTER_RETREATED,
     CARD_EVOLVED,
     ACTION_USED,
     REPLY_ARMED,
     ATTACK_DECLARED,
     DAMAGE_APPLIED,
     CARD_KNOCKED_OUT,
+    PROMOTION_REQUIRED,
     CHARACTER_PROMOTED,
     TURN_STARTED,
     TURN_ENDED,
@@ -50,9 +54,12 @@ data class CharacterInPlay(
     val resources: Int = 0,
     val enteredTurn: Int = 0,
     val evolvedThisTurn: Boolean = false,
+    val evolutionStack: List<String> = emptyList(),
 ) {
     fun hpLeft(catalog: Map<String, CardDefinition>): Int =
         ((catalog[cardId]?.hp ?: 0) - damage).coerceAtLeast(0)
+
+    fun allCardIds(): List<String> = evolutionStack + cardId
 }
 
 data class SideState(
@@ -67,6 +74,7 @@ data class SideState(
 
 data class TurnFlags(
     val resourceAttached: Boolean = false,
+    val retreatUsed: Boolean = false,
     val attackDeclared: Boolean = false,
 )
 
@@ -80,6 +88,7 @@ data class MatchStateV1(
     val opponent: SideState,
     val playerSetupComplete: Boolean = false,
     val opponentSetupComplete: Boolean = false,
+    val pendingPromotionSide: MatchSide? = null,
     val flags: TurnFlags = TurnFlags(),
     val winner: MatchSide? = null,
     val events: List<MatchEvent> = emptyList(),
@@ -89,10 +98,12 @@ sealed interface MatchCommandV1 {
     data class PlayCharacter(val cardId: String, val zone: CharacterZone) : MatchCommandV1
     data object CompleteSetup : MatchCommandV1
     data class AttachResource(val instanceId: String) : MatchCommandV1
+    data class Retreat(val reserveInstanceId: String) : MatchCommandV1
     data class Evolve(val evolutionCardId: String, val targetInstanceId: String) : MatchCommandV1
     data class ArmReply(val cardId: String) : MatchCommandV1
     data class UseAction(val cardId: String) : MatchCommandV1
     data class Attack(val attackIndex: Int) : MatchCommandV1
+    data class Promote(val reserveInstanceId: String) : MatchCommandV1
     data object EndTurn : MatchCommandV1
 }
 
@@ -133,16 +144,20 @@ class MatchEngineV1(
             is MatchCommandV1.PlayCharacter -> playCharacter(state, command)
             MatchCommandV1.CompleteSetup -> completeSetup(state)
             is MatchCommandV1.AttachResource -> attachResource(state, command)
+            is MatchCommandV1.Retreat -> retreat(state, command)
             is MatchCommandV1.Evolve -> evolve(state, command)
             is MatchCommandV1.ArmReply -> armReply(state, command)
             is MatchCommandV1.UseAction -> useAction(state, command)
             is MatchCommandV1.Attack -> attack(state, command)
+            is MatchCommandV1.Promote -> promote(state, command)
             MatchCommandV1.EndTurn -> endTurn(state)
         }
     }
 
     private fun playCharacter(state: MatchStateV1, command: MatchCommandV1.PlayCharacter): MatchStateV1 {
-        if (state.phase !in setOf(MatchPhase.SETUP, MatchPhase.MAIN)) return reject(state, "Impossible de poser un Personnage maintenant.")
+        if (state.phase !in setOf(MatchPhase.SETUP, MatchPhase.MAIN)) {
+            return reject(state, "Impossible de poser un Personnage maintenant.")
+        }
         val side = currentSide(state)
         if (command.cardId !in side.hand) return reject(state, "Cette carte n’est pas dans la main.")
         val card = catalog[command.cardId] ?: return reject(state, "Carte inconnue.")
@@ -205,11 +220,43 @@ class MatchEngineV1(
             ?: return reject(state, "Personnage cible introuvable.")
         return replaceCurrentSide(state, updated)
             .copy(flags = state.flags.copy(resourceAttached = true))
-            .withEvent(MatchEventType.RESOURCE_ATTACHED, state.activeSide, updated.findCharacter(command.instanceId)?.cardId, "Ressource attachée.")
+            .withEvent(
+                MatchEventType.RESOURCE_ATTACHED,
+                state.activeSide,
+                updated.findCharacter(command.instanceId)?.cardId,
+                "Ressource attachée.",
+            )
+    }
+
+    private fun retreat(state: MatchStateV1, command: MatchCommandV1.Retreat): MatchStateV1 {
+        if (state.phase != MatchPhase.MAIN) return reject(state, "La retraite se fait pendant la phase principale.")
+        if (state.flags.retreatUsed) return reject(state, "Une retraite a déjà été effectuée ce tour.")
+        val side = currentSide(state)
+        val active = side.active ?: return reject(state, "Aucun Personnage actif.")
+        val reserveIndex = side.reserves.indexOfFirst { it.instanceId == command.reserveInstanceId }
+        if (reserveIndex < 0) return reject(state, "Le Personnage choisi n’est pas en réserve.")
+        val retreatCost = catalog[active.cardId]?.retreat ?: return reject(state, "Coût de retraite introuvable.")
+        if (active.resources < retreatCost) {
+            return reject(state, "Ressources insuffisantes pour payer la retraite ($retreatCost).")
+        }
+
+        val promoted = side.reserves[reserveIndex]
+        val retired = active.copy(resources = active.resources - retreatCost)
+        val newReserves = side.reserves.toMutableList().also { it[reserveIndex] = retired }
+        val updated = side.copy(active = promoted, reserves = newReserves)
+        return replaceCurrentSide(state, updated)
+            .copy(flags = state.flags.copy(retreatUsed = true))
+            .withEvent(
+                MatchEventType.CHARACTER_RETREATED,
+                state.activeSide,
+                retired.cardId,
+                "Retraite payée : $retreatCost ressource(s). ${catalog[promoted.cardId]?.name ?: promoted.cardId} devient Actif.",
+            )
     }
 
     private fun evolve(state: MatchStateV1, command: MatchCommandV1.Evolve): MatchStateV1 {
         if (state.phase != MatchPhase.MAIN) return reject(state, "Une évolution se joue pendant la phase principale.")
+        if (state.turnNumber == 1) return reject(state, "Aucune évolution n’est autorisée au premier tour.")
         val side = currentSide(state)
         if (command.evolutionCardId !in side.hand) return reject(state, "L’évolution n’est pas dans la main.")
         val evolution = catalog[command.evolutionCardId] ?: return reject(state, "Évolution inconnue.")
@@ -218,19 +265,26 @@ class MatchEngineV1(
         }
         val target = side.findCharacter(command.targetInstanceId) ?: return reject(state, "Personnage cible introuvable.")
         if (evolution.evolvesFromId != target.cardId) return reject(state, "Cette évolution ne correspond pas au Personnage ciblé.")
-        if (target.enteredTurn >= state.turnNumber || target.evolvedThisTurn) return reject(state, "Ce Personnage ne peut pas encore évoluer ce tour.")
-        val oldHp = catalog[target.cardId]?.hp ?: 0
-        val newHp = evolution.hp
-        val preservedDamage = target.damage.coerceAtMost(newHp)
-        val evolved = target.copy(cardId = evolution.canonicalId, damage = preservedDamage, evolvedThisTurn = true)
+        if (target.enteredTurn >= state.turnNumber || target.evolvedThisTurn) {
+            return reject(state, "Ce Personnage ne peut pas encore évoluer ce tour.")
+        }
+
+        val oldCardId = target.cardId
+        val oldHp = catalog[oldCardId]?.hp ?: 0
+        val evolved = target.copy(
+            cardId = evolution.canonicalId,
+            damage = target.damage.coerceAtMost(evolution.hp),
+            evolvedThisTurn = true,
+            evolutionStack = target.evolutionStack + oldCardId,
+        )
         val updatedSide = side.updateCharacter(command.targetInstanceId) { evolved }
-            ?.copy(hand = side.hand.removeOne(command.evolutionCardId), discard = side.discard + target.cardId)
+            ?.copy(hand = side.hand.removeOne(command.evolutionCardId))
             ?: return reject(state, "Évolution impossible.")
         return replaceCurrentSide(state, updatedSide).withEvent(
             MatchEventType.CARD_EVOLVED,
             state.activeSide,
             evolution.canonicalId,
-            "Évolution : ${catalog[target.cardId]?.name ?: target.cardId} → ${evolution.name} (${oldHp}→${newHp} PV max).",
+            "Évolution : ${catalog[oldCardId]?.name ?: oldCardId} → ${evolution.name} ($oldHp→${evolution.hp} PV max).",
         )
     }
 
@@ -295,7 +349,7 @@ class MatchEngineV1(
         if (hit.hpLeft(catalog) <= 0) {
             newDefenderSide = newDefenderSide.copy(
                 active = null,
-                discard = newDefenderSide.discard + defender.cardId,
+                discard = newDefenderSide.discard + defender.allCardIds(),
             )
             val scoringSide = currentSide(next).copy(points = currentSide(next).points + 1)
             next = replaceCurrentSide(replaceOtherSide(next, newDefenderSide), scoringSide)
@@ -305,25 +359,53 @@ class MatchEngineV1(
                 return next.copy(phase = MatchPhase.FINISHED, winner = state.activeSide)
                     .withEvent(MatchEventType.MATCH_FINISHED, state.activeSide, null, "Victoire ${state.activeSide}.")
             }
-            if (newDefenderSide.reserves.isNotEmpty()) {
-                val promoted = newDefenderSide.reserves.first()
-                newDefenderSide = newDefenderSide.copy(active = promoted, reserves = newDefenderSide.reserves.drop(1))
-                next = replaceOtherSide(next, newDefenderSide).withEvent(
-                    MatchEventType.CHARACTER_PROMOTED,
-                    opposite(state.activeSide),
-                    promoted.cardId,
-                    "Une réserve devient active.",
-                )
-            } else {
+            if (newDefenderSide.reserves.isEmpty()) {
                 return next.copy(phase = MatchPhase.FINISHED, winner = state.activeSide)
                     .withEvent(MatchEventType.MATCH_FINISHED, state.activeSide, null, "Victoire : plus aucun Personnage adverse en jeu.")
             }
+
+            val defender = opposite(state.activeSide)
+            return next.copy(phase = MatchPhase.PROMOTION, pendingPromotionSide = defender)
+                .withEvent(
+                    MatchEventType.PROMOTION_REQUIRED,
+                    defender,
+                    null,
+                    "Choisissez un Personnage de réserve à promouvoir.",
+                )
         }
         return endTurn(next.copy(phase = MatchPhase.MAIN))
     }
 
+    private fun promote(state: MatchStateV1, command: MatchCommandV1.Promote): MatchStateV1 {
+        if (state.phase != MatchPhase.PROMOTION) return reject(state, "Aucune promotion n’est attendue.")
+        val promotionSide = state.pendingPromotionSide ?: return reject(state, "Aucun camp n’attend de promotion.")
+        val side = sideFor(state, promotionSide)
+        if (side.active != null) return reject(state, "Le camp possède déjà un Personnage actif.")
+        val reserveIndex = side.reserves.indexOfFirst { it.instanceId == command.reserveInstanceId }
+        if (reserveIndex < 0) return reject(state, "Le Personnage choisi n’est pas disponible pour la promotion.")
+
+        val promoted = side.reserves[reserveIndex]
+        val updated = side.copy(
+            active = promoted,
+            reserves = side.reserves.toMutableList().also { it.removeAt(reserveIndex) },
+        )
+        var next = replaceSide(state, promotionSide, updated)
+            .copy(phase = MatchPhase.MAIN, pendingPromotionSide = null)
+            .withEvent(
+                MatchEventType.CHARACTER_PROMOTED,
+                promotionSide,
+                promoted.cardId,
+                "${catalog[promoted.cardId]?.name ?: promoted.cardId} devient Actif.",
+            )
+        next = endTurn(next)
+        return next
+    }
+
     private fun endTurn(state: MatchStateV1): MatchStateV1 {
-        if (state.phase !in setOf(MatchPhase.MAIN, MatchPhase.RESOLVING)) return reject(state, "Impossible de terminer le tour maintenant.")
+        if (state.phase !in setOf(MatchPhase.MAIN, MatchPhase.RESOLVING)) {
+            return reject(state, "Impossible de terminer le tour maintenant.")
+        }
+        if (state.pendingPromotionSide != null) return reject(state, "Une promotion doit être résolue avant la fin du tour.")
         val endingSide = state.activeSide
         val nextSide = opposite(endingSide)
         var next = state.withEvent(MatchEventType.TURN_ENDED, endingSide, null, "Fin du tour.")
@@ -341,41 +423,71 @@ class MatchEngineV1(
     }
 
     private fun drawInitialHand(side: SideState): SideState {
-        val count = minOf(MATCH_STARTING_HAND, side.deck.size)
+        val count = minOf(MATCH_STARTING_HAND, MATCH_MAX_HAND, side.deck.size)
         return side.copy(hand = side.deck.take(count), deck = side.deck.drop(count))
     }
 
     private fun drawForTurn(state: MatchStateV1, side: MatchSide): MatchStateV1 {
-        val current = if (side == MatchSide.PLAYER) state.player else state.opponent
+        val current = sideFor(state, side)
+        if (current.hand.size >= MATCH_MAX_HAND) {
+            return state.withEvent(
+                MatchEventType.DRAW_SKIPPED,
+                side,
+                null,
+                "Pioche ignorée : main pleine ($MATCH_MAX_HAND cartes).",
+            )
+        }
         val card = current.deck.firstOrNull() ?: return state
         val updated = current.copy(deck = current.deck.drop(1), hand = current.hand + card)
-        return if (side == MatchSide.PLAYER) state.copy(player = updated).withEvent(MatchEventType.CARD_DRAWN, side, card, "Carte piochée")
-        else state.copy(opponent = updated).withEvent(MatchEventType.CARD_DRAWN, side, card, "Carte piochée")
+        return replaceSide(state, side, updated)
+            .withEvent(MatchEventType.CARD_DRAWN, side, card, "Carte piochée")
     }
 
-    private fun currentSide(state: MatchStateV1): SideState = if (state.activeSide == MatchSide.PLAYER) state.player else state.opponent
-    private fun otherSide(state: MatchStateV1): SideState = if (state.activeSide == MatchSide.PLAYER) state.opponent else state.player
+    private fun currentSide(state: MatchStateV1): SideState = sideFor(state, state.activeSide)
+    private fun otherSide(state: MatchStateV1): SideState = sideFor(state, opposite(state.activeSide))
+
+    private fun sideFor(state: MatchStateV1, side: MatchSide): SideState =
+        if (side == MatchSide.PLAYER) state.player else state.opponent
+
+    private fun replaceSide(state: MatchStateV1, side: MatchSide, value: SideState): MatchStateV1 =
+        if (side == MatchSide.PLAYER) state.copy(player = value) else state.copy(opponent = value)
+
     private fun replaceCurrentSide(state: MatchStateV1, side: SideState): MatchStateV1 =
-        if (state.activeSide == MatchSide.PLAYER) state.copy(player = side) else state.copy(opponent = side)
+        replaceSide(state, state.activeSide, side)
+
     private fun replaceOtherSide(state: MatchStateV1, side: SideState): MatchStateV1 =
-        if (state.activeSide == MatchSide.PLAYER) state.copy(opponent = side) else state.copy(player = side)
+        replaceSide(state, opposite(state.activeSide), side)
 
     private fun reject(state: MatchStateV1, reason: String): MatchStateV1 =
         state.withEvent(MatchEventType.COMMAND_REJECTED, state.activeSide, null, reason)
 
-    private fun nextInstanceId(side: MatchSide): String = "${if (side == MatchSide.PLAYER) "p" else "o"}-${seed}-${++instanceCounter}"
+    private fun nextInstanceId(side: MatchSide): String =
+        "${if (side == MatchSide.PLAYER) "p" else "o"}-${seed}-${++instanceCounter}"
 
-    private fun append(events: MutableList<MatchEvent>, type: MatchEventType, side: MatchSide?, cardId: String?, message: String) {
+    private fun append(
+        events: MutableList<MatchEvent>,
+        type: MatchEventType,
+        side: MatchSide?,
+        cardId: String?,
+        message: String,
+    ) {
         events += MatchEvent(events.size, type, side, cardId, message)
     }
 
-    private fun MatchStateV1.withEvent(type: MatchEventType, side: MatchSide?, cardId: String?, message: String): MatchStateV1 =
-        copy(events = events + MatchEvent(events.size, type, side, cardId, message))
+    private fun MatchStateV1.withEvent(
+        type: MatchEventType,
+        side: MatchSide?,
+        cardId: String?,
+        message: String,
+    ): MatchStateV1 = copy(events = events + MatchEvent(events.size, type, side, cardId, message))
 
     private fun SideState.findCharacter(instanceId: String): CharacterInPlay? =
         active?.takeIf { it.instanceId == instanceId } ?: reserves.firstOrNull { it.instanceId == instanceId }
 
-    private fun SideState.updateCharacter(instanceId: String, transform: (CharacterInPlay) -> CharacterInPlay): SideState? {
+    private fun SideState.updateCharacter(
+        instanceId: String,
+        transform: (CharacterInPlay) -> CharacterInPlay,
+    ): SideState? {
         val currentActive = active
         if (currentActive?.instanceId == instanceId) return copy(active = transform(currentActive))
         val index = reserves.indexOfFirst { it.instanceId == instanceId }
@@ -394,5 +506,6 @@ class MatchEngineV1(
         return toMutableList().also { it.removeAt(index) }
     }
 
-    private fun opposite(side: MatchSide): MatchSide = if (side == MatchSide.PLAYER) MatchSide.OPPONENT else MatchSide.PLAYER
+    private fun opposite(side: MatchSide): MatchSide =
+        if (side == MatchSide.PLAYER) MatchSide.OPPONENT else MatchSide.PLAYER
 }
