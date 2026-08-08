@@ -5,6 +5,7 @@ import com.zeubicardgames.app.core.model.CardDefinition
 import com.zeubicardgames.app.core.model.CardVariant
 import com.zeubicardgames.app.core.model.Rarity
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -27,28 +28,51 @@ class MatchEngineV1Test {
         assertEquals(a.player.hand, b.player.hand)
         assertEquals(MATCH_STARTING_HAND, a.player.hand.size)
         assertEquals(MATCH_STARTING_HAND, a.opponent.hand.size)
+        assertEquals(MatchPhase.SETUP, a.phase)
         assertTrue(a.events.any { it.type == MatchEventType.MATCH_STARTED })
+        assertFalse(a.events.any { it.type == MatchEventType.TURN_STARTED })
     }
 
     @Test
     fun `only a base character can be played directly`() {
-        val deck = List(10) { evoA.canonicalId } + List(10) { baseA.canonicalId }
+        val deck = List(20) { evoA.canonicalId }
         val engine = MatchEngineV1(catalog, 1)
         val state = engine.start(deck, deck)
-        val evolutionInHand = state.player.hand.firstOrNull { it == evoA.canonicalId }
-        assertNotNull(evolutionInHand)
 
-        val rejected = engine.apply(state, MatchCommandV1.PlayCharacter(evolutionInHand!!, CharacterZone.ACTIVE))
+        val rejected = engine.apply(state, MatchCommandV1.PlayCharacter(evoA.canonicalId, CharacterZone.ACTIVE))
         assertEquals(null, rejected.player.active)
         assertEquals(MatchEventType.COMMAND_REJECTED, rejected.events.last().type)
     }
 
     @Test
-    fun `resource can be attached only once per turn`() {
+    fun `both sides must finish setup before turn one`() {
         val deck = List(20) { baseA.canonicalId }
         val engine = MatchEngineV1(catalog, 2)
         var state = engine.start(deck, deck)
+
+        state = engine.apply(state, MatchCommandV1.CompleteSetup)
+        assertEquals(MatchEventType.COMMAND_REJECTED, state.events.last().type)
+        assertFalse(state.playerSetupComplete)
+
         state = engine.apply(state, MatchCommandV1.PlayCharacter(baseA.canonicalId, CharacterZone.ACTIVE))
+        state = engine.apply(state, MatchCommandV1.CompleteSetup)
+        assertTrue(state.playerSetupComplete)
+        assertEquals(MatchSide.OPPONENT, state.activeSide)
+        assertEquals(MatchPhase.SETUP, state.phase)
+
+        state = engine.apply(state, MatchCommandV1.PlayCharacter(baseA.canonicalId, CharacterZone.ACTIVE))
+        state = engine.apply(state, MatchCommandV1.CompleteSetup)
+        assertTrue(state.opponentSetupComplete)
+        assertEquals(MatchSide.PLAYER, state.activeSide)
+        assertEquals(MatchPhase.MAIN, state.phase)
+        assertEquals(MatchEventType.TURN_STARTED, state.events.last().type)
+    }
+
+    @Test
+    fun `resource can be attached only once per turn`() {
+        val deck = List(20) { baseA.canonicalId }
+        val engine = MatchEngineV1(catalog, 3)
+        var state = readyMatch(engine, deck, deck, baseA.canonicalId, baseA.canonicalId)
         val activeId = state.player.active!!.instanceId
 
         state = engine.apply(state, MatchCommandV1.AttachResource(activeId))
@@ -62,52 +86,70 @@ class MatchEngineV1Test {
     fun `evolution requires the correct lineage and a later turn`() {
         val playerDeck = List(10) { baseA.canonicalId } + List(10) { evoA.canonicalId }
         val opponentDeck = List(20) { baseB.canonicalId }
-        val engine = MatchEngineV1(catalog, 4)
-        var state = engine.start(playerDeck, opponentDeck)
-        state = engine.apply(state, MatchCommandV1.PlayCharacter(baseA.canonicalId, CharacterZone.ACTIVE))
-        val activeId = state.player.active!!.instanceId
-        val evoId = state.player.hand.firstOrNull { it == evoA.canonicalId }
-        if (evoId != null) {
-            val sameTurn = engine.apply(state, MatchCommandV1.Evolve(evoId, activeId))
-            assertEquals(baseA.canonicalId, sameTurn.player.active!!.cardId)
-            assertEquals(MatchEventType.COMMAND_REJECTED, sameTurn.events.last().type)
+        val seed = findSeed(playerDeck, opponentDeck) { state ->
+            baseA.canonicalId in state.player.hand && evoA.canonicalId in state.player.hand
         }
+        val engine = MatchEngineV1(catalog, seed)
+        var state = readyMatch(engine, playerDeck, opponentDeck, baseA.canonicalId, baseB.canonicalId)
+        val activeId = state.player.active!!.instanceId
+
+        val sameTurn = engine.apply(state, MatchCommandV1.Evolve(evoA.canonicalId, activeId))
+        assertEquals(baseA.canonicalId, sameTurn.player.active!!.cardId)
+        assertEquals(MatchEventType.COMMAND_REJECTED, sameTurn.events.last().type)
 
         state = engine.apply(state, MatchCommandV1.EndTurn)
-        state = engine.apply(state, MatchCommandV1.PlayCharacter(baseB.canonicalId, CharacterZone.ACTIVE))
         state = engine.apply(state, MatchCommandV1.EndTurn)
-        val evolutionNow = state.player.hand.firstOrNull { it == evoA.canonicalId }
-        if (evolutionNow != null) {
-            state = engine.apply(state, MatchCommandV1.Evolve(evolutionNow, activeId))
-            assertEquals(evoA.canonicalId, state.player.active!!.cardId)
-            assertTrue(state.events.any { it.type == MatchEventType.CARD_EVOLVED })
-        }
+        state = engine.apply(state, MatchCommandV1.Evolve(evoA.canonicalId, activeId))
+        assertEquals(evoA.canonicalId, state.player.active!!.cardId)
+        assertTrue(state.events.any { it.type == MatchEventType.CARD_EVOLVED })
     }
 
     @Test
     fun `ko awards a point and promotes the first reserve`() {
         val playerDeck = List(20) { baseA.canonicalId }
         val opponentDeck = List(10) { weak.canonicalId } + List(10) { baseB.canonicalId }
-        val engine = MatchEngineV1(catalog, 8)
+        val seed = findSeed(playerDeck, opponentDeck) { state ->
+            weak.canonicalId in state.opponent.hand && baseB.canonicalId in state.opponent.hand
+        }
+        val engine = MatchEngineV1(catalog, seed)
         var state = engine.start(playerDeck, opponentDeck)
         state = engine.apply(state, MatchCommandV1.PlayCharacter(baseA.canonicalId, CharacterZone.ACTIVE))
+        state = engine.apply(state, MatchCommandV1.CompleteSetup)
+        state = engine.apply(state, MatchCommandV1.PlayCharacter(weak.canonicalId, CharacterZone.ACTIVE))
+        state = engine.apply(state, MatchCommandV1.PlayCharacter(baseB.canonicalId, CharacterZone.RESERVE_1))
+        state = engine.apply(state, MatchCommandV1.CompleteSetup)
+
         val playerActive = state.player.active!!.instanceId
         state = engine.apply(state, MatchCommandV1.AttachResource(playerActive))
-        state = engine.apply(state, MatchCommandV1.EndTurn)
+        state = engine.apply(state, MatchCommandV1.Attack(0))
 
-        val weakInHand = state.opponent.hand.firstOrNull { it == weak.canonicalId }
-        val reserveCard = state.opponent.hand.firstOrNull { it == baseB.canonicalId }
-        if (weakInHand != null && reserveCard != null) {
-            state = engine.apply(state, MatchCommandV1.PlayCharacter(weakInHand, CharacterZone.ACTIVE))
-            state = engine.apply(state, MatchCommandV1.PlayCharacter(reserveCard, CharacterZone.RESERVE_1))
-            state = engine.apply(state, MatchCommandV1.EndTurn)
-            state = engine.apply(state, MatchCommandV1.Attack(0))
+        assertEquals(1, state.player.points)
+        assertNotNull(state.opponent.active)
+        assertEquals(baseB.canonicalId, state.opponent.active!!.cardId)
+        assertTrue(state.events.any { it.type == MatchEventType.CHARACTER_PROMOTED })
+    }
 
-            assertEquals(1, state.player.points)
-            assertNotNull(state.opponent.active)
-            assertEquals(baseB.canonicalId, state.opponent.active!!.cardId)
-            assertTrue(state.events.any { it.type == MatchEventType.CHARACTER_PROMOTED })
-        }
+    private fun readyMatch(
+        engine: MatchEngineV1,
+        playerDeck: List<String>,
+        opponentDeck: List<String>,
+        playerBase: String,
+        opponentBase: String,
+    ): MatchStateV1 {
+        var state = engine.start(playerDeck, opponentDeck)
+        state = engine.apply(state, MatchCommandV1.PlayCharacter(playerBase, CharacterZone.ACTIVE))
+        state = engine.apply(state, MatchCommandV1.CompleteSetup)
+        state = engine.apply(state, MatchCommandV1.PlayCharacter(opponentBase, CharacterZone.ACTIVE))
+        state = engine.apply(state, MatchCommandV1.CompleteSetup)
+        return state
+    }
+
+    private fun findSeed(
+        playerDeck: List<String>,
+        opponentDeck: List<String>,
+        predicate: (MatchStateV1) -> Boolean,
+    ): Long = (0L..5_000L).first { seed ->
+        predicate(MatchEngineV1(catalog, seed).start(playerDeck, opponentDeck))
     }
 
     private fun deckOf(vararg ids: String): List<String> = buildList {
