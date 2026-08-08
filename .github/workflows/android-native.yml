@@ -33,7 +33,11 @@ jobs:
             echo 'Le normaliseur de catalogue V1 est introuvable.'
             exit 1
           }
-          chmod +x native/gradlew native/tools/build_catalog.mjs native/tools/normalize_catalog.mjs
+          test -f native/tools/audit_effect_coverage.mjs || {
+            echo 'L’audit de couverture des effets est introuvable.'
+            exit 1
+          }
+          chmod +x native/gradlew native/tools/build_catalog.mjs native/tools/normalize_catalog.mjs native/tools/audit_effect_coverage.mjs
           grep -E 'compileSdk|targetSdk|minSdk|versionCode|versionName' native/app/build.gradle.kts
 
       - uses: actions/setup-node@v4
@@ -45,6 +49,9 @@ jobs:
 
       - name: Normaliser le catalogue ZeubiCardGames V1
         run: node native/tools/normalize_catalog.mjs --project native
+
+      - name: Auditer la couverture Actions / Répliques
+        run: node native/tools/audit_effect_coverage.mjs --project native
 
       - uses: actions/setup-java@v4
         with:
