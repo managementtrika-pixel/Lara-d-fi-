@@ -1,5 +1,7 @@
 package com.zeubicardgames.app.core.gameengine
 
+import com.zeubicardgames.app.core.effects.ActionEffectChoiceV1
+import com.zeubicardgames.app.core.effects.ActionEffectResolverV1
 import com.zeubicardgames.app.core.model.Attack
 import com.zeubicardgames.app.core.model.CardDefinition
 import com.zeubicardgames.app.core.model.CardType
@@ -101,7 +103,10 @@ sealed interface MatchCommandV1 {
     data class Retreat(val reserveInstanceId: String) : MatchCommandV1
     data class Evolve(val evolutionCardId: String, val targetInstanceId: String) : MatchCommandV1
     data class ArmReply(val cardId: String) : MatchCommandV1
-    data class UseAction(val cardId: String) : MatchCommandV1
+    data class UseAction(
+        val cardId: String,
+        val choice: ActionEffectChoiceV1 = ActionEffectChoiceV1(),
+    ) : MatchCommandV1
     data class Attack(val attackIndex: Int) : MatchCommandV1
     data class Promote(val reserveInstanceId: String) : MatchCommandV1
     data object EndTurn : MatchCommandV1
@@ -113,6 +118,7 @@ class MatchEngineV1(
 ) {
     private val catalog = cards.associateBy { it.canonicalId }
     private val random = Random(seed)
+    private val actionResolver = ActionEffectResolverV1(cards)
     private var instanceCounter = 0L
 
     fun start(playerDeck: List<String>, opponentDeck: List<String>): MatchStateV1 {
@@ -291,35 +297,23 @@ class MatchEngineV1(
     private fun armReply(state: MatchStateV1, command: MatchCommandV1.ArmReply): MatchStateV1 {
         if (state.phase != MatchPhase.MAIN) return reject(state, "Une Réplique s’arme pendant la phase principale.")
         val side = currentSide(state)
-        if (side.supportSlots.size >= MATCH_MAX_SUPPORT_SLOTS) return reject(state, "Les trois emplacements Action/Réplique sont occupés.")
         if (command.cardId !in side.hand) return reject(state, "Cette Réplique n’est pas dans la main.")
         val card = catalog[command.cardId] ?: return reject(state, "Carte inconnue.")
         if (card.type != CardType.REPLIQUE) return reject(state, "Cette carte n’est pas une Réplique.")
-        val updated = side.copy(
-            hand = side.hand.removeOne(command.cardId),
-            supportSlots = side.supportSlots + command.cardId,
-        )
-        return replaceCurrentSide(state, updated).withEvent(
-            MatchEventType.REPLY_ARMED,
-            state.activeSide,
-            command.cardId,
-            "Réplique armée.",
+        return reject(
+            state,
+            "${card.name} n’est pas encore activée dans le moteur V1 : la carte reste dans ta main.",
         )
     }
 
     private fun useAction(state: MatchStateV1, command: MatchCommandV1.UseAction): MatchStateV1 {
-        if (state.phase != MatchPhase.MAIN) return reject(state, "Une Action se joue pendant la phase principale.")
-        val side = currentSide(state)
-        if (command.cardId !in side.hand) return reject(state, "Cette Action n’est pas dans la main.")
-        val card = catalog[command.cardId] ?: return reject(state, "Carte inconnue.")
-        if (card.type != CardType.ACTION) return reject(state, "Cette carte n’est pas une Action.")
-        val updated = side.copy(hand = side.hand.removeOne(command.cardId), discard = side.discard + command.cardId)
-        return replaceCurrentSide(state, updated).withEvent(
-            MatchEventType.ACTION_USED,
-            state.activeSide,
-            command.cardId,
-            "Action jouée : ${card.name}. L’effet sera résolu par l’interpréteur d’effets.",
+        val result = actionResolver.resolve(
+            state = state,
+            side = state.activeSide,
+            actionCardId = command.cardId,
+            choice = command.choice,
         )
+        return if (result.success) result.state else reject(state, result.reason)
     }
 
     private fun attack(state: MatchStateV1, command: MatchCommandV1.Attack): MatchStateV1 {
@@ -364,11 +358,11 @@ class MatchEngineV1(
                     .withEvent(MatchEventType.MATCH_FINISHED, state.activeSide, null, "Victoire : plus aucun Personnage adverse en jeu.")
             }
 
-            val defender = opposite(state.activeSide)
-            return next.copy(phase = MatchPhase.PROMOTION, pendingPromotionSide = defender)
+            val defenderSideToPromote = opposite(state.activeSide)
+            return next.copy(phase = MatchPhase.PROMOTION, pendingPromotionSide = defenderSideToPromote)
                 .withEvent(
                     MatchEventType.PROMOTION_REQUIRED,
-                    defender,
+                    defenderSideToPromote,
                     null,
                     "Choisissez un Personnage de réserve à promouvoir.",
                 )
