@@ -13,11 +13,17 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: android-native-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Vérifier la source native
         run: |
@@ -130,6 +136,20 @@ jobs:
           git add native/app/schemas 2>/dev/null || true
           git add downloads/ZeubiCardGames-Native-debug.apk
 
-          if git diff --cached --quiet; then exit 0; fi
+          if git diff --cached --quiet; then
+            echo 'Aucun artefact à publier.'
+            exit 0
+          fi
+
           git commit -m "Publier le build Android natif validé [skip ci]"
-          git push
+
+          # Une seule exécution est autorisée par la section concurrency ci-dessus.
+          # Ce rebase protège aussi contre un commit manuel arrivé pendant le build.
+          git fetch origin main
+          if ! git rebase origin/main; then
+            git rebase --abort || true
+            echo 'Le dépôt a avancé avec des changements incompatibles pendant ce build. Une exécution plus récente publiera les artefacts.'
+            exit 0
+          fi
+
+          git push origin HEAD:main
