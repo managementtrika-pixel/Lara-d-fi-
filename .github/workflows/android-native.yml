@@ -34,7 +34,7 @@ jobs:
             exit 1
           }
           chmod +x native/gradlew native/tools/build_catalog.mjs native/tools/normalize_catalog.mjs
-          grep -E 'compileSdk|targetSdk|minSdk' native/app/build.gradle.kts
+          grep -E 'compileSdk|targetSdk|minSdk|versionCode|versionName' native/app/build.gradle.kts
 
       - uses: actions/setup-node@v4
         with:
@@ -50,6 +50,28 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+
+      - name: Restaurer la signature Android stable
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: zeubicardgames-debug-keystore-v1
+
+      - name: Préparer la signature Android stable
+        run: |
+          mkdir -p ~/.android
+          if [ ! -f ~/.android/debug.keystore ]; then
+            keytool -genkeypair \
+              -keystore ~/.android/debug.keystore \
+              -storepass android \
+              -alias androiddebugkey \
+              -keypass android \
+              -dname "CN=Android Debug,O=ZeubiCardGames,C=FR" \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000
+          fi
+          keytool -list -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey
 
       - uses: gradle/actions/setup-gradle@v4
         with:
@@ -74,6 +96,10 @@ jobs:
         working-directory: native
         run: ./gradlew assembleDebug --no-daemon --stacktrace
 
+      - name: Vérifier la signature de l’APK
+        run: |
+          ${ANDROID_HOME}/build-tools/36.0.0/apksigner verify --verbose --print-certs native/app/build/outputs/apk/debug/app-debug.apk
+
       - name: Préparer l’APK
         run: |
           mkdir -p downloads
@@ -90,7 +116,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Nettoyage de l’ancien dépôt qui avait accidentellement versionné caches et sorties Gradle.
           git rm -r --cached --ignore-unmatch native/.gradle native/app/build || true
 
           git add .gitignore
