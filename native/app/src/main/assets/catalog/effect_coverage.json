@@ -1,0 +1,352 @@
+{
+  "schemaVersion": 1,
+  "supportCardCount": 34,
+  "counts": {
+    "VERIFIED": 19,
+    "RULE_CONFLICT": 2,
+    "UNVERIFIED": 13
+  },
+  "executableCoveragePercent": 55.9,
+  "entries": [
+    {
+      "key": "cod:019",
+      "canonicalId": "cod:019:uav_en_ligne",
+      "setId": "cod",
+      "number": "019",
+      "name": "UAV en ligne",
+      "type": "action",
+      "wireCode": "searchPokemon",
+      "status": "UNVERIFIED"
+    },
+    {
+      "key": "cod:020",
+      "canonicalId": "cod:020:largage_tactique",
+      "setId": "cod",
+      "number": "020",
+      "name": "Largage tactique",
+      "type": "action",
+      "wireCode": "recoverEnergy2",
+      "status": "UNVERIFIED"
+    },
+    {
+      "key": "cod:021",
+      "canonicalId": "cod:021:changement_de_classe",
+      "setId": "cod",
+      "number": "021",
+      "name": "Changement de classe",
+      "type": "action",
+      "wireCode": "switchAndBuff",
+      "status": "UNVERIFIED"
+    },
+    {
+      "key": "cod:022",
+      "canonicalId": "cod:022:drone_de_reconnaissance",
+      "setId": "cod",
+      "number": "022",
+      "name": "Drone de reconnaissance",
+      "type": "action",
+      "wireCode": "peekHandDraw",
+      "status": "UNVERIFIED"
+    },
+    {
+      "key": "cod:023",
+      "canonicalId": "cod:023:serie_d_eliminations",
+      "setId": "cod",
+      "number": "023",
+      "name": "Série d’éliminations",
+      "type": "action",
+      "wireCode": "streakDraw",
+      "status": "UNVERIFIED"
+    },
+    {
+      "key": "cod:024",
+      "canonicalId": "cod:024:extraction",
+      "setId": "cod",
+      "number": "024",
+      "name": "Extraction !",
+      "type": "action",
+      "wireCode": "switchHeal30",
+      "status": "UNVERIFIED"
+    },
+    {
+      "key": "cod:025",
+      "canonicalId": "cod:025:plaque_d_armure",
+      "setId": "cod",
+      "number": "025",
+      "name": "Plaque d’armure",
+      "type": "replique",
+      "wireCode": "reduce40",
+      "status": "VERIFIED"
+    },
+    {
+      "key": "cod:026",
+      "canonicalId": "cod:026:flash",
+      "setId": "cod",
+      "number": "026",
+      "name": "Flash !",
+      "type": "replique",
+      "wireCode": "reduce30Lock",
+      "status": "UNVERIFIED"
+    },
+    {
+      "key": "cod:027",
+      "canonicalId": "cod:027:mine_surprise",
+      "setId": "cod",
+      "number": "027",
+      "name": "Mine surprise",
+      "type": "replique",
+      "wireCode": "counter30",
+      "status": "VERIFIED"
+    },
+    {
+      "key": "cod:028",
+      "canonicalId": "cod:028:derniere_chance",
+      "setId": "cod",
+      "number": "028",
+      "name": "Dernière chance",
+      "type": "replique",
+      "wireCode": "survive10",
+      "status": "VERIFIED"
+    },
+    {
+      "key": "cod:029",
+      "canonicalId": "cod:029:brouillage_radar",
+      "setId": "cod",
+      "number": "029",
+      "name": "Brouillage radar",
+      "type": "replique",
+      "wireCode": "cancelTrainer",
+      "status": "UNVERIFIED"
+    },
+    {
+      "key": "cod:030",
+      "canonicalId": "cod:030:on_a_encore_une_partie",
+      "setId": "cod",
+      "number": "030",
+      "name": "On a encore une partie",
+      "type": "replique",
+      "wireCode": "revive60",
+      "status": "UNVERIFIED"
+    },
+    {
+      "key": "dbz:019",
+      "canonicalId": "dbz:019:haricot_senzu",
+      "setId": "dbz",
+      "number": "019",
+      "name": "Haricot Senzu",
+      "type": "action",
+      "wireCode": "heal90",
+      "status": "VERIFIED"
+    },
+    {
+      "key": "dbz:020",
+      "canonicalId": "dbz:020:detecteur_de_puissance",
+      "setId": "dbz",
+      "number": "020",
+      "name": "Détecteur de puissance",
+      "type": "action",
+      "wireCode": "searchPokemon",
+      "status": "VERIFIED"
+    },
+    {
+      "key": "dbz:021",
+      "canonicalId": "dbz:021:capsule",
+      "setId": "dbz",
+      "number": "021",
+      "name": "Capsule !",
+      "type": "action",
+      "wireCode": "effectEnergy",
+      "status": "RULE_CONFLICT"
+    },
+    {
+      "key": "dbz:022",
+      "canonicalId": "dbz:022:entrainement_sous_gravite",
+      "setId": "dbz",
+      "number": "022",
+      "name": "Entraînement sous gravité",
+      "type": "action",
+      "wireCode": "buff30Self10",
+      "status": "VERIFIED"
+    },
+    {
+      "key": "dbz:023",
+      "canonicalId": "dbz:023:chambre_de_l_esprit_et_du_temps",
+      "setId": "dbz",
+      "number": "023",
+      "name": "Chambre de l’Esprit et du Temps",
+      "type": "action",
+      "wireCode": "instantEvolve",
+      "status": "VERIFIED"
+    },
+    {
+      "key": "dbz:024",
+      "canonicalId": "dbz:024:fusion",
+      "setId": "dbz",
+      "number": "024",
+      "name": "Fusion !",
+      "type": "action",
+      "wireCode": "buff50",
+      "status": "UNVERIFIED"
+    },
+    {
+      "key": "dbz:025",
+      "canonicalId": "dbz:025:teleportation",
+      "setId": "dbz",
+      "number": "025",
+      "name": "Téléportation !",
+      "type": "replique",
+      "wireCode": "switchBeforeHit",
+      "status": "VERIFIED"
+    },
+    {
+      "key": "dbz:026",
+      "canonicalId": "dbz:026:meme_pas_ma_forme_finale",
+      "setId": "dbz",
+      "number": "026",
+      "name": "Même pas ma forme finale",
+      "type": "replique",
+      "wireCode": "evolveSurvive30",
+      "status": "VERIFIED"
+    },
+    {
+      "key": "dbz:027",
+      "canonicalId": "dbz:027:le_detecteur_explose",
+      "setId": "dbz",
+      "number": "027",
+      "name": "Le détecteur explose !",
+      "type": "replique",
+      "wireCode": "cancelBonus",
+      "status": "VERIFIED"
+    },
+    {
+      "key": "dbz:028",
+      "canonicalId": "dbz:028:encore_plus_de_puissance",
+      "setId": "dbz",
+      "number": "028",
+      "name": "Encore plus de puissance ?!",
+      "type": "replique",
+      "wireCode": "draw2ExtraEnergy",
+      "status": "UNVERIFIED"
+    },
+    {
+      "key": "dbz:029",
+      "canonicalId": "dbz:029:les_sept_boules_sont_reunies",
+      "setId": "dbz",
+      "number": "029",
+      "name": "Les sept boules sont réunies",
+      "type": "replique",
+      "wireCode": "recover2",
+      "status": "VERIFIED"
+    },
+    {
+      "key": "dbz:030",
+      "canonicalId": "dbz:030:cinq_minutes_avant_l_explosion",
+      "setId": "dbz",
+      "number": "030",
+      "name": "Cinq minutes avant l’explosion",
+      "type": "replique",
+      "wireCode": "survive10Buff50",
+      "status": "VERIFIED"
+    },
+    {
+      "key": "emerald:020",
+      "canonicalId": "emerald:020:recharge_de_la_batterie",
+      "setId": "emerald",
+      "number": "020",
+      "name": "Recharge de la batterie",
+      "type": "action",
+      "wireCode": "effectEnergy",
+      "status": "UNVERIFIED"
+    },
+    {
+      "key": "emerald:022",
+      "canonicalId": "emerald:022:construction_impossible",
+      "setId": "emerald",
+      "number": "022",
+      "name": "Construction impossible",
+      "type": "action",
+      "wireCode": "searchTrainerDraw",
+      "status": "VERIFIED"
+    },
+    {
+      "key": "emerald:027",
+      "canonicalId": "emerald:027:construction_surprise",
+      "setId": "emerald",
+      "number": "027",
+      "name": "Construction surprise",
+      "type": "replique",
+      "wireCode": "counter30",
+      "status": "VERIFIED"
+    },
+    {
+      "key": "emerald:028",
+      "canonicalId": "emerald:028:volonte_inebranlable",
+      "setId": "emerald",
+      "number": "028",
+      "name": "Volonté inébranlable",
+      "type": "replique",
+      "wireCode": "survive10",
+      "status": "VERIFIED"
+    },
+    {
+      "key": "ninja:019",
+      "canonicalId": "ninja:019:entrainement_au_chakra",
+      "setId": "ninja",
+      "number": "019",
+      "name": "Entraînement au chakra",
+      "type": "action",
+      "wireCode": "effectEnergy",
+      "status": "RULE_CONFLICT"
+    },
+    {
+      "key": "ninja:020",
+      "canonicalId": "ninja:020:course_sur_les_murs",
+      "setId": "ninja",
+      "number": "020",
+      "name": "Course sur les murs",
+      "type": "action",
+      "wireCode": "switch",
+      "status": "UNVERIFIED"
+    },
+    {
+      "key": "ninja:021",
+      "canonicalId": "ninja:021:parchemin_interdit",
+      "setId": "ninja",
+      "number": "021",
+      "name": "Parchemin interdit",
+      "type": "action",
+      "wireCode": "searchEvolution",
+      "status": "VERIFIED"
+    },
+    {
+      "key": "ninja:023",
+      "canonicalId": "ninja:023:concentration_du_chakra",
+      "setId": "ninja",
+      "number": "023",
+      "name": "Concentration du chakra",
+      "type": "action",
+      "wireCode": "moveEnergy",
+      "status": "VERIFIED"
+    },
+    {
+      "key": "ninja:024",
+      "canonicalId": "ninja:024:mission_de_rang_s",
+      "setId": "ninja",
+      "number": "024",
+      "name": "Mission de rang S",
+      "type": "action",
+      "wireCode": "draw3discard1",
+      "status": "VERIFIED"
+    },
+    {
+      "key": "ninja:026",
+      "canonicalId": "ninja:026:c_etait_un_clone",
+      "setId": "ninja",
+      "number": "026",
+      "name": "C’était un clone",
+      "type": "replique",
+      "wireCode": "shield40",
+      "status": "VERIFIED"
+    }
+  ]
+}
