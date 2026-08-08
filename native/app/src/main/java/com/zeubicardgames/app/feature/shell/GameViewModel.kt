@@ -49,16 +49,46 @@ class GameViewModel @Inject constructor(
     private val repository: GameRepository,
     private val preferences: PreferencesStore,
 ) : ViewModel() {
+    private val startupContent = runCatching {
+        repository.catalog to repository.extensions
+    }
+
     private val local = MutableStateFlow(
-        GameUiState(cards = repository.catalog, extensions = repository.extensions)
+        GameUiState(
+            cards = startupContent.getOrNull()?.first.orEmpty(),
+            extensions = startupContent.getOrNull()?.second.orEmpty(),
+            notice = startupContent.exceptionOrNull()?.let {
+                "Démarrage sécurisé : catalogue indisponible (${it.message ?: it::class.simpleName})."
+            },
+        )
     )
+
+    private val safeOwned = repository.owned.catch { error ->
+        reportStartupFailure("collection", error)
+        emit(emptyMap())
+    }
+
+    private val safeDecks = repository.decks.catch { error ->
+        reportStartupFailure("decks", error)
+        emit(emptyList())
+    }
+
+    private val safeCampaign = repository.campaign.catch { error ->
+        reportStartupFailure("campagne", error)
+        emit(emptyMap())
+    }
+
+    private val safePreferences = preferences.flow.catch { error ->
+        reportStartupFailure("préférences", error)
+        emit(UserPreferences())
+    }
 
     val state: StateFlow<GameUiState> = combine(
         local,
-        repository.owned,
-        repository.decks,
-        repository.campaign,
-        preferences.flow,
+        safeOwned,
+        safeDecks,
+        safeCampaign,
+        safePreferences,
     ) { a, owned, decks, campaign, prefs ->
         a.copy(owned = owned, decks = decks, campaign = campaign, preferences = prefs)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), local.value)
@@ -67,16 +97,28 @@ class GameViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            repository.pendingPack()?.let { opening ->
-                local.update {
-                    it.copy(
-                        selectedExtension = opening.setId,
-                        packResult = opening.cards,
-                        pendingPackId = opening.id,
+            val opening = runCatching { repository.pendingPack() }
+                .onFailure { reportStartupFailure("sauvegarde des boosters", it) }
+                .getOrNull()
+
+            opening?.let {
+                local.update { state ->
+                    state.copy(
+                        selectedExtension = it.setId,
+                        packResult = it.cards,
+                        pendingPackId = it.id,
                         packRecovered = true,
                     )
                 }
             }
+        }
+    }
+
+    private fun reportStartupFailure(area: String, error: Throwable) {
+        local.update { current ->
+            if (current.notice != null) current else current.copy(
+                notice = "Démarrage sécurisé : $area indisponible (${error.message ?: error::class.simpleName})."
+            )
         }
     }
 
