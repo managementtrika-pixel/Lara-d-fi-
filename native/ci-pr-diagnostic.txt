@@ -1,0 +1,2 @@
+Diagnostic PR CI Répliques — 2026-08-09T23:09+02:00
+Aucun impact runtime.
