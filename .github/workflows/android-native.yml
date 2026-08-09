@@ -9,6 +9,13 @@ on:
       - 'ZeubiCardGames_V8_5_CombatModes_BoosterDisplay.html'
       - '.github/workflows/android-native.yml'
       - '.gitignore'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'native/**'
+      - 'ZeubiCardGames_V8_5_CombatModes_BoosterDisplay.html'
+      - '.github/workflows/android-native.yml'
+      - '.gitignore'
   workflow_dispatch:
 
 permissions:
@@ -126,6 +133,7 @@ jobs:
           retention-days: 30
 
       - name: Publier uniquement les artefacts utiles
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -144,8 +152,6 @@ jobs:
 
           git commit -m "Publier le build Android natif validé [skip ci]"
 
-          # Une seule exécution est autorisée par la section concurrency ci-dessus.
-          # Ce rebase protège aussi contre un commit manuel arrivé pendant le build.
           git fetch origin main
           if ! git rebase origin/main; then
             git rebase --abort || true
