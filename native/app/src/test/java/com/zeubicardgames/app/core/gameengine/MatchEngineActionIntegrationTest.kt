@@ -14,8 +14,8 @@ class MatchEngineActionIntegrationTest {
     private val base = card("dbz", "001", "Base", "personnage", "base", null, hp = 100)
     private val senzu = card("dbz", "019", "Haricot Senzu", "action", "base", "heal90")
     private val unverified = card("cod", "019", "UAV en ligne", "action", "base", "searchPokemon")
-    private val reply = card("ninja", "026", "C’était un clone", "replique", "base", "shield40")
-    private val catalog = listOf(base, senzu, unverified, reply)
+    private val unsupportedReply = card("cod", "026", "Flash !", "replique", "base", "reduce30Lock")
+    private val catalog = listOf(base, senzu, unverified, unsupportedReply)
 
     @Test
     fun `verified action resolves through match engine and is consumed`() {
@@ -71,16 +71,16 @@ class MatchEngineActionIntegrationTest {
     }
 
     @Test
-    fun `reply cannot be armed before its trigger resolver exists`() {
+    fun `unsupported reply cannot be armed before its trigger resolver exists`() {
         val engine = MatchEngineV1(catalog, 4)
         val state = matchState(
-            hand = listOf(reply.canonicalId),
+            hand = listOf(unsupportedReply.canonicalId),
             active = CharacterInPlay("p1", base.canonicalId),
         )
 
-        val next = engine.apply(state, MatchCommandV1.ArmReply(reply.canonicalId))
+        val next = engine.apply(state, MatchCommandV1.ArmReply(unsupportedReply.canonicalId))
 
-        assertTrue(reply.canonicalId in next.player.hand)
+        assertTrue(unsupportedReply.canonicalId in next.player.hand)
         assertTrue(next.player.supportSlots.isEmpty())
         assertEquals(MatchEventType.COMMAND_REJECTED, next.events.last().type)
     }
