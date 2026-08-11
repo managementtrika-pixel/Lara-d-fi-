@@ -37,7 +37,7 @@ class MatchEngineRepliesV1Test {
     )
 
     @Test
-    fun `supported reply moves from hand to a support slot and unsupported reply stays in hand`() {
+    fun `supported reply moves one copy from hand to a support slot and unsupported reply stays in hand`() {
         val playerDeck = List(10) { attacker70.canonicalId } + List(10) { armor.canonicalId }
         val opponentDeck = List(20) { defender.canonicalId }
         val seed = findSeed(playerDeck, opponentDeck) {
@@ -45,10 +45,11 @@ class MatchEngineRepliesV1Test {
         }
         val engine = MatchEngineV1(catalog, seed)
         var state = readyMatch(engine, playerDeck, opponentDeck, attacker70.canonicalId, defender.canonicalId)
+        val armorInHandBefore = state.player.hand.count { it == armor.canonicalId }
 
         state = engine.apply(state, MatchCommandV1.ArmReply(armor.canonicalId))
         assertTrue(armor.canonicalId in state.player.supportSlots)
-        assertFalse(armor.canonicalId in state.player.hand)
+        assertEquals(armorInHandBefore - 1, state.player.hand.count { it == armor.canonicalId })
         assertEquals(MatchEventType.REPLY_ARMED, state.events.last().type)
 
         val unsupportedDeck = List(10) { attacker70.canonicalId } + List(10) { unsupported.canonicalId }
@@ -63,11 +64,12 @@ class MatchEngineRepliesV1Test {
             attacker70.canonicalId,
             defender.canonicalId,
         )
+        val unsupportedInHandBefore = unsupportedState.player.hand.count { it == unsupported.canonicalId }
         unsupportedState = unsupportedEngine.apply(
             unsupportedState,
             MatchCommandV1.ArmReply(unsupported.canonicalId),
         )
-        assertTrue(unsupported.canonicalId in unsupportedState.player.hand)
+        assertEquals(unsupportedInHandBefore, unsupportedState.player.hand.count { it == unsupported.canonicalId })
         assertFalse(unsupported.canonicalId in unsupportedState.player.supportSlots)
         assertEquals(MatchEventType.COMMAND_REJECTED, unsupportedState.events.last().type)
     }
