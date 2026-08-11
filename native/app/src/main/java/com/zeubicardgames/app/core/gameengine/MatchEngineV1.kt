@@ -2,6 +2,9 @@ package com.zeubicardgames.app.core.gameengine
 
 import com.zeubicardgames.app.core.effects.ActionEffectChoiceV1
 import com.zeubicardgames.app.core.effects.ActionEffectResolverV1
+import com.zeubicardgames.app.core.effects.ReplyEffectResolverV1
+import com.zeubicardgames.app.core.effects.ReplyResolutionInputV1
+import com.zeubicardgames.app.core.effects.ReplyWindowV1
 import com.zeubicardgames.app.core.model.Attack
 import com.zeubicardgames.app.core.model.CardDefinition
 import com.zeubicardgames.app.core.model.CardType
@@ -30,8 +33,13 @@ enum class MatchEventType {
     CARD_EVOLVED,
     ACTION_USED,
     REPLY_ARMED,
+    REACTION_REQUIRED,
+    REACTION_PASSED,
+    REPLY_TRIGGERED,
     ATTACK_DECLARED,
+    DAMAGE_CALCULATED,
     DAMAGE_APPLIED,
+    EFFECT_APPLIED,
     CARD_KNOCKED_OUT,
     PROMOTION_REQUIRED,
     CHARACTER_PROMOTED,
@@ -80,8 +88,24 @@ data class TurnFlags(
     val attackDeclared: Boolean = false,
 )
 
+data class PendingAttackV1(
+    val attackerSide: MatchSide,
+    val attackerInstanceId: String,
+    val defenderInstanceId: String,
+    val attackIndex: Int,
+    val attackName: String,
+    val incomingDamage: Int,
+    val defenderDamageOverride: Int? = null,
+)
+
+data class PendingReactionV1(
+    val side: MatchSide,
+    val window: ReplyWindowV1,
+    val eligibleCardIds: List<String>,
+)
+
 data class MatchStateV1(
-    val schemaVersion: Int = 1,
+    val schemaVersion: Int = 2,
     val seed: Long,
     val turnNumber: Int = 1,
     val activeSide: MatchSide = MatchSide.PLAYER,
@@ -91,6 +115,8 @@ data class MatchStateV1(
     val playerSetupComplete: Boolean = false,
     val opponentSetupComplete: Boolean = false,
     val pendingPromotionSide: MatchSide? = null,
+    val pendingAttack: PendingAttackV1? = null,
+    val pendingReaction: PendingReactionV1? = null,
     val flags: TurnFlags = TurnFlags(),
     val winner: MatchSide? = null,
     val events: List<MatchEvent> = emptyList(),
@@ -108,6 +134,7 @@ sealed interface MatchCommandV1 {
         val choice: ActionEffectChoiceV1 = ActionEffectChoiceV1(),
     ) : MatchCommandV1
     data class Attack(val attackIndex: Int) : MatchCommandV1
+    data class ResolveReaction(val cardId: String? = null) : MatchCommandV1
     data class Promote(val reserveInstanceId: String) : MatchCommandV1
     data object EndTurn : MatchCommandV1
 }
@@ -119,6 +146,7 @@ class MatchEngineV1(
     private val catalog = cards.associateBy { it.canonicalId }
     private val random = Random(seed)
     private val actionResolver = ActionEffectResolverV1(cards)
+    private val replyResolver = ReplyEffectResolverV1(cards)
     private var instanceCounter = 0L
 
     fun start(playerDeck: List<String>, opponentDeck: List<String>): MatchStateV1 {
@@ -155,6 +183,7 @@ class MatchEngineV1(
             is MatchCommandV1.ArmReply -> armReply(state, command)
             is MatchCommandV1.UseAction -> useAction(state, command)
             is MatchCommandV1.Attack -> attack(state, command)
+            is MatchCommandV1.ResolveReaction -> resolveReaction(state, command)
             is MatchCommandV1.Promote -> promote(state, command)
             MatchCommandV1.EndTurn -> endTurn(state)
         }
@@ -214,8 +243,7 @@ class MatchEngineV1(
             ).withEvent(MatchEventType.TURN_STARTED, MatchSide.PLAYER, null, "Tour 1 — PLAYER")
         }
 
-        next = next.copy(activeSide = opposite(state.activeSide))
-        return next
+        return next.copy(activeSide = opposite(state.activeSide))
     }
 
     private fun attachResource(state: MatchStateV1, command: MatchCommandV1.AttachResource): MatchStateV1 {
@@ -300,9 +328,20 @@ class MatchEngineV1(
         if (command.cardId !in side.hand) return reject(state, "Cette Réplique n’est pas dans la main.")
         val card = catalog[command.cardId] ?: return reject(state, "Carte inconnue.")
         if (card.type != CardType.REPLIQUE) return reject(state, "Cette carte n’est pas une Réplique.")
-        return reject(
-            state,
-            "${card.name} n’est pas encore activée dans le moteur V1 : la carte reste dans ta main.",
+        val window = replyResolver.supportedWindow(command.cardId)
+            ?: return reject(state, "${card.name} n’a pas encore d’exécuteur de Réplique V1 : la carte reste dans ta main.")
+        if (side.supportSlots.size >= MATCH_MAX_SUPPORT_SLOTS) {
+            return reject(state, "Les trois emplacements Action/Réplique sont occupés.")
+        }
+        val updated = side.copy(
+            hand = side.hand.removeOne(command.cardId),
+            supportSlots = side.supportSlots + command.cardId,
+        )
+        return replaceCurrentSide(state, updated).withEvent(
+            MatchEventType.REPLY_ARMED,
+            state.activeSide,
+            command.cardId,
+            "${card.name} est armée pour ${window.name}.",
         )
     }
 
@@ -328,46 +367,275 @@ class MatchEngineV1(
             ?: return reject(state, "Attaque inconnue.")
         if (attacker.resources < attack.cost) return reject(state, "Ressources insuffisantes pour ${attack.name}.")
 
-        var next = state.copy(phase = MatchPhase.RESOLVING, flags = state.flags.copy(attackDeclared = true))
-            .withEvent(MatchEventType.ATTACK_DECLARED, state.activeSide, attacker.cardId, attack.name)
-
-        val hit = defender.copy(damage = defender.damage + attack.damage)
-        var newDefenderSide = defenderSide.copy(active = hit)
-        next = replaceOtherSide(next, newDefenderSide).withEvent(
-            MatchEventType.DAMAGE_APPLIED,
-            opposite(state.activeSide),
-            defender.cardId,
-            "${attack.damage} dégâts appliqués.",
+        val pending = PendingAttackV1(
+            attackerSide = state.activeSide,
+            attackerInstanceId = attacker.instanceId,
+            defenderInstanceId = defender.instanceId,
+            attackIndex = command.attackIndex,
+            attackName = attack.name,
+            incomingDamage = attack.damage,
         )
+        val next = state.copy(
+            phase = MatchPhase.RESOLVING,
+            flags = state.flags.copy(attackDeclared = true),
+            pendingAttack = pending,
+            pendingReaction = null,
+        ).withEvent(
+            MatchEventType.ATTACK_DECLARED,
+            state.activeSide,
+            attacker.cardId,
+            attack.name,
+        )
+        return openBeforeDamage(next)
+    }
+
+    private fun resolveReaction(state: MatchStateV1, command: MatchCommandV1.ResolveReaction): MatchStateV1 {
+        if (state.phase != MatchPhase.RESOLVING) return reject(state, "Aucune attaque n’attend de Réplique.")
+        val reaction = state.pendingReaction ?: return reject(state, "Aucune fenêtre de Réplique n’est ouverte.")
+        val pending = state.pendingAttack ?: return reject(state, "Contexte d’attaque introuvable.")
+
+        if (command.cardId == null) {
+            val passed = state.copy(pendingReaction = null).withEvent(
+                MatchEventType.REACTION_PASSED,
+                reaction.side,
+                null,
+                "Fenêtre ${reaction.window.name} passée.",
+            )
+            return continueAfterWindow(passed, reaction.window)
+        }
+
+        val cardId = command.cardId
+        val reactionSide = sideFor(state, reaction.side)
+        if (cardId !in reaction.eligibleCardIds || cardId !in reactionSide.supportSlots) {
+            return reject(state, "Cette Réplique n’est pas disponible dans cette fenêtre.")
+        }
+
+        val attackerSide = sideFor(state, pending.attackerSide)
+        val defenderSideName = opposite(pending.attackerSide)
+        val defenderSide = sideFor(state, defenderSideName)
+        val attacker = attackerSide.findCharacter(pending.attackerInstanceId)
+            ?: return reject(state, "Attaquant introuvable pendant la résolution.")
+        val defender = defenderSide.findCharacter(pending.defenderInstanceId)
+            ?: return reject(state, "Défenseur introuvable pendant la résolution.")
+        val defenderMaxHp = catalog[defender.cardId]?.hp ?: return reject(state, "PV du défenseur introuvables.")
+
+        if (reaction.window == ReplyWindowV1.AFTER_ATTACK) {
+            val attackerMaxHp = catalog[attacker.cardId]?.hp ?: return reject(state, "PV de l’attaquant introuvables.")
+            if (attacker.damage + 30 >= attackerMaxHp) {
+                return reject(
+                    state,
+                    "Cette Réplique provoquerait un K.O. de l’attaquant après l’attaque. Ce cas n’est pas défini par la source vérifiée : la carte reste armée.",
+                )
+            }
+        }
+
+        val output = replyResolver.resolve(
+            cardId = cardId,
+            window = reaction.window,
+            input = ReplyResolutionInputV1(
+                incomingDamage = pending.incomingDamage,
+                defenderMaxHp = defenderMaxHp,
+                defenderDamageBeforeAttack = defender.damage,
+                attackerDamageBeforeReply = attacker.damage,
+            ),
+        )
+        if (!output.success) return reject(state, output.reason)
+
+        var next = consumeReply(state, reaction.side, cardId)
+            .copy(pendingReaction = null)
+            .withEvent(
+                MatchEventType.REPLY_TRIGGERED,
+                reaction.side,
+                cardId,
+                output.reason,
+            )
+            .withEvent(
+                MatchEventType.EFFECT_APPLIED,
+                reaction.side,
+                cardId,
+                output.reason,
+            )
+
+        return when (reaction.window) {
+            ReplyWindowV1.BEFORE_DAMAGE -> {
+                next = next.copy(
+                    pendingAttack = pending.copy(incomingDamage = output.incomingDamage),
+                ).withEvent(
+                    MatchEventType.DAMAGE_CALCULATED,
+                    defenderSideName,
+                    defender.cardId,
+                    "Dégâts après Réplique : ${output.incomingDamage}.",
+                )
+                openBeforeKo(next)
+            }
+            ReplyWindowV1.BEFORE_KO -> {
+                next = next.copy(
+                    pendingAttack = pending.copy(defenderDamageOverride = output.defenderDamage),
+                )
+                applyPendingDamage(next)
+            }
+            ReplyWindowV1.AFTER_ATTACK -> {
+                val updatedAttackerSide = attackerSide.updateCharacter(attacker.instanceId) {
+                    it.copy(damage = output.attackerDamage)
+                } ?: return reject(state, "Impossible d’appliquer le contre-dégât.")
+                next = replaceSide(next, pending.attackerSide, updatedAttackerSide)
+                    .withEvent(
+                        MatchEventType.DAMAGE_APPLIED,
+                        pending.attackerSide,
+                        attacker.cardId,
+                        "${output.attackerDamage - attacker.damage} dégâts de Réplique appliqués à l’attaquant.",
+                    )
+                finishAttack(next)
+            }
+        }
+    }
+
+    private fun openBeforeDamage(state: MatchStateV1): MatchStateV1 =
+        openReactionWindow(state, ReplyWindowV1.BEFORE_DAMAGE) ?: openBeforeKo(state)
+
+    private fun openBeforeKo(state: MatchStateV1): MatchStateV1 {
+        val pending = state.pendingAttack ?: return reject(state, "Contexte d’attaque introuvable.")
+        val defenderSide = sideFor(state, opposite(pending.attackerSide))
+        val defender = defenderSide.findCharacter(pending.defenderInstanceId)
+            ?: return reject(state, "Défenseur introuvable.")
+        val maxHp = catalog[defender.cardId]?.hp ?: return reject(state, "PV du défenseur introuvables.")
+        val wouldBeKo = defender.damage + pending.incomingDamage >= maxHp
+        if (!wouldBeKo) return applyPendingDamage(state)
+        return openReactionWindow(state, ReplyWindowV1.BEFORE_KO) ?: applyPendingDamage(state)
+    }
+
+    private fun openAfterAttack(state: MatchStateV1): MatchStateV1 =
+        openReactionWindow(state, ReplyWindowV1.AFTER_ATTACK) ?: finishAttack(state)
+
+    private fun openReactionWindow(state: MatchStateV1, window: ReplyWindowV1): MatchStateV1? {
+        val pending = state.pendingAttack ?: return null
+        val reactionSideName = opposite(pending.attackerSide)
+        val reactionSide = sideFor(state, reactionSideName)
+        val eligible = reactionSide.supportSlots.filter { replyResolver.supportedWindow(it) == window }
+        if (eligible.isEmpty()) return null
+        return state.copy(
+            phase = MatchPhase.RESOLVING,
+            pendingReaction = PendingReactionV1(
+                side = reactionSideName,
+                window = window,
+                eligibleCardIds = eligible,
+            ),
+        ).withEvent(
+            MatchEventType.REACTION_REQUIRED,
+            reactionSideName,
+            null,
+            "Fenêtre de Réplique ${window.name}.",
+        )
+    }
+
+    private fun continueAfterWindow(state: MatchStateV1, window: ReplyWindowV1): MatchStateV1 =
+        when (window) {
+            ReplyWindowV1.BEFORE_DAMAGE -> openBeforeKo(state)
+            ReplyWindowV1.BEFORE_KO -> applyPendingDamage(state)
+            ReplyWindowV1.AFTER_ATTACK -> finishAttack(state)
+        }
+
+    private fun applyPendingDamage(state: MatchStateV1): MatchStateV1 {
+        val pending = state.pendingAttack ?: return reject(state, "Contexte d’attaque introuvable.")
+        val defenderSideName = opposite(pending.attackerSide)
+        val defenderSide = sideFor(state, defenderSideName)
+        val defender = defenderSide.findCharacter(pending.defenderInstanceId)
+            ?: return reject(state, "Défenseur introuvable.")
+        val finalDamage = pending.defenderDamageOverride ?: (defender.damage + pending.incomingDamage)
+        val applied = (finalDamage - defender.damage).coerceAtLeast(0)
+        val hit = defender.copy(damage = finalDamage)
+        val updatedDefenderSide = defenderSide.updateCharacter(defender.instanceId) { hit }
+            ?: return reject(state, "Impossible d’appliquer les dégâts.")
+
+        var next = replaceSide(state, defenderSideName, updatedDefenderSide)
+            .copy(pendingReaction = null)
+            .withEvent(
+                MatchEventType.DAMAGE_CALCULATED,
+                defenderSideName,
+                defender.cardId,
+                "Dégâts finaux de l’attaque : $applied.",
+            )
+            .withEvent(
+                MatchEventType.DAMAGE_APPLIED,
+                defenderSideName,
+                defender.cardId,
+                "$applied dégâts appliqués.",
+            )
 
         if (hit.hpLeft(catalog) <= 0) {
-            newDefenderSide = newDefenderSide.copy(
-                active = null,
-                discard = newDefenderSide.discard + defender.allCardIds(),
-            )
-            val scoringSide = currentSide(next).copy(points = currentSide(next).points + 1)
-            next = replaceCurrentSide(replaceOtherSide(next, newDefenderSide), scoringSide)
-                .withEvent(MatchEventType.CARD_KNOCKED_OUT, opposite(state.activeSide), defender.cardId, "Personnage K.O.")
+            return resolveDefenderKo(next, pending, hit)
+        }
+        return openAfterAttack(next)
+    }
 
-            if (scoringSide.points >= MATCH_POINTS_TO_WIN) {
-                return next.copy(phase = MatchPhase.FINISHED, winner = state.activeSide)
-                    .withEvent(MatchEventType.MATCH_FINISHED, state.activeSide, null, "Victoire ${state.activeSide}.")
-            }
-            if (newDefenderSide.reserves.isEmpty()) {
-                return next.copy(phase = MatchPhase.FINISHED, winner = state.activeSide)
-                    .withEvent(MatchEventType.MATCH_FINISHED, state.activeSide, null, "Victoire : plus aucun Personnage adverse en jeu.")
-            }
+    private fun resolveDefenderKo(
+        state: MatchStateV1,
+        pending: PendingAttackV1,
+        defeated: CharacterInPlay,
+    ): MatchStateV1 {
+        val defenderSideName = opposite(pending.attackerSide)
+        val defenderSide = sideFor(state, defenderSideName)
+        val clearedDefender = defenderSide.copy(
+            active = null,
+            discard = defenderSide.discard + defeated.allCardIds(),
+        )
+        val attackerSide = sideFor(state, pending.attackerSide)
+        val scoringSide = attackerSide.copy(points = attackerSide.points + 1)
+        var next = replaceSide(
+            replaceSide(state, defenderSideName, clearedDefender),
+            pending.attackerSide,
+            scoringSide,
+        ).copy(
+            pendingAttack = null,
+            pendingReaction = null,
+        ).withEvent(
+            MatchEventType.CARD_KNOCKED_OUT,
+            defenderSideName,
+            defeated.cardId,
+            "Personnage K.O.",
+        )
 
-            val defenderSideToPromote = opposite(state.activeSide)
-            return next.copy(phase = MatchPhase.PROMOTION, pendingPromotionSide = defenderSideToPromote)
+        if (scoringSide.points >= MATCH_POINTS_TO_WIN) {
+            return next.copy(phase = MatchPhase.FINISHED, winner = pending.attackerSide)
+                .withEvent(MatchEventType.MATCH_FINISHED, pending.attackerSide, null, "Victoire ${pending.attackerSide}.")
+        }
+        if (clearedDefender.reserves.isEmpty()) {
+            return next.copy(phase = MatchPhase.FINISHED, winner = pending.attackerSide)
                 .withEvent(
-                    MatchEventType.PROMOTION_REQUIRED,
-                    defenderSideToPromote,
+                    MatchEventType.MATCH_FINISHED,
+                    pending.attackerSide,
                     null,
-                    "Choisissez un Personnage de réserve à promouvoir.",
+                    "Victoire : plus aucun Personnage adverse en jeu.",
                 )
         }
-        return endTurn(next.copy(phase = MatchPhase.MAIN))
+
+        return next.copy(
+            phase = MatchPhase.PROMOTION,
+            pendingPromotionSide = defenderSideName,
+        ).withEvent(
+            MatchEventType.PROMOTION_REQUIRED,
+            defenderSideName,
+            null,
+            "Choisissez un Personnage de réserve à promouvoir.",
+        )
+    }
+
+    private fun finishAttack(state: MatchStateV1): MatchStateV1 =
+        endTurn(
+            state.copy(
+                phase = MatchPhase.MAIN,
+                pendingAttack = null,
+                pendingReaction = null,
+            )
+        )
+
+    private fun consumeReply(state: MatchStateV1, side: MatchSide, cardId: String): MatchStateV1 {
+        val current = sideFor(state, side)
+        val updated = current.copy(
+            supportSlots = current.supportSlots.removeOne(cardId),
+            discard = current.discard + cardId,
+        )
+        return replaceSide(state, side, updated)
     }
 
     private fun promote(state: MatchStateV1, command: MatchCommandV1.Promote): MatchStateV1 {
@@ -400,6 +668,9 @@ class MatchEngineV1(
             return reject(state, "Impossible de terminer le tour maintenant.")
         }
         if (state.pendingPromotionSide != null) return reject(state, "Une promotion doit être résolue avant la fin du tour.")
+        if (state.pendingAttack != null || state.pendingReaction != null) {
+            return reject(state, "Une attaque ou une fenêtre de Réplique doit être résolue avant la fin du tour.")
+        }
         val endingSide = state.activeSide
         val nextSide = opposite(endingSide)
         var next = state.withEvent(MatchEventType.TURN_ENDED, endingSide, null, "Fin du tour.")
@@ -448,9 +719,6 @@ class MatchEngineV1(
 
     private fun replaceCurrentSide(state: MatchStateV1, side: SideState): MatchStateV1 =
         replaceSide(state, state.activeSide, side)
-
-    private fun replaceOtherSide(state: MatchStateV1, side: SideState): MatchStateV1 =
-        replaceSide(state, opposite(state.activeSide), side)
 
     private fun reject(state: MatchStateV1, reason: String): MatchStateV1 =
         state.withEvent(MatchEventType.COMMAND_REJECTED, state.activeSide, null, reason)
