@@ -11,11 +11,11 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.zeubicardgames.native"
+        applicationId = "com.zeubicardgames.brawl"
         minSdk = 26
         targetSdk = 36
-        versionCode = 3
-        versionName = "0.1.2-native"
+        versionCode = 100
+        versionName = "1.0.0-brawl"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
