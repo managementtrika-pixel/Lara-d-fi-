@@ -9,26 +9,18 @@ class BeatEmUpEngineTest {
     private val fighter = FighterSpec(
         id = "test",
         name = "Test Fighter",
-        cardName = "Test Fighter",
-        setId = "cod",
-        style = FighterStyle.BALANCED,
         maxHp = 250f,
         moveSpeed = 180f,
         attack = 35f,
         defense = 15f,
-        specialName = "Test Special",
-        accentArgb = 0xFFFFAA44L,
     )
 
     private val stage = StageSpec(
         id = "test_stage",
         name = "Test Stage",
         subtitle = "Combat",
-        setId = "cod",
-        boosterPath = "boosters/cod.webp",
-        bossCardName = "Test Boss",
-        accentArgb = 0xFFFFAA44L,
         waves = 3,
+        bossName = "Test Boss",
     )
 
     @Test
