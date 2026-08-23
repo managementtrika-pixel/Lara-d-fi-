@@ -14,8 +14,8 @@ android {
         applicationId = "com.zeubicardgames.brawl"
         minSdk = 26
         targetSdk = 36
-        versionCode = 100
-        versionName = "1.0.0-brawl"
+        versionCode = 101
+        versionName = "1.0.1-rift"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -71,3 +71,45 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
+
+val prepareRiftAssets by tasks.registering {
+    val sourceDir = rootProject.file("rift_assets_src")
+    val outDir = file("src/main/assets/rift")
+    val parts = listOf(
+        sourceDir.resolve("chunk_00.b64"),
+        sourceDir.resolve("chunk_01.b64"),
+        sourceDir.resolve("tail_00.b64"),
+        sourceDir.resolve("tail_01.b64"),
+        sourceDir.resolve("tail_02.b64"),
+        sourceDir.resolve("tail_03.b64"),
+        sourceDir.resolve("tail_04.b64"),
+        sourceDir.resolve("tail_05.b64"),
+        sourceDir.resolve("tail_06.b64"),
+        sourceDir.resolve("tail_07.b64"),
+        sourceDir.resolve("tail_08.b64"),
+        sourceDir.resolve("tail_09.b64"),
+    )
+    inputs.files(parts)
+    outputs.dir(outDir)
+    doLast {
+        outDir.mkdirs()
+        val base64 = parts.joinToString("") { it.readText().trim() }
+        val zipBytes = java.util.Base64.getDecoder().decode(base64)
+        java.util.zip.ZipInputStream(zipBytes.inputStream()).use { zip ->
+            var entry = zip.nextEntry
+            while (entry != null) {
+                if (!entry.isDirectory) {
+                    val target = outDir.resolve(entry.name)
+                    target.parentFile.mkdirs()
+                    target.outputStream().use { output -> zip.copyTo(output) }
+                }
+                zip.closeEntry()
+                entry = zip.nextEntry
+            }
+        }
+        val required = listOf("rift_sprites.webp", "sprites.json", "bg_kurokawa.webp", "menu_rift_brawl.webp")
+        check(required.all { outDir.resolve(it).isFile }) { "Rift Brawl asset pack incomplete" }
+    }
+}
+
+tasks.named("preBuild").configure { dependsOn(prepareRiftAssets) }
