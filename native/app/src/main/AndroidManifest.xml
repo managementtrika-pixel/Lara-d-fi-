@@ -3,14 +3,15 @@
         android:name=".ZeubiApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="ZeubiCardGames"
+        android:label="Zeubi Brawl"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ZeubiCardGames">
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:screenOrientation="portrait">
+            android:screenOrientation="landscape"
+            android:resizeableActivity="false">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
