@@ -456,7 +456,7 @@ object GameEngine {
 
     private fun contextualChoices(c: Campaign, category: String, s: SituationTemplate, index: Int): List<Choice> {
         val thread = s.threadId
-        val variant = positiveMod(index + c.turn, 4)
+        val variant = positiveMod((index + c.turn).toLong(), 4)
         fun phrase(vararg options: String) = options[variant % options.size]
         fun ch(label: String, moral: Int, prestige: Int, opinion: Int, fear: Int, power: Int, impact: Int, risk: Int, approach: String, stakes: Int = s.stakes, relation: Int = 0, flag: String? = null) =
             Choice(label, moral, prestige, opinion, fear, power, impact, risk, approach, stakes, category, thread, relation, flag)
@@ -469,7 +469,7 @@ object GameEngine {
             ch(phrase("${s.tacticalAngle.replaceFirstChar { it.uppercase() }}", "Construire un plan autour de ceci : ${s.tacticalAngle}", "Ne pas répondre frontalement : ${s.tacticalAngle}", "Exploiter le terrain : ${s.tacticalAngle}"), 3, 5, 2, 0, 1, 7, 5, "TACTICAL", relation = 1)
         )
         val special = specialChoice(c, category, s)
-        val offset = positiveMod(index / 5, base.size)
+        val offset = positiveMod((index / 5).toLong(), base.size)
         val rotated = base.drop(offset) + base.take(offset)
         return (rotated + special).distinctBy { it.label }.take(6)
     }
