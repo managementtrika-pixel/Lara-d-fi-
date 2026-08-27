@@ -5,7 +5,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,6 +42,15 @@ fun MetahumanLegacyApp(context: Context) {
         var campaign by remember { mutableStateOf(loadCampaign(context)) }
         var screen by remember { mutableStateOf(if (campaign == null) "HOME" else "DESTIN") }
         var hall by remember { mutableStateOf(loadHall(context)) }
+        var pendingOutcome by remember { mutableStateOf<String?>(null) }
+        var showRestartDialog by remember { mutableStateOf(false) }
+
+        fun startFreshCampaign(seed: Long = System.currentTimeMillis()) {
+            campaign = GameEngine.newCampaign(seed)
+            saveCampaign(context, campaign!!)
+            pendingOutcome = null
+            screen = "DESTIN"
+        }
 
         Surface(Modifier.fillMaxSize(), color = Coal) {
             Box {
@@ -50,31 +58,57 @@ fun MetahumanLegacyApp(context: Context) {
                 when {
                     campaign == null -> HomeScreen(
                         hallCount = hall.size,
-                        onNew = {
-                            campaign = GameEngine.newCampaign(System.currentTimeMillis())
-                            saveCampaign(context, campaign!!)
-                            screen = "DESTIN"
-                        },
-                        onSeeded = {
-                            campaign = GameEngine.newCampaign(20490413L)
-                            saveCampaign(context, campaign!!)
-                            screen = "DESTIN"
-                        },
+                        onNew = { startFreshCampaign() },
+                        onSeeded = { startFreshCampaign(20490413L) },
                         onHall = { screen = "HALL" }
                     )
-                    campaign!!.finished -> FinalScreen(campaign!!, onArchive = {
-                        val entry = "${campaign!!.name}|${GameEngine.legacyTitle(campaign!!)}|${GameEngine.legacyScore(campaign!!)}|${campaign!!.scope.label}"
-                        hall = (listOf(entry) + hall).distinct().take(30)
-                        saveHall(context, hall)
-                        clearCampaign(context)
-                        campaign = null
-                        screen = "HOME"
-                    })
+                    campaign!!.finished -> FinalScreen(
+                        c = campaign!!,
+                        onArchive = {
+                            val entry = "${campaign!!.name}|${GameEngine.legacyTitle(campaign!!)}|${GameEngine.legacyScore(campaign!!)}|${campaign!!.scope.label}"
+                            hall = (listOf(entry) + hall).distinct().take(30)
+                            saveHall(context, hall)
+                            clearCampaign(context)
+                            campaign = null
+                            pendingOutcome = null
+                            screen = "HOME"
+                        },
+                        onRestart = { showRestartDialog = true }
+                    )
                     screen == "HALL" -> HallScreen(hall) { screen = if (campaign == null) "HOME" else "DESTIN" }
-                    else -> CareerShell(campaign!!, screen, onScreen = { screen = it }, onChoice = { choice ->
-                        campaign = GameEngine.choose(campaign!!, choice)
-                        saveCampaign(context, campaign!!)
-                    })
+                    else -> CareerShell(
+                        c = campaign!!,
+                        screen = screen,
+                        pendingOutcome = pendingOutcome,
+                        onScreen = { screen = it },
+                        onRestart = { showRestartDialog = true },
+                        onContinue = { pendingOutcome = null },
+                        onChoice = { choice ->
+                            val current = campaign!!
+                            val resolution = GameEngine.resolve(current, GameEngine.event(current), choice)
+                            campaign = resolution.campaign
+                            pendingOutcome = resolution.outcome
+                            saveCampaign(context, resolution.campaign)
+                        }
+                    )
+                }
+
+                if (showRestartDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showRestartDialog = false },
+                        title = { Text("RECOMMENCER ?") },
+                        text = { Text("La destinée actuelle sera abandonnée. Une nouvelle vie, une nouvelle identité et une nouvelle suite d'événements seront générées.") },
+                        confirmButton = {
+                            Button(onClick = {
+                                clearCampaign(context)
+                                showRestartDialog = false
+                                startFreshCampaign()
+                            }) { Text("RECOMMENCER") }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showRestartDialog = false }) { Text("ANNULER") }
+                        }
+                    )
                 }
             }
         }
@@ -120,14 +154,27 @@ private fun HomeScreen(hallCount: Int, onNew: () -> Unit, onSeeded: () -> Unit, 
 }
 
 @Composable
-private fun CareerShell(c: Campaign, screen: String, onScreen: (String) -> Unit, onChoice: (Choice) -> Unit) {
+private fun CareerShell(
+    c: Campaign,
+    screen: String,
+    pendingOutcome: String?,
+    onScreen: (String) -> Unit,
+    onRestart: () -> Unit,
+    onContinue: () -> Unit,
+    onChoice: (Choice) -> Unit
+) {
     Column(Modifier.fillMaxSize()) {
-        Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Column {
+        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
                 Text(c.alias.uppercase(), fontWeight = FontWeight.Black, fontSize = 23.sp)
                 Text("${c.age} ans · ${c.scope.label} · ${c.moralLabel}", color = Muted, fontSize = 12.sp)
             }
-            Text("P ${c.prestige}", color = Gold, fontWeight = FontWeight.Bold)
+            Column(horizontalAlignment = Alignment.End) {
+                Text("P ${c.prestige}", color = Gold, fontWeight = FontWeight.Bold)
+                TextButton(onClick = onRestart, contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp)) {
+                    Text("RECOMMENCER", fontSize = 10.sp, color = Muted)
+                }
+            }
         }
         HorizontalDivider(color = Color(0x223A4652))
         Box(Modifier.weight(1f)) {
@@ -136,7 +183,7 @@ private fun CareerShell(c: Campaign, screen: String, onScreen: (String) -> Unit,
                 "MONDE" -> WorldScreen(c)
                 "LIENS" -> LinksScreen(c)
                 "CHRONIQUE" -> TimelineScreen(c)
-                else -> DestinyScreen(c, onChoice)
+                else -> if (pendingOutcome != null) OutcomeScreen(c, pendingOutcome, onContinue) else DestinyScreen(c, onChoice)
             }
         }
         NavigationBar(containerColor = Color(0xF2161A20)) {
@@ -148,8 +195,32 @@ private fun CareerShell(c: Campaign, screen: String, onScreen: (String) -> Unit,
 }
 
 @Composable
+private fun OutcomeScreen(c: Campaign, outcome: String, onContinue: () -> Unit) {
+    Column(
+        Modifier.fillMaxSize().padding(18.dp).verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text("CONSÉQUENCE", color = Gold, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+        Spacer(Modifier.height(10.dp))
+        Text("LE MONDE RÉPOND", fontSize = 30.sp, fontWeight = FontWeight.Black)
+        Spacer(Modifier.height(16.dp))
+        Card(colors = CardDefaults.cardColors(containerColor = Color(0xF220252C)), shape = RoundedCornerShape(10.dp)) {
+            Text(outcome, modifier = Modifier.padding(18.dp), color = Ivory, fontSize = 16.sp, lineHeight = 24.sp)
+        }
+        Spacer(Modifier.height(18.dp))
+        Text("Opinion ${signed(c.opinion)} · Peur ${c.fear} · Prestige ${c.prestige} · Exposition ${c.identityExposure}%", color = Muted, fontSize = 12.sp)
+        Spacer(Modifier.height(20.dp))
+        Button(onClick = onContinue, modifier = Modifier.fillMaxWidth().height(54.dp)) { Text("CONTINUER") }
+        Spacer(Modifier.height(8.dp))
+        Text("Cette réaction est liée à la situation, à ton choix et à la réputation construite jusque-là.", color = Color(0xFF707781), fontSize = 11.sp)
+    }
+}
+
+private fun signed(v: Int) = if (v >= 0) "+$v" else "$v"
+
+@Composable
 private fun DestinyScreen(c: Campaign, onChoice: (Choice) -> Unit) {
-    val event = remember(c.seed, c.turn) { GameEngine.event(c) }
+    val event = remember(c.seed, c.turn, c.opinion, c.fear, c.control, c.identityExposure) { GameEngine.event(c) }
     Column(Modifier.fillMaxSize().padding(18.dp).verticalScroll(rememberScrollState())) {
         Text("${event.category} · ÉVÉNEMENT ${c.turn + 1}/120", color = Gold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(10.dp))
@@ -161,24 +232,27 @@ private fun DestinyScreen(c: Campaign, onChoice: (Choice) -> Unit) {
             ElevatedButton(
                 onClick = { onChoice(choice) },
                 modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp),
-                colors = ButtonDefaults.elevatedButtonColors(containerColor = if (index == 3) Color(0xFF242027) else Color(0xFF20252C), contentColor = Ivory),
+                colors = ButtonDefaults.elevatedButtonColors(containerColor = if (choice.risk >= 8) Color(0xFF242027) else Color(0xFF20252C), contentColor = Ivory),
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Row(Modifier.fillMaxWidth().padding(vertical = 7.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                Row(Modifier.fillMaxWidth().padding(vertical = 7.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Text(choice.label.uppercase(), fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                    Spacer(Modifier.width(8.dp))
                     Text(riskLabel(choice.risk), color = if (choice.risk >= 6) Danger else Gold, fontSize = 10.sp)
                 }
             }
+            if (index < event.choices.lastIndex) Spacer(Modifier.height(1.dp))
         }
         Spacer(Modifier.height(12.dp))
-        Text("Les conséquences cachées ne sont pas affichées. La même seed et les mêmes choix reproduisent le même résultat.", color = Color(0xFF707781), fontSize = 11.sp)
+        Text("Les conséquences cachées ne sont pas affichées. La même seed et les mêmes choix reproduisent le même résultat, mais ta réputation change la manière dont le monde réagit.", color = Color(0xFF707781), fontSize = 11.sp)
     }
 }
 
 private fun riskLabel(risk: Int) = when {
-    risk >= 7 -> "TRÈS DANGEREUX"
-    risk >= 5 -> "RISQUÉ"
-    risk >= 3 -> "INCERTAIN"
+    risk >= 8 -> "EXTRÊME"
+    risk >= 6 -> "TRÈS RISQUÉ"
+    risk >= 4 -> "RISQUÉ"
+    risk >= 2 -> "INCERTAIN"
     else -> "FAIBLE RISQUE"
 }
 
@@ -243,14 +317,14 @@ private fun TimelineScreen(c: Campaign) {
         SectionTitle("CHRONIQUE")
         if (c.timeline.isEmpty()) Text("Aucune décision historique pour l'instant.", color = Muted)
         c.timeline.reversed().forEach { item ->
-            Text(item, color = Ivory, modifier = Modifier.padding(vertical = 7.dp), fontSize = 14.sp)
+            Text(item, color = if (item.startsWith("↳")) Muted else Ivory, modifier = Modifier.padding(vertical = 7.dp), fontSize = if (item.startsWith("↳")) 12.sp else 14.sp, lineHeight = 19.sp)
             HorizontalDivider(color = Color(0x183A4652))
         }
     }
 }
 
 @Composable
-private fun FinalScreen(c: Campaign, onArchive: () -> Unit) {
+private fun FinalScreen(c: Campaign, onArchive: () -> Unit, onRestart: () -> Unit) {
     Column(Modifier.fillMaxSize().padding(24.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.Center) {
         Text("LEGACY", color = Gold, letterSpacing = 4.sp, fontWeight = FontWeight.Bold)
         Text(c.name.uppercase(), fontSize = 34.sp, fontWeight = FontWeight.Black)
@@ -261,6 +335,8 @@ private fun FinalScreen(c: Campaign, onArchive: () -> Unit) {
         Text("${c.alias} n'est pas devenu une légende parce qu'une barre était pleine. Sa trace vient des choix répétés, des compromis acceptés et de l'échelle à laquelle le monde a fini par devoir compter avec lui.", color = Muted, lineHeight = 22.sp)
         Spacer(Modifier.height(24.dp))
         Button(onClick = onArchive, modifier = Modifier.fillMaxWidth().height(54.dp)) { Text("ARCHIVER CETTE VIE") }
+        Spacer(Modifier.height(10.dp))
+        OutlinedButton(onClick = onRestart, modifier = Modifier.fillMaxWidth().height(50.dp)) { Text("RECOMMENCER") }
     }
 }
 
