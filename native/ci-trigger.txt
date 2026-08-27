@@ -1,2 +1,0 @@
-CI trigger 2026-08-09T23:09:00+02:00
-Ce fichier ne participe pas au runtime. Il force uniquement une passe complète du workflow Android natif après l’ajout des tests Répliques.

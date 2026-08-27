@@ -1,10 +1,8 @@
-# Android / Gradle
-native/.gradle/
-native/**/build/
-native/local.properties
-native/.idea/
-native/**/*.iml
-
-# OS / editor
+.gradle/
+.idea/
+local.properties
+**/build/
+*.iml
+*.jks
+*.keystore
 .DS_Store
-Thumbs.db
