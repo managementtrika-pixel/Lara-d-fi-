@@ -1,0 +1,1 @@
+METAHUMAN LEGACY narrative runtime bundle. Binary parts are concatenated in numeric order and decoded by NarrativeCodec. Runtime manifest validates 1050 events, 3600 choices, 50 arcs and 200 epilogues.
