@@ -1,9 +1,17 @@
 package com.metahumanlegacy.game
 
+import java.io.File
 import org.junit.Assert.*
+import org.junit.Before
 import org.junit.Test
 
 class GameEngineTest {
+    @Before fun installNarrativeBundle() {
+        NarrativeCodec.installAssetParts { path ->
+            File("src/main/assets/$path").readBytes()
+        }
+    }
+
     @Test fun fullConnectedPackIsLoadedWithoutDuplicates() {
         val s = GameEngine.catalogStats()
         assertEquals(1050, s.events)
@@ -13,7 +21,7 @@ class GameEngineTest {
         assertEquals(0, s.duplicateIds)
         assertEquals(0, s.duplicateTitles)
         assertEquals(0, s.duplicateTexts)
-        assertEquals(3400, GameEngine.debugEffectsCount())
+        assertEquals(3600, GameEngine.debugEffectsCount())
     }
 
     @Test fun authoredEventsExposeFourSituationSpecificChoices() {
