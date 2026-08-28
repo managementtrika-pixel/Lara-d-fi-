@@ -4,117 +4,82 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class GameEngineTest {
-    @Test fun sameSeedProducesSameCampaignEventAndOutcome() {
-        val a = GameEngine.newCampaign(42L)
-        val b = GameEngine.newCampaign(42L)
-        assertEquals(a, b)
-        val eventA = GameEngine.event(a)
-        val eventB = GameEngine.event(b)
-        assertEquals(eventA, eventB)
-        assertEquals(GameEngine.resolve(a, eventA, eventA.choices.first()), GameEngine.resolve(b, eventB, eventB.choices.first()))
+    @Test fun fullConnectedPackIsLoadedWithoutDuplicates() {
+        val s = GameEngine.catalogStats()
+        assertEquals(1050, s.events)
+        assertEquals(3600, s.choices)
+        assertEquals(50, s.arcs)
+        assertEquals(200, s.epilogues)
+        assertEquals(0, s.duplicateIds)
+        assertEquals(0, s.duplicateTitles)
+        assertEquals(0, s.duplicateTexts)
+        assertEquals(3400, GameEngine.debugEffectsCount())
     }
 
-    @Test fun completeCreationChangesStartingCharacter() {
-        val base = GameEngine.randomBlueprint(5L).copy(
-            firstName = "Maya",
-            lastName = "Vale",
-            alias = "Aster",
-            motivation = "Protéger les miens",
-            visualStyle = "Visage découvert"
-        )
-        val military = GameEngine.newCampaign(99L, base.copy(socialBackground = "Famille militaire"))
-        val unstable = GameEngine.newCampaign(99L, base.copy(socialBackground = "Foyer instable"))
-        assertEquals("Maya Vale", military.name)
-        assertEquals("Aster", military.alias)
-        assertTrue(military.control > unstable.control)
-        assertTrue(military.familyBond > 50)
-        assertTrue(military.identityExposure >= 30)
+    @Test fun authoredEventsExposeFourSituationSpecificChoices() {
+        val e = GameEngine.debugEventById("A01_TUNNEL_CHILD_S1")!!
+        assertEquals(4, e.choices.size)
+        assertEquals(4, e.choices.map { it.label }.toSet().size)
+        assertEquals(setOf("CARE", "ORDER", "TRUTH", "ASCEND"), e.choices.map { it.approach }.toSet())
     }
 
-    @Test fun eventsOfferSixContextualChoices() {
-        val c = GameEngine.newCampaign(7L)
-        val e = GameEngine.event(c)
-        assertEquals(6, e.choices.size)
-        assertEquals(6, e.choices.map { it.label }.distinct().size)
-        assertTrue(e.provocation.isNotBlank())
-        assertTrue(e.choices.all { it.sourceCategory == e.category })
+    @Test fun aDecisionUnlocksTheCorrectLaterRoute() {
+        val bp = CharacterBlueprint("Ava","Vale","Halo","elle","Vesper","Centre","Milieu scientifique","Mutation naturelle","Énergie","Surcharge","Protéger les miens","Masque minimal")
+        val start = GameEngine.newCampaign(42L, bp)
+        val s1 = GameEngine.debugEventById("A01_TUNNEL_CHILD_S1")!!
+        val care = s1.choices.first { it.approach == "CARE" }
+        val after = GameEngine.resolve(start, s1, care).campaign
+        assertTrue("A01_TUNNEL_CHILD_S1_CARE" in after.flags)
+        assertTrue(after.threads.any { it.id == "A01_TUNNEL_CHILD" })
+        val s2 = GameEngine.debugEventById("A01_TUNNEL_CHILD_S2_FROM_CARE")!!
+        assertEquals("A01_TUNNEL_CHILD", s2.threadId)
+        assertEquals(2, s2.threadStage)
     }
 
-    @Test fun majorDominationChoiceHasLargeConsequences() {
-        var c = GameEngine.newCampaign(71L)
-        var chosen: Choice? = null
-        var event: EventNode? = null
-        repeat(80) { turn ->
-            val candidateCampaign = c.copy(turn = turn)
-            val candidateEvent = GameEngine.event(candidateCampaign)
-            val candidate = candidateEvent.choices.firstOrNull { it.approach == "DOMINATE" && it.stakes == 3 }
-            if (chosen == null && candidate != null) {
-                c = candidateCampaign
-                event = candidateEvent
-                chosen = candidate
+    @Test fun extendedEffectsAreReallyApplied() {
+        val bp = CharacterBlueprint("Ava","Vale","Halo","elle","Vesper","Centre","Milieu scientifique","Mutation naturelle","Énergie","Surcharge","Protéger les miens","Masque minimal")
+        val c = GameEngine.newCampaign(91L, bp)
+        val e = GameEngine.debugEventById("A01_TUNNEL_CHILD_S1")!!
+        val truth = e.choices.first { it.approach == "TRUTH" }
+        assertTrue(truth.identityDelta > 0)
+        val next = GameEngine.resolve(c, e, truth).campaign
+        assertTrue(next.identityExposure > c.identityExposure)
+        assertTrue(next.influence > c.influence)
+    }
+
+    @Test fun majorChoicesCarryMoreWeight() {
+        val crisis = GameEngine.debugEventById("A01_TUNNEL_CHILD_S4_FROM_CARE")!!
+        assertTrue(crisis.stakes >= 2)
+        val c = GameEngine.newCampaign(333L)
+        val choice = crisis.choices.first { it.approach == "CARE" }
+        val next = GameEngine.resolve(c, crisis, choice).campaign
+        assertTrue(kotlin.math.abs(next.morality - c.morality) >= kotlin.math.abs(choice.moral))
+    }
+
+    @Test fun sameSeedAndChoiceStayDeterministic() {
+        val a = GameEngine.newCampaign(999L)
+        val b = GameEngine.newCampaign(999L)
+        val ea = GameEngine.event(a)
+        val eb = GameEngine.event(b)
+        assertEquals(ea.id, eb.id)
+        val ra = GameEngine.resolve(a, ea, ea.choices[2])
+        val rb = GameEngine.resolve(b, eb, eb.choices[2])
+        assertEquals(ra.campaign, rb.campaign)
+        assertEquals(ra.outcome, rb.outcome)
+    }
+
+    @Test fun longCareerKeepsNarrativeVarietyAndNeverStarves() {
+        var c = GameEngine.newCampaign(12345L)
+        val seen = linkedSetOf<String>()
+        repeat(140) { turn ->
+            if (!c.finished) {
+                val e = GameEngine.event(c)
+                assertTrue(e.choices.isNotEmpty())
+                seen += e.id
+                c = GameEngine.resolve(c, e, e.choices[turn % e.choices.size]).campaign
             }
         }
-        assertNotNull(event)
-        assertNotNull(chosen)
-        val next = GameEngine.choose(c, chosen!!)
-        assertTrue(next.prestige > c.prestige)
-        assertTrue(next.fear >= c.fear + 15)
-        assertTrue(next.morality <= c.morality - 15)
-    }
-
-    @Test fun resolutionWritesNarrativeConsequenceToTimeline() {
-        val c = GameEngine.newCampaign(1234L)
-        val event = GameEngine.event(c)
-        val resolution = GameEngine.resolve(c, event, event.choices.first())
-        assertTrue(resolution.outcome.length > 100)
-        assertTrue(resolution.campaign.timeline.last().startsWith("↳"))
-        assertEquals(c.turn + 1, resolution.campaign.turn)
-    }
-
-    @Test fun choicesOpenThreadsThatReturnLater() {
-        var c = GameEngine.newCampaign(551L)
-        var openingEvent = GameEngine.event(c)
-        var guard = 0
-        while (openingEvent.threadId == null && guard < 40) {
-            c = c.copy(turn = c.turn + 1)
-            openingEvent = GameEngine.event(c)
-            guard++
-        }
-        assertNotNull(openingEvent.threadId)
-        val openingChoice = openingEvent.choices.first { it.threadId != null }
-        val after = GameEngine.resolve(c, openingEvent, openingChoice).campaign
-        assertTrue(after.threads.isNotEmpty())
-
-        var futureTurn = after.turn + 2
-        while (futureTurn % 5 != 0) futureTurn++
-        val followUp = GameEngine.event(after.copy(turn = futureTurn))
-        assertTrue(followUp.threadStage > 0)
-        assertEquals(after.threads.first().id, followUp.threadId)
-        assertTrue(followUp.text.contains("souvi", ignoreCase = true) || followUp.text.contains("ancien", ignoreCase = true))
-    }
-
-    @Test fun eventAddressSpaceIsExpanded() {
-        val ids = (0 until 15000).map { turn ->
-            GameEngine.event(GameEngine.newCampaign(991L).copy(turn = turn)).id
-        }.toSet()
-        assertTrue(ids.size > 850)
-    }
-
-    @Test fun authoredSituationTitlesVarySubstantially() {
-        val titles = (0 until 300).map { turn ->
-            GameEngine.event(GameEngine.newCampaign(991L).copy(turn = turn)).title
-        }.toSet()
-        assertTrue(titles.size >= 55)
-    }
-
-    @Test fun scopeCanGrowWithoutPowerBeingMaxed() {
-        var c = GameEngine.newCampaign(88L)
-        repeat(120) {
-            val event = GameEngine.event(c)
-            val effective = event.choices.filter { it.approach != "DOMINATE" }.maxByOrNull { it.impact } ?: event.choices.first()
-            c = GameEngine.choose(c, effective)
-        }
-        assertTrue(c.scope.ordinal >= Scope.CITY.ordinal)
-        assertTrue(c.power <= 100)
+        assertTrue("only ${seen.size} unique events", seen.size > 80)
+        assertTrue(c.timeline.size >= 100)
     }
 }
