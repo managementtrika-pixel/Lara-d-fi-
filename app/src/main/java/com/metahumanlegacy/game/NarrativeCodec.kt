@@ -22,15 +22,15 @@ internal data class ExtraEffect(
 )
 
 internal object NarrativeCodec {
-    private const val PART_COUNT = 11
+    private const val PART_COUNT = 7
     private var bundleLoader: (() -> ByteArray)? = null
     private var entriesCache: Map<String, ByteArray>? = null
 
     fun installAssetParts(loader: (String) -> ByteArray) {
         installBundle {
-            val out = ByteArrayOutputStream(280_000)
+            val out = ByteArrayOutputStream(120_000)
             for (index in 1..PART_COUNT) {
-                val path = "narrative_bundle/v2part_${index.toString().padStart(2, '0')}.bin"
+                val path = "narrative_bundle/rt16_${index.toString().padStart(2, '0')}.bin"
                 out.write(loader(path))
             }
             out.toByteArray()
