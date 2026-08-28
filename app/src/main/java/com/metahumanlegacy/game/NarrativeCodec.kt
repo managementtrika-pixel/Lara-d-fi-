@@ -2,7 +2,7 @@ package com.metahumanlegacy.game
 
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.util.zip.GZIPInputStream
+import java.util.zip.ZipInputStream
 
 internal data class Authored(
     val id: String, val family: String, val arc: String, val minAge: Int, val maxAge: Int,
@@ -22,17 +22,59 @@ internal data class ExtraEffect(
 )
 
 internal object NarrativeCodec {
-    fun catalog(): List<Authored> = parseCatalog(gunzipBase64(
-        listOf(
-            NARRATIVE_PART_01, NARRATIVE_PART_02, NARRATIVE_PART_03, NARRATIVE_PART_04, NARRATIVE_PART_05,
-            NARRATIVE_PART_06, NARRATIVE_PART_07, NARRATIVE_PART_08, NARRATIVE_PART_09, NARRATIVE_PART_10,
-            NARRATIVE_PART_11, NARRATIVE_PART_12, NARRATIVE_PART_13, NARRATIVE_PART_14
-        ).joinToString("")
-    ))
+    private const val PART_COUNT = 11
+    private var bundleLoader: (() -> ByteArray)? = null
+    private var entriesCache: Map<String, ByteArray>? = null
 
-    fun effects(): Map<String, ExtraEffect> = parseEffects(
-        gunzipBase64(listOf(EFFECTS_PART_01, EFFECTS_PART_02).joinToString(""))
-    )
+    fun installAssetParts(loader: (String) -> ByteArray) {
+        installBundle {
+            val out = ByteArrayOutputStream(280_000)
+            for (index in 1..PART_COUNT) {
+                val path = "narrative_bundle/v2part_${index.toString().padStart(2, '0')}.bin"
+                out.write(loader(path))
+            }
+            out.toByteArray()
+        }
+    }
+
+    fun installBundle(loader: () -> ByteArray) {
+        bundleLoader = loader
+        entriesCache = null
+    }
+
+    fun catalog(): List<Authored> = parseCatalog(textEntry("events.mhl"))
+    fun effects(): Map<String, ExtraEffect> = parseEffects(textEntry("effects.tsv"))
+
+    fun manifest(): Map<String, String> = textEntry("manifest.tsv")
+        .lineSequence().filter { it.isNotBlank() }.associate { line ->
+            val p = line.split('\t', limit = 2)
+            p.first() to p.getOrElse(1) { "" }
+        }
+
+    private fun textEntry(name: String): String = entries()[name]?.toString(Charsets.UTF_8)
+        ?: error("Narrative bundle missing required entry: $name")
+
+    private fun entries(): Map<String, ByteArray> {
+        entriesCache?.let { return it }
+        val bytes = bundleLoader?.invoke() ?: error("Narrative bundle is not installed")
+        val loaded = linkedMapOf<String, ByteArray>()
+        ZipInputStream(ByteArrayInputStream(bytes)).use { zip ->
+            while (true) {
+                val entry = zip.nextEntry ?: break
+                if (!entry.isDirectory) {
+                    val out = ByteArrayOutputStream()
+                    zip.copyTo(out)
+                    loaded[entry.name] = out.toByteArray()
+                }
+                zip.closeEntry()
+            }
+        }
+        require("events.mhl" in loaded && "effects.tsv" in loaded && "manifest.tsv" in loaded) {
+            "Narrative bundle is incomplete: ${loaded.keys.sorted()}"
+        }
+        entriesCache = loaded
+        return loaded
+    }
 
     private fun parseCatalog(text: String): List<Authored> = buildList {
         for (line in text.lineSequence()) {
@@ -70,33 +112,5 @@ internal object NarrativeCodec {
                 c[4].toIntOrNull() ?: 0, c[5].toIntOrNull() ?: 0, c[6], c[7].split(',').filter { it.isNotBlank() }
             ))
         }
-    }
-
-    private fun gunzipBase64(input: String): String {
-        val bytes = decodeBase64(input)
-        return GZIPInputStream(ByteArrayInputStream(bytes)).bufferedReader(Charsets.UTF_8).use { it.readText() }
-    }
-
-    private fun decodeBase64(input: String): ByteArray {
-        val alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-        val table = IntArray(256) { -1 }
-        for (i in alphabet.indices) table[alphabet[i].code] = i
-        val out = ByteArrayOutputStream(input.length * 3 / 4)
-        var buffer = 0
-        var bits = 0
-        for (ch in input) {
-            if (ch == '=') break
-            val code = ch.code
-            if (code >= table.size) continue
-            val v = table[code]
-            if (v < 0) continue
-            buffer = (buffer shl 6) or v
-            bits += 6
-            if (bits >= 8) {
-                bits -= 8
-                out.write((buffer shr bits) and 0xFF)
-            }
-        }
-        return out.toByteArray()
     }
 }
