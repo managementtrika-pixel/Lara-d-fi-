@@ -2,6 +2,7 @@ package com.metahumanlegacy.game
 
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.security.MessageDigest
 import java.util.zip.ZipInputStream
 
 internal data class Authored(
@@ -22,16 +23,20 @@ internal data class ExtraEffect(
 )
 
 internal object NarrativeCodec {
-    private const val PART_COUNT = 7
+    private val bundleParts = buildList {
+        for (index in 1..11) add("narrative_bundle/rt_${index.toString().padStart(2, '0')}.b64")
+        for (index in 23..28) add("narrative_bundle/tail_${index.toString().padStart(2, '0')}.b64")
+    }
+
     private var bundleLoader: (() -> ByteArray)? = null
     private var entriesCache: Map<String, ByteArray>? = null
 
     fun installAssetParts(loader: (String) -> ByteArray) {
         installBundle {
             val out = ByteArrayOutputStream(120_000)
-            for (index in 1..PART_COUNT) {
-                val path = "narrative_bundle/rt16_${index.toString().padStart(2, '0')}.bin"
-                out.write(loader(path))
+            for (path in bundleParts) {
+                val encoded = loader(path).toString(Charsets.US_ASCII).trim()
+                out.write(decodeBase64(encoded))
             }
             out.toByteArray()
         }
@@ -72,8 +77,51 @@ internal object NarrativeCodec {
         require("events.mhl" in loaded && "effects.tsv" in loaded && "manifest.tsv" in loaded) {
             "Narrative bundle is incomplete: ${loaded.keys.sorted()}"
         }
+        verifyBundle(loaded)
         entriesCache = loaded
         return loaded
+    }
+
+    private fun verifyBundle(entries: Map<String, ByteArray>) {
+        val lines = entries.getValue("manifest.tsv").toString(Charsets.UTF_8).lineSequence()
+            .filter { it.isNotBlank() }.toList()
+        val expected = lines.associate { line ->
+            val p = line.split('\t')
+            p.first() to p.drop(1)
+        }
+        for (name in listOf("events.mhl", "effects.tsv")) {
+            val spec = expected[name] ?: error("Narrative manifest missing $name")
+            require(spec.size >= 2) { "Narrative manifest entry invalid for $name" }
+            val data = entries.getValue(name)
+            require(data.size == spec[0].toInt()) { "$name size mismatch: ${data.size} != ${spec[0]}" }
+            require(sha256(data) == spec[1]) { "$name SHA-256 mismatch" }
+        }
+    }
+
+    private fun sha256(bytes: ByteArray): String = MessageDigest.getInstance("SHA-256")
+        .digest(bytes).joinToString("") { "%02x".format(it) }
+
+    private fun decodeBase64(input: String): ByteArray {
+        val alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+        val table = IntArray(256) { -1 }
+        for (i in alphabet.indices) table[alphabet[i].code] = i
+        val out = ByteArrayOutputStream(input.length * 3 / 4)
+        var buffer = 0
+        var bits = 0
+        for (ch in input) {
+            if (ch == '=') break
+            val code = ch.code
+            if (code >= table.size) continue
+            val value = table[code]
+            if (value < 0) continue
+            buffer = (buffer shl 6) or value
+            bits += 6
+            if (bits >= 8) {
+                bits -= 8
+                out.write((buffer shr bits) and 0xFF)
+            }
+        }
+        return out.toByteArray()
     }
 
     private fun parseCatalog(text: String): List<Authored> = buildList {
