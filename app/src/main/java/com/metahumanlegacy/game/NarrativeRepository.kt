@@ -65,7 +65,8 @@ internal object NarrativeRepository {
 
     private fun toChoice(a: Authored, x: AuthChoice, stakes: Int): Choice {
         val route = routeFor(a.id, x.flags, x.tagToken)
-        val extra = extras["${a.id}::$route"]
+        val effectRoute = if ("_EP_" in a.id) "CONTINUE" else route
+        val extra = extras["${a.id}::$effectRoute"]
         val flags = (x.flags + (extra?.flags ?: emptyList())).distinct()
         return Choice(
             x.label, x.moral, x.prestige, x.opinion, x.fear, extra?.power ?: 0,
