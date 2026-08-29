@@ -5,35 +5,14 @@ import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
 import java.util.zip.ZipInputStream
 
-internal data class Authored(
-    val id: String, val family: String, val arc: String, val minAge: Int, val maxAge: Int,
-    val rarity: String, val weight: Double, val cooldown: Int, val once: Boolean,
-    val phase: String, val scopeMin: String, val originReq: String, val requiredFlag: String,
-    val forbiddenFlag: String, val title: String, val text: String, val choices: List<AuthChoice>
-)
-
-internal data class AuthChoice(
-    val label: String, val moral: Int, val prestige: Int, val opinion: Int, val fear: Int,
-    val risk: Int, val tagToken: String, val flags: List<String>
-)
-
-internal data class ExtraEffect(
-    val power: Int, val influence: Int, val relation: Int, val identity: Int,
-    val health: Int, val riskLabel: String, val flags: List<String>
-)
-
 internal object NarrativeCodec {
-    private val bundleParts = buildList {
-        for (index in 1..11) add("narrative_bundle/rt_${index.toString().padStart(2, '0')}.b64")
-        for (index in 23..28) add("narrative_bundle/tail_${index.toString().padStart(2, '0')}.b64")
-    }
-
+    private val bundleParts = (1..10).map { "nobody_bundle/nb_${it.toString().padStart(2, '0')}.b64" }
     private var bundleLoader: (() -> ByteArray)? = null
     private var entriesCache: Map<String, ByteArray>? = null
 
     fun installAssetParts(loader: (String) -> ByteArray) {
         installBundle {
-            val out = ByteArrayOutputStream(120_000)
+            val out = ByteArrayOutputStream(80_000)
             for (path in bundleParts) {
                 val encoded = loader(path).toString(Charsets.US_ASCII).trim()
                 out.write(decodeBase64(encoded))
@@ -47,8 +26,11 @@ internal object NarrativeCodec {
         entriesCache = null
     }
 
-    fun catalog(): List<Authored> = parseCatalog(textEntry("events.mhl"))
-    fun effects(): Map<String, ExtraEffect> = parseEffects(textEntry("effects.tsv"))
+    fun prologue(): List<FormativeChapter> = parsePrologue(textEntry("prologue.tsv"))
+    fun awakening(): AwakeningScene = parseAwakening(textEntry("awakening.tsv"))
+    fun foundation(): List<FoundationScene> = parseFoundation(textEntry("foundation.tsv"))
+    fun beats(): List<MajorBeat> = parseBeats(textEntry("arcs.tsv"))
+    fun endings(): Map<String, Map<String, String>> = parseEndings(textEntry("endings.tsv"))
 
     fun manifest(): Map<String, String> = textEntry("manifest.tsv")
         .lineSequence().filter { it.isNotBlank() }.associate { line ->
@@ -74,28 +56,131 @@ internal object NarrativeCodec {
                 zip.closeEntry()
             }
         }
-        require("events.mhl" in loaded && "effects.tsv" in loaded && "manifest.tsv" in loaded) {
-            "Narrative bundle is incomplete: ${loaded.keys.sorted()}"
-        }
+        val required = listOf("prologue.tsv", "awakening.tsv", "foundation.tsv", "arcs.tsv", "endings.tsv", "manifest.tsv")
+        require(required.all { it in loaded }) { "Narrative bundle is incomplete: ${loaded.keys.sorted()}" }
         verifyBundle(loaded)
         entriesCache = loaded
         return loaded
     }
 
     private fun verifyBundle(entries: Map<String, ByteArray>) {
-        val lines = entries.getValue("manifest.tsv").toString(Charsets.UTF_8).lineSequence()
-            .filter { it.isNotBlank() }.toList()
-        val expected = lines.associate { line ->
-            val p = line.split('\t')
-            p.first() to p.drop(1)
-        }
-        for (name in listOf("events.mhl", "effects.tsv")) {
-            val spec = expected[name] ?: error("Narrative manifest missing $name")
-            require(spec.size >= 2) { "Narrative manifest entry invalid for $name" }
+        val specs = entries.getValue("manifest.tsv").toString(Charsets.UTF_8).lineSequence()
+            .filter { it.isNotBlank() && it.contains('\t') }
+            .map { it.split('\t') }
+            .filter { it.size >= 3 && it[0].endsWith(".tsv") }
+            .associateBy { it[0] }
+        for (name in listOf("prologue.tsv", "awakening.tsv", "foundation.tsv", "arcs.tsv", "endings.tsv")) {
+            val spec = specs[name] ?: error("Narrative manifest missing $name")
             val data = entries.getValue(name)
-            require(data.size == spec[0].toInt()) { "$name size mismatch: ${data.size} != ${spec[0]}" }
-            require(sha256(data) == spec[1]) { "$name SHA-256 mismatch" }
+            require(data.size == spec[1].toInt()) { "$name size mismatch" }
+            require(sha256(data) == spec[2]) { "$name SHA-256 mismatch" }
         }
+    }
+
+    private fun parsePrologue(text: String): List<FormativeChapter> = text.lineSequence()
+        .filter { it.isNotBlank() }.map { line ->
+            val p = line.split('\t', limit = 5)
+            val choices = p[4].split(";;").map { raw ->
+                val c = raw.split('~', limit = 8)
+                Choice(
+                    label = restore(c[0]),
+                    moral = c[1].toInt(),
+                    relationDelta = c[2].toInt(),
+                    risk = riskValue(c[3]),
+                    approach = "FORMATIVE",
+                    stakes = if (c[3] == "HIGH") 2 else 1,
+                    sourceCategory = "VIE",
+                    flag = c[7].replace(',', '+'),
+                    affinityDelta = csv(c[4]),
+                    expressionDelta = csv(c[5]),
+                    costDelta = csv(c[6])
+                )
+            }
+            FormativeChapter(p[0], p[1].toInt(), restore(p[2]), restore(p[3]), choices)
+        }.toList()
+
+    private fun parseAwakening(text: String): AwakeningScene {
+        val p = text.trim().split('\t', limit = 6)
+        val choices = p[5].split(";;").map { raw ->
+            val c = raw.split('~', limit = 3)
+            val route = when (c[1]) {
+                "SECRET_CONTROL" -> "ORDER"
+                "FIRST_HEROIC_USE" -> "CARE"
+                "MASTERY" -> "TRUTH"
+                "SELF_INTEREST" -> "ASCEND"
+                else -> "ORDER"
+            }
+            Choice(
+                label = restore(c[0]), approach = route, stakes = 2, sourceCategory = "ÉVEIL",
+                flag = c.getOrElse(2) { "" }.replace(',', '+')
+            )
+        }
+        return AwakeningScene(
+            p[0], p[1].toInt(), restore(p[2]), restore(p[3]),
+            csv(p[4]).toSet(), choices
+        )
+    }
+
+    private fun parseFoundation(text: String): List<FoundationScene> = text.lineSequence()
+        .filter { it.isNotBlank() }.map { line ->
+            val p = line.split('\t', limit = 5)
+            val choices = p[4].split(";;").map { raw ->
+                val c = raw.split('~', limit = 3)
+                Choice(
+                    label = restore(c[0]), approach = c[1], stakes = 1,
+                    sourceCategory = "FONDATION", flag = c[2],
+                    moral = when (c[1]) { "CARE" -> 2; "ASCEND" -> -1; else -> 0 },
+                    opinion = when (c[1]) { "CARE" -> 1; "ASCEND" -> -1; else -> 0 },
+                    fear = if (c[1] == "ASCEND") 1 else 0,
+                    impact = if (c[1] == "ASCEND") 2 else 1,
+                    identityDelta = if (c[1] in setOf("TRUTH", "ASCEND")) 2 else 0
+                )
+            }
+            FoundationScene(p[0], p[1].toInt(), restore(p[2]), restore(p[3]), choices)
+        }.toList()
+
+    private fun parseBeats(text: String): List<MajorBeat> = text.lineSequence()
+        .filter { it.isNotBlank() }.map { line ->
+            val p = line.split('\t', limit = 12)
+            val choices = p[11].split(";;").map { raw ->
+                val c = raw.split('~', limit = 14)
+                Choice(
+                    label = restore(c[0]), approach = c[1],
+                    moral = c[2].toInt(), prestige = c[3].toInt(), opinion = c[4].toInt(),
+                    fear = c[5].toInt(), power = c[6].toInt(), impact = c[7].toInt(),
+                    relationDelta = c[8].toInt(), identityDelta = c[9].toInt(), healthDelta = c[10].toInt(),
+                    risk = riskValue(c[11]), flag = c[12].replace(',', '+'),
+                    deferredHook = c[13].toBooleanStrictOrNull() ?: false
+                )
+            }
+            MajorBeat(
+                id = p[0], arc = p[1], stage = p[2].toInt(),
+                minAge = p[3].toInt(), maxAge = p[4].toInt(), minScope = scopeOf(p[5]),
+                requiresFlags = csv(p[6]).toSet(), tags = csv(p[7]),
+                title = restore(p[8]), text = restore(p[9]), callbacks = p[10].split("||").filter { it.isNotBlank() }.map(::restore),
+                choices = choices
+            )
+        }.toList()
+
+    private fun parseEndings(text: String): Map<String, Map<String, String>> = buildMap {
+        for (line in text.lineSequence().filter { it.isNotBlank() }) {
+            val p = line.split('\t', limit = 5)
+            put(p[0], mapOf(
+                "CARE" to restore(p[1]), "ORDER" to restore(p[2]),
+                "TRUTH" to restore(p[3]), "ASCEND" to restore(p[4])
+            ))
+        }
+    }
+
+    private fun restore(value: String) = value.replace("\\n", "\n")
+    private fun csv(value: String) = value.split(',').map { it.trim() }.filter { it.isNotBlank() }
+
+    private fun riskValue(raw: String): Int = when (raw.uppercase()) {
+        "EXTREME" -> 9
+        "HIGH" -> 7
+        "MEDIUM" -> 4
+        "LOW" -> 2
+        else -> 1
     }
 
     private fun sha256(bytes: ByteArray): String = MessageDigest.getInstance("SHA-256")
@@ -122,43 +207,5 @@ internal object NarrativeCodec {
             }
         }
         return out.toByteArray()
-    }
-
-    private fun parseCatalog(text: String): List<Authored> = buildList {
-        for (line in text.lineSequence()) {
-            if (line.isBlank() || line.startsWith("#")) continue
-            val c = line.split('\t', limit = 17)
-            if (c.size < 17) continue
-            val choices = buildList {
-                for (raw in c[16].split(";;")) {
-                    if (raw.isBlank()) continue
-                    val p = raw.split('~', limit = 7)
-                    if (p.size < 7) continue
-                    val tags = p[6].split('+').filter { it.isNotBlank() }
-                    add(AuthChoice(
-                        p[0], p[1].toIntOrNull() ?: 0, p[2].toIntOrNull() ?: 0,
-                        p[3].toIntOrNull() ?: 0, p[4].toIntOrNull() ?: 0, p[5].toIntOrNull() ?: 0,
-                        tags.firstOrNull().orEmpty(), tags.drop(1)
-                    ))
-                }
-            }
-            add(Authored(
-                c[0], c[1], c[2], c[3].toIntOrNull() ?: 18, c[4].toIntOrNull() ?: 99,
-                c[5], c[6].toDoubleOrNull() ?: 1.0, c[7].toIntOrNull() ?: 0,
-                c[8].equals("true", true), c[9], c[10], c[11], c[12], c[13], c[14], c[15], choices
-            ))
-        }
-    }
-
-    private fun parseEffects(text: String): Map<String, ExtraEffect> = buildMap {
-        for (line in text.lineSequence()) {
-            if (line.isBlank()) continue
-            val c = line.split('\t', limit = 8)
-            if (c.size < 8) continue
-            put(c[0], ExtraEffect(
-                c[1].toIntOrNull() ?: 0, c[2].toIntOrNull() ?: 0, c[3].toIntOrNull() ?: 0,
-                c[4].toIntOrNull() ?: 0, c[5].toIntOrNull() ?: 0, c[6], c[7].split(',').filter { it.isNotBlank() }
-            ))
-        }
     }
 }
