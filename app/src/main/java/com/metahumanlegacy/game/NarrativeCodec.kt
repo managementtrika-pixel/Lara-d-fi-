@@ -3,12 +3,18 @@ package com.metahumanlegacy.game
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
+import java.util.zip.GZIPInputStream
 import java.util.zip.ZipInputStream
+
+internal data class NarrativeConstat(val title: String, val text: String)
 
 internal object NarrativeCodec {
     private val bundleParts = (1..10).map { "nobody_bundle/nb_${it.toString().padStart(2, '0')}.b64" }
+    private val constatParts = (1..9).map { "constats_bundle/ct_${it.toString().padStart(2, '0')}.b64" }
     private var bundleLoader: (() -> ByteArray)? = null
+    private var constatLoader: (() -> ByteArray)? = null
     private var entriesCache: Map<String, ByteArray>? = null
+    private var constatsCache: Map<String, NarrativeConstat>? = null
 
     fun installAssetParts(loader: (String) -> ByteArray) {
         installBundle {
@@ -19,6 +25,14 @@ internal object NarrativeCodec {
             }
             out.toByteArray()
         }
+        installConstats {
+            val encoded = buildString(65_000) {
+                for (path in constatParts) {
+                    append(loader(path).toString(Charsets.US_ASCII).trim())
+                }
+            }
+            GZIPInputStream(ByteArrayInputStream(decodeBase64(encoded))).use { it.readBytes() }
+        }
     }
 
     fun installBundle(loader: () -> ByteArray) {
@@ -26,11 +40,18 @@ internal object NarrativeCodec {
         entriesCache = null
     }
 
+    private fun installConstats(loader: () -> ByteArray) {
+        constatLoader = loader
+        constatsCache = null
+    }
+
     fun prologue(): List<FormativeChapter> = parsePrologue(textEntry("prologue.tsv"))
     fun awakening(): AwakeningScene = parseAwakening(textEntry("awakening.tsv"))
     fun foundation(): List<FoundationScene> = parseFoundation(textEntry("foundation.tsv"))
     fun beats(): List<MajorBeat> = parseBeats(textEntry("arcs.tsv"))
     fun endings(): Map<String, Map<String, String>> = parseEndings(textEntry("endings.tsv"))
+    fun constat(choiceId: String): NarrativeConstat? = constats()[choiceId]
+    fun constatCount(): Int = constats().size
 
     fun manifest(): Map<String, String> = textEntry("manifest.tsv")
         .lineSequence().filter { it.isNotBlank() }.associate { line ->
@@ -60,6 +81,21 @@ internal object NarrativeCodec {
         require(required.all { it in loaded }) { "Narrative bundle is incomplete: ${loaded.keys.sorted()}" }
         verifyBundle(loaded)
         entriesCache = loaded
+        return loaded
+    }
+
+    private fun constats(): Map<String, NarrativeConstat> {
+        constatsCache?.let { return it }
+        val text = constatLoader?.invoke()?.toString(Charsets.UTF_8)
+            ?: error("Constat bundle is not installed")
+        val loaded = linkedMapOf<String, NarrativeConstat>()
+        for (line in text.lineSequence().filter { it.isNotBlank() }) {
+            val p = line.split('\t', limit = 3)
+            require(p.size == 3) { "Malformed constat row" }
+            loaded[p[0]] = NarrativeConstat(restoreConstat(p[1]), restoreConstat(p[2]))
+        }
+        require(loaded.size == 1064) { "Expected 1064 constats, got ${loaded.size}" }
+        constatsCache = loaded
         return loaded
     }
 
@@ -173,6 +209,26 @@ internal object NarrativeCodec {
     }
 
     private fun restore(value: String) = value.replace("\\n", "\n")
+
+    private fun restoreConstat(value: String): String {
+        val out = StringBuilder(value.length)
+        var i = 0
+        while (i < value.length) {
+            if (value[i] == '\\' && i + 1 < value.length) {
+                when (value[i + 1]) {
+                    'n' -> { out.append('\n'); i += 2 }
+                    't' -> { out.append('\t'); i += 2 }
+                    '\\' -> { out.append('\\'); i += 2 }
+                    else -> { out.append(value[i]); i++ }
+                }
+            } else {
+                out.append(value[i])
+                i++
+            }
+        }
+        return out.toString()
+    }
+
     private fun csv(value: String) = value.split(',').map { it.trim() }.filter { it.isNotBlank() }
 
     private fun riskValue(raw: String): Int = when (raw.uppercase()) {
