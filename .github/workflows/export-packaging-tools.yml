@@ -1,0 +1,29 @@
+name: Export Android Packaging Tools
+
+on:
+  push:
+    branches: [ "final/comic-apk" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tools:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: android-actions/setup-android@v3
+      - name: Install Android build tools
+        run: sdkmanager "build-tools;36.0.0"
+      - name: Collect tools
+        run: |
+          mkdir packaging-tools
+          cp "$ANDROID_HOME/build-tools/36.0.0/lib/apksigner.jar" packaging-tools/apksigner.jar
+          cp "$ANDROID_HOME/build-tools/36.0.0/zipalign" packaging-tools/zipalign
+          cp "$ANDROID_HOME/build-tools/36.0.0/lib64/libc++.so" packaging-tools/libc++.so
+          chmod +x packaging-tools/zipalign
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-packaging-tools-self-contained
+          path: packaging-tools/
+          if-no-files-found: error
