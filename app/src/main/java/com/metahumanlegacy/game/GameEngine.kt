@@ -94,9 +94,14 @@ object GameEngine {
 
     fun resolve(c: Campaign, event: EventNode, choice: Choice): Resolution {
         val next = GameRules.apply(c, event, choice)
-        val outcome = GameRules.outcome(c, next, event, choice)
+        val fallback = GameRules.outcome(c, next, event, choice)
+        val choiceIndex = event.choices.indexOf(choice)
+        val choiceId = if (choiceIndex >= 0) "${event.id}_C${choiceIndex + 1}" else ""
+        val constat = choiceId.takeIf { it.isNotBlank() }?.let(NarrativeCodec::constat)
+        val outcome = constat?.let { "${it.title}\n\n${it.text}" } ?: fallback
+        val timelineNote = constat?.title ?: fallback
         return Resolution(
-            next.copy(timeline = (next.timeline + "↳ $outcome").takeLast(180)),
+            next.copy(timeline = (next.timeline + "↳ $timelineNote").takeLast(180)),
             outcome
         )
     }
@@ -116,6 +121,7 @@ object GameEngine {
     fun legacyScore(c: Campaign) = GameRules.legacyScore(c)
 
     internal fun catalogStats() = NarrativeRepository.stats()
+    internal fun constatCount() = NarrativeCodec.constatCount()
     internal fun debugEventById(id: String, c: Campaign? = null) = NarrativeRepository.byId(id, c)
     internal fun debugAuthoredIds() = NarrativeRepository.ids()
 }
