@@ -65,7 +65,7 @@ private object MhlVisualStore {
         val index = indices[key] ?: return@synchronized null
         val source = atlas ?: runCatching {
             val encoded = buildString(194_000) {
-                for (i in 1..20) {
+                for (i in 1..10) {
                     val path = "metahuman/comic_atlas_${i.toString().padStart(2, '0')}.b64"
                     append(context.assets.open(path).bufferedReader().use { it.readText() }.trim())
                 }
