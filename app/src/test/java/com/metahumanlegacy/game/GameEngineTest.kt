@@ -18,6 +18,23 @@ class GameEngineTest {
         assertEquals(1000, s.majorChoices)
         assertEquals(50, s.arcs)
         assertEquals(200, s.endings)
+        assertEquals(1064, GameEngine.constatCount())
+    }
+
+    @Test fun authoredConstatReplacesGenericImmediateSummary() {
+        val c = GameEngine.newCampaign(
+            42L,
+            CharacterBlueprint(
+                "Ava", "Vale", "elle", "Vesper", "Centre",
+                "Classe moyenne", "Justice", "Études scientifiques", "Curieux"
+            )
+        )
+        val e = GameEngine.event(c)
+        val r = GameEngine.resolve(c, e, e.choices[0])
+        assertTrue(r.outcome.startsWith("Un détail que tu oublieras presque\n\n"))
+        assertTrue(r.outcome.contains("retourner dans la fumée"))
+        assertFalse(r.outcome.contains("Tu ne sais pas encore ce que cette décision construit"))
+        assertEquals("Rester du bon côté de soi", NarrativeCodec.constat("A01_TUNNEL_CHILD_S1_C1")?.title)
     }
 
     @Test fun careerStartsAsNobodyWithNoBuildChosen() {
