@@ -184,58 +184,61 @@ internal fun UltimatePortrait(
         }
 
         if (libraryAtlas != null && libraryIndex != null) {
-            // A validated whole portrait is rendered as one atomic layer. Generated eyes, hair and
-            // masks are deliberately not stacked over it: that is what prevents drifting anchors.
+            // Illustrated mode: one transparent head from the curated 8x6 Library atlas is placed
+            // on a coherent game-rendered torso. No square card, no atlas background, no facial
+            // fragments or procedural mask are drawn over the identity.
             val clothes = if (heroMode) paletteColors(state.costumePalette, c.powerFamily)
                 else outfitColor(state.civilianStyle) to Color(0xFF10151C)
             val bodyWidth = when (state.bodyBuild) {
-                "Fin" -> .34f
-                "Massif" -> .52f
-                "Robuste" -> .48f
-                else -> .42f
+                "Fin" -> .35f
+                "Massif" -> .54f
+                "Robuste" -> .49f
+                else -> .43f
             }
-            val shoulderY = h * .68f
+            val shoulderY = h * .66f
             val torso = Path().apply {
                 moveTo(w * (.5f - bodyWidth / 2), h)
-                lineTo(w * (.5f - bodyWidth / 2.15f), shoulderY)
-                quadraticBezierTo(w * .5f, h * .61f, w * (.5f + bodyWidth / 2.15f), shoulderY)
+                lineTo(w * (.5f - bodyWidth / 2.05f), shoulderY)
+                quadraticBezierTo(w * .5f, h * .585f, w * (.5f + bodyWidth / 2.05f), shoulderY)
                 lineTo(w * (.5f + bodyWidth / 2), h)
                 close()
             }
             drawPath(torso, clothes.first)
-            drawPath(torso, clothes.second.copy(alpha = .82f), style = Stroke(w * .018f))
+            drawPath(torso, clothes.second.copy(alpha = .90f), style = Stroke(w * .014f))
+            if (heroMode) {
+                drawLine(clothes.second.copy(alpha = .80f), Offset(w * .36f, h * .73f), Offset(w * .64f, h * .73f), w * .012f)
+                drawLine(profile.accent.copy(alpha = .60f), Offset(w * .40f, h * .78f), Offset(w * .60f, h * .78f), w * .006f)
+            }
 
             val sourceW = libraryAtlas.width / LibraryCustomizationCatalog.FACE_COLUMNS
             val sourceH = libraryAtlas.height / LibraryCustomizationCatalog.FACE_ROWS
             val col = libraryIndex % LibraryCustomizationCatalog.FACE_COLUMNS
             val row = libraryIndex / LibraryCustomizationCatalog.FACE_COLUMNS
-            val portraitSide = minOf(w * .86f, h * .64f)
-            val portraitLeft = (w - portraitSide) / 2f
-            val portraitTop = h * .075f
+            val faceSide = minOf(w * .82f, h * .61f)
+            val faceLeft = (w - faceSide) / 2f
+            val faceTop = h * .075f
             drawImage(
                 image = libraryAtlas,
                 srcOffset = IntOffset(col * sourceW, row * sourceH),
                 srcSize = IntSize(sourceW, sourceH),
-                dstOffset = IntOffset(portraitLeft.toInt(), portraitTop.toInt()),
-                dstSize = IntSize(portraitSide.toInt().coerceAtLeast(1), portraitSide.toInt().coerceAtLeast(1))
+                dstOffset = IntOffset(faceLeft.toInt(), faceTop.toInt()),
+                dstSize = IntSize(faceSide.toInt().coerceAtLeast(1), faceSide.toInt().coerceAtLeast(1))
             )
 
-            if (heroMode) {
-                drawRoundRect(
-                    color = profile.accent.copy(alpha = .72f),
-                    topLeft = Offset(portraitLeft, portraitTop),
-                    size = Size(portraitSide, portraitSide),
-                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(w * .025f),
-                    style = Stroke(w * .012f)
-                )
-            }
+            drawRoundRect(
+                color = (if (heroMode) profile.accent else UltimateGold).copy(alpha = .55f),
+                topLeft = Offset(w * .035f, h * .025f),
+                size = Size(w * .93f, h * .95f),
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(w * .04f),
+                style = Stroke(w * .008f)
+            )
             if (heroMode && state.emblem != "Aucun") {
-                drawEmblem(state.emblem, clothes.second, Offset(w * .5f, h * .82f), w * .10f)
+                drawEmblem(state.emblem, clothes.second, Offset(w * .5f, h * .845f), w * .09f)
             }
-            if (state.injuries.isNotEmpty()) {
-                drawLine(UltimateRed.copy(alpha = .55f), Offset(w * .44f, h * .76f), Offset(w * .57f, h * .90f), w * .006f)
+            if (showAura && heroMode) {
+                drawCircle(profile.accent.copy(alpha = .22f), radius = w * .32f, center = Offset(w * .5f, h * .40f), style = Stroke(w * .010f))
             }
-            drawRect(UltimateGold.copy(alpha = .7f), topLeft = Offset(0f, h - w * .016f), size = Size(w, w * .016f))
+            drawRect(UltimateGold.copy(alpha = .72f), topLeft = Offset(w * .08f, h - w * .018f), size = Size(w * .84f, w * .018f))
             return@Canvas
         }
 

@@ -10,8 +10,8 @@ class LibraryCustomizationAssetTest {
         assertTrue(LibraryCustomizationCatalog.facePresets.isNotEmpty())
         assertTrue(LibraryCustomizationCatalog.FACE_COLUMNS == 8)
         assertTrue(LibraryCustomizationCatalog.FACE_ROWS == 6)
-        assertTrue(LibraryCustomizationCatalog.facePresets.size == 30)
-        assertTrue(LibraryCustomizationCatalog.facePresets.map { it.skinTone to it.faceShape }.distinct().size == 30)
+        assertTrue(LibraryCustomizationCatalog.facePresets.size == 48)
+        assertTrue(LibraryCustomizationCatalog.facePresets.map { it.atlasIndex }.distinct().size == 48)
         LibraryCustomizationCatalog.facePresets.forEach { preset ->
             assertTrue(preset.skinTone in UltimateCatalog.skinTones)
             assertTrue(preset.faceShape in UltimateCatalog.faceShapes)
@@ -80,7 +80,14 @@ class LibraryCustomizationAssetTest {
         assertTrue(applied.libraryFaceIndex == preset.atlasIndex)
         assertTrue(applied.hair == "Boucles")
         assertTrue(applied.hairColor == "Roux")
+        assertTrue(applied.skinTone == draft.skinTone)
+        assertTrue(applied.faceShape == draft.faceShape)
         assertTrue(preset.matches(applied))
     }
 
+
+    @Test
+    fun illustratedFaceCatalogCoversWholeSheet() {
+        assertTrue(LibraryCustomizationCatalog.facePresets.map { it.atlasIndex }.sorted() == (0 until 48).toList())
+    }
 }
