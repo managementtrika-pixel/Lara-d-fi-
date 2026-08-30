@@ -2,7 +2,7 @@ name: Android CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "final/comic-apk" ]
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
@@ -40,4 +40,16 @@ jobs:
           path: |
             app/build/outputs/apk/debug/app-debug.apk
             apk-sha256.txt
+          if-no-files-found: error
+      - name: Export Android packaging tools
+        run: |
+          cp "$ANDROID_HOME/build-tools/36.0.0/lib/apksigner.jar" apksigner.jar
+          cp "$ANDROID_HOME/build-tools/36.0.0/zipalign" zipalign
+          chmod +x zipalign
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-packaging-tools
+          path: |
+            apksigner.jar
+            zipalign
           if-no-files-found: error
