@@ -49,19 +49,14 @@ internal data class LibraryFacePreset(
     val eyes: String,
     val civilianStyle: String
 ) {
+    // One atlas cell is one facial base. Hair, beard, eyes and clothes stay independent.
     fun apply(draft: UltimateCreationDraft): UltimateCreationDraft = draft.copy(
         skinTone = skinTone,
-        faceShape = faceShape,
-        hair = hair,
-        hairColor = hairColor,
-        facialHair = facialHair,
-        eyes = eyes,
-        civilianStyle = civilianStyle
+        faceShape = faceShape
     )
 
     fun matches(draft: UltimateCreationDraft): Boolean =
-        draft.skinTone == skinTone && draft.faceShape == faceShape && draft.hair == hair &&
-            draft.hairColor == hairColor && draft.facialHair == facialHair && draft.eyes == eyes
+        draft.skinTone == skinTone && draft.faceShape == faceShape
 }
 
 internal data class LibraryCityPreset(
@@ -106,26 +101,44 @@ internal data class LibraryCostumePreset(
 }
 
 internal object LibraryCustomizationCatalog {
-    const val FACE_COLUMNS = 4
-    const val FACE_ROWS = 3
+    const val FACE_COLUMNS = 8
+    const val FACE_ROWS = 6
     const val CITY_COLUMNS = 4
     const val CITY_ROWS = 3
     const val COSTUME_COLUMNS = 4
     const val COSTUME_ROWS = 2
 
     val facePresets = listOf(
-        LibraryFacePreset("Classique", 0, "Très clair", "Ovale", "Court texturé", "Brun", "Aucune", "Bleus", "Classique"),
-        LibraryFacePreset("Sculpté", 1, "Foncé", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Minimal"),
-        LibraryFacePreset("Sobre", 2, "Clair", "Fin", "Dégradé", "Noir", "Aucune", "Très sombres", "Professionnel"),
-        LibraryFacePreset("Urbain", 3, "Très foncé", "Carré", "Court texturé", "Noir", "Barbe courte", "Bruns", "Street sobre"),
-        LibraryFacePreset("Élégante", 4, "Clair", "Ovale", "Attaché", "Noir", "Aucune", "Noisette", "Classique"),
-        LibraryFacePreset("Athlétique", 5, "Foncé", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Sportif"),
-        LibraryFacePreset("Audacieuse", 6, "Mat", "Anguleux", "Rasé", "Brun", "Aucune", "Noisette", "Créatif"),
-        LibraryFacePreset("Minimaliste", 7, "Clair", "Fin", "Rasé", "Noir", "Aucune", "Très sombres", "Minimal"),
-        LibraryFacePreset("Nordique", 8, "Très clair", "Fin", "Court texturé", "Blond", "Aucune", "Bleus", "Vintage"),
-        LibraryFacePreset("Créative", 9, "Clair", "Ovale", "Boucles", "Brun", "Aucune", "Verts", "Créatif"),
-        LibraryFacePreset("Nocturne", 10, "Mat", "Anguleux", "Court texturé", "Noir", "Aucune", "Très sombres", "Street sobre"),
-        LibraryFacePreset("Libre", 11, "Très clair", "Ovale", "Rasé", "Blond", "Aucune", "Gris", "Sportif")
+        LibraryFacePreset("Ovale · Très clair", 0, "Très clair", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Carré · Très clair", 7, "Très clair", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Fin · Très clair", 8, "Très clair", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Rond · Très clair", 12, "Très clair", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Anguleux · Très clair", 13, "Très clair", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Ovale · Clair", 16, "Clair", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Carré · Clair", 19, "Clair", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Fin · Clair", 21, "Clair", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Rond · Clair", 25, "Clair", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Anguleux · Clair", 30, "Clair", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Ovale · Moyen", 3, "Moyen", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Carré · Moyen", 9, "Moyen", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Fin · Moyen", 15, "Moyen", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Rond · Moyen", 23, "Moyen", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Anguleux · Moyen", 33, "Moyen", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Ovale · Mat", 5, "Mat", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Carré · Mat", 11, "Mat", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Fin · Mat", 20, "Mat", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Rond · Mat", 27, "Mat", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Anguleux · Mat", 35, "Mat", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Ovale · Foncé", 6, "Foncé", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Carré · Foncé", 14, "Foncé", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Fin · Foncé", 22, "Foncé", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Rond · Foncé", 29, "Foncé", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Anguleux · Foncé", 36, "Foncé", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Ovale · Très foncé", 2, "Très foncé", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Carré · Très foncé", 10, "Très foncé", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Fin · Très foncé", 18, "Très foncé", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Rond · Très foncé", 24, "Très foncé", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Anguleux · Très foncé", 40, "Très foncé", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre")
     )
 
     // The source atlas contains two deliberately non-city fantasy/cosmic cells. They are not

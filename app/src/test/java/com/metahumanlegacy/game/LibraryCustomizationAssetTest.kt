@@ -8,6 +8,10 @@ class LibraryCustomizationAssetTest {
     @Test
     fun facePresetsOnlyUseSupportedStableOptions() {
         assertTrue(LibraryCustomizationCatalog.facePresets.isNotEmpty())
+        assertTrue(LibraryCustomizationCatalog.FACE_COLUMNS == 8)
+        assertTrue(LibraryCustomizationCatalog.FACE_ROWS == 6)
+        assertTrue(LibraryCustomizationCatalog.facePresets.size == 30)
+        assertTrue(LibraryCustomizationCatalog.facePresets.map { it.skinTone to it.faceShape }.distinct().size == 30)
         LibraryCustomizationCatalog.facePresets.forEach { preset ->
             assertTrue(preset.skinTone in UltimateCatalog.skinTones)
             assertTrue(preset.faceShape in UltimateCatalog.faceShapes)

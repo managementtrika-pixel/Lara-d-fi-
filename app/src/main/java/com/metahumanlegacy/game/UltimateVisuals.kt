@@ -146,11 +146,9 @@ private fun paletteColors(palette: String, power: String): Pair<Color, Color> = 
 }
 
 private fun libraryFaceIndex(state: UltimateState): Int? =
-    LibraryCustomizationCatalog.facePresets.indexOfFirst { preset ->
-        preset.skinTone == state.skinTone && preset.faceShape == state.faceShape &&
-            preset.hair == state.hair && preset.hairColor == state.hairColor &&
-            preset.facialHair == state.facialHair && preset.eyes == state.eyes
-    }.takeIf { it >= 0 }
+    LibraryCustomizationCatalog.facePresets.firstOrNull { preset ->
+        preset.skinTone == state.skinTone && preset.faceShape == state.faceShape
+    }?.atlasIndex
 
 @Composable
 internal fun UltimatePortrait(
