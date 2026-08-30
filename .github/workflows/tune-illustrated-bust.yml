@@ -1,0 +1,45 @@
+name: Tune Illustrated Bust
+on:
+  push:
+    branches:
+      - fix/character-creator-visual-redesign
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/character-creator-visual-redesign
+      - name: Tune illustrated bust proportions
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('app/src/main/java/com/metahumanlegacy/game/UltimateVisuals.kt')
+          s = p.read_text()
+          start = s.index('        if (libraryAtlas != null && libraryIndex != null) {')
+          end = s.index('\n        val skin = skinColor(state.skinTone)', start)
+          block = s[start:end]
+          for old,new in [
+              ('"Fin" -> .35f','"Fin" -> .68f'),
+              ('"Massif" -> .54f','"Massif" -> .90f'),
+              ('"Robuste" -> .49f','"Robuste" -> .86f'),
+              ('else -> .43f','else -> .78f'),
+              ('val shoulderY = h * .66f','val shoulderY = h * .62f'),
+              ('quadraticBezierTo(w * .5f, h * .585f','quadraticBezierTo(w * .5f, h * .57f')
+          ]:
+              if old not in block:
+                  raise SystemExit(f'missing illustrated bust token: {old}')
+              block = block.replace(old,new,1)
+          p.write_text(s[:start] + block + s[end:])
+          PY
+      - name: Remove one-shot workflow
+        run: rm .github/workflows/tune-illustrated-bust.yml
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "polish: improve illustrated portrait bust proportions"
+          git push origin HEAD:fix/character-creator-visual-redesign
