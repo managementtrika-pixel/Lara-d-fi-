@@ -190,16 +190,16 @@ internal fun UltimatePortrait(
             val clothes = if (heroMode) paletteColors(state.costumePalette, c.powerFamily)
                 else outfitColor(state.civilianStyle) to Color(0xFF10151C)
             val bodyWidth = when (state.bodyBuild) {
-                "Fin" -> .35f
-                "Massif" -> .54f
-                "Robuste" -> .49f
-                else -> .43f
+                "Fin" -> .68f
+                "Massif" -> .90f
+                "Robuste" -> .86f
+                else -> .78f
             }
-            val shoulderY = h * .66f
+            val shoulderY = h * .62f
             val torso = Path().apply {
                 moveTo(w * (.5f - bodyWidth / 2), h)
                 lineTo(w * (.5f - bodyWidth / 2.05f), shoulderY)
-                quadraticBezierTo(w * .5f, h * .585f, w * (.5f + bodyWidth / 2.05f), shoulderY)
+                quadraticBezierTo(w * .5f, h * .57f, w * (.5f + bodyWidth / 2.05f), shoulderY)
                 lineTo(w * (.5f + bodyWidth / 2), h)
                 close()
             }
