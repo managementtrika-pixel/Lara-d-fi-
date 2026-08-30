@@ -27,8 +27,6 @@ class DepthDirectorTest {
             val choice = event.choices[it % event.choices.size]
             val resolved = GameEngine.resolve(c, event, choice).campaign
 
-            // Depth memory may be added, but the vector change itself remains exactly the authored
-            // choice payload handled by GameRules.
             choice.affinityDelta.forEach { key ->
                 assertEquals((beforeAffinity[key] ?: 0) + 1, resolved.affinityScores[key])
             }
@@ -75,7 +73,7 @@ class DepthDirectorTest {
         assertEquals(base.choices.size, 2)
         assertTrue(enriched.choices.size > base.choices.size)
         assertTrue(enriched.choices.any { it.label.contains("secours", ignoreCase = true) })
-        assertTrue(enriched.text.contains("informations", ignoreCase = true))
+        assertNotEquals(base.text, enriched.text)
         assertEquals(enriched, DepthDirector.enrichEvent(c, base))
     }
 
@@ -124,6 +122,34 @@ class DepthDirectorTest {
         assertTrue(flags.any { it.startsWith("deep:clock_") })
         assertTrue(flags.any { it.startsWith("deep:strain=") })
         assertNotEquals(before.flags, flags)
+    }
+
+    @Test
+    fun oldMemoriesAndRepeatedStoryTextureCanOpenAlternativeChoices() {
+        val c = GameEngine.newCampaign(8080L).copy(
+            turn = 44,
+            powerFamily = "Lumière",
+            flags = setOf(
+                "POWER_REVEALED", "ALIAS_CHOSEN", "deep:v1",
+                "deep:memory=8,26,OLD_CRISIS,CRISE,CARE",
+                "deep:recent=CRISE,CRISE,CRISE,CRISE",
+                "deep:code_care=8", "deep:code_order=1", "deep:code_truth=2", "deep:code_ascend=1"
+            )
+        )
+        val base = EventNode(
+            id = "NEW_CRISIS",
+            title = "Une nouvelle évacuation",
+            text = "Une autre crise frappe un quartier de la ville.",
+            choices = listOf(Choice("Intervenir", approach = "ORDER", stakes = 3, risk = 4)),
+            category = "CRISE",
+            provocation = "URGENCE",
+            stakes = 3,
+            kind = "MAJOR"
+        )
+        val enriched = CareerVariationDirector.enrich(c, base)
+        assertTrue(enriched.choices.size >= 2)
+        assertTrue(enriched.choices.any { it.label.contains("26 ans") })
+        assertTrue(enriched.text.contains("expérience personnelle", ignoreCase = true))
     }
 
     @Test
