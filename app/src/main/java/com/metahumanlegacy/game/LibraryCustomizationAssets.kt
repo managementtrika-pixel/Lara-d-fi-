@@ -49,14 +49,15 @@ internal data class LibraryFacePreset(
     val eyes: String,
     val civilianStyle: String
 ) {
-    // One atlas cell is one facial base. Hair, beard, eyes and clothes stay independent.
+    // One atlas cell is one atomic illustrated head. We never stack incompatible generated
+    // face fragments over it. Editing a facial detail later deliberately switches to free mode.
     fun apply(draft: UltimateCreationDraft): UltimateCreationDraft = draft.copy(
         skinTone = skinTone,
-        faceShape = faceShape
+        faceShape = faceShape,
+        libraryFaceIndex = atlasIndex
     )
 
-    fun matches(draft: UltimateCreationDraft): Boolean =
-        draft.skinTone == skinTone && draft.faceShape == faceShape
+    fun matches(draft: UltimateCreationDraft): Boolean = draft.libraryFaceIndex == atlasIndex
 }
 
 internal data class LibraryCityPreset(
@@ -248,8 +249,8 @@ private fun LibraryPresetHeader(title: String, subtitle: String) {
 @Composable
 internal fun LibraryFacePresetStrip(draft: UltimateCreationDraft, onDraft: (UltimateCreationDraft) -> Unit) {
     LibraryPresetHeader(
-        "Looks illustrés",
-        "Chaque vignette applique un preset complet aux paramètres stables. Aucun fragment généré n'est superposé au hasard."
+        "Base du visage",
+        "Une vignette = une seule personne. Modifier teint, forme, coiffure, barbe ou yeux repasse automatiquement en mode libre pour éviter tout mauvais assemblage."
     )
     Row(
         Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),

@@ -65,4 +65,22 @@ class LibraryCustomizationAssetTest {
         assertTrue(advanced.isNotEmpty())
         assertTrue(advanced.none { it.minimumEra <= 1 })
     }
+
+    @Test
+    fun illustratedFaceSelectionUsesOneExactAtlasCell() {
+        val blueprint = CharacterBlueprint(
+            firstName = "Test", lastName = "Avatar", pronouns = "iel",
+            city = GameEngine.cities.first(), district = GameEngine.districts.first(),
+            socialBackground = GameEngine.socialBackgrounds.first(), motivation = GameEngine.motivations.first(),
+            civilianPath = GameEngine.civilianPaths.first(), temperament = GameEngine.temperaments.first()
+        )
+        val draft = UltimateCreationDraft(blueprint = blueprint, hair = "Boucles", hairColor = "Roux")
+        val preset = LibraryCustomizationCatalog.facePresets[7]
+        val applied = preset.apply(draft)
+        assertTrue(applied.libraryFaceIndex == preset.atlasIndex)
+        assertTrue(applied.hair == "Boucles")
+        assertTrue(applied.hairColor == "Roux")
+        assertTrue(preset.matches(applied))
+    }
+
 }

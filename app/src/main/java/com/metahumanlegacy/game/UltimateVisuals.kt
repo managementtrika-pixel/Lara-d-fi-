@@ -146,9 +146,9 @@ private fun paletteColors(palette: String, power: String): Pair<Color, Color> = 
 }
 
 private fun libraryFaceIndex(state: UltimateState): Int? =
-    LibraryCustomizationCatalog.facePresets.firstOrNull { preset ->
-        preset.skinTone == state.skinTone && preset.faceShape == state.faceShape
-    }?.atlasIndex
+    state.libraryFaceIndex.takeIf {
+        it in 0 until LibraryCustomizationCatalog.FACE_COLUMNS * LibraryCustomizationCatalog.FACE_ROWS
+    }
 
 @Composable
 internal fun UltimatePortrait(
