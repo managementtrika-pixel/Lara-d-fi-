@@ -85,20 +85,33 @@ object GameEngine {
                 "motivation:${blueprint.motivation}",
                 "background:${blueprint.socialBackground}",
                 "civilian_path:${blueprint.civilianPath}",
-                "temperament:${blueprint.temperament}"
+                "temperament:${blueprint.temperament}",
+                "deep:v1"
             )
         )
     }
 
-    fun event(c: Campaign): EventNode = NarrativeRepository.event(c)
+    /**
+     * The authored repository still chooses the canonical story beat. Two deterministic depth
+     * passes then make accumulated life experience relevant without replacing the authored arc.
+     * Formative/awakening beats are deliberately left structurally untouched.
+     */
+    fun event(c: Campaign): EventNode {
+        val authored = NarrativeRepository.event(c)
+        val deep = DepthDirector.enrichEvent(c, authored)
+        return CareerVariationDirector.enrich(c, deep)
+    }
 
     fun resolve(c: Campaign, event: EventNode, choice: Choice): Resolution {
-        val next = GameRules.apply(c, event, choice)
+        val rawNext = GameRules.apply(c, event, choice)
+        val deep = DepthDirector.afterChoice(c, rawNext, event, choice)
+        val next = deep.campaign
         val fallback = GameRules.outcome(c, next, event, choice)
         val choiceIndex = event.choices.indexOf(choice)
         val choiceId = if (choiceIndex >= 0) "${event.id}_C${choiceIndex + 1}" else ""
         val constat = choiceId.takeIf { it.isNotBlank() }?.let(NarrativeCodec::constat)
-        val outcome = constat?.let { "${it.title}\n\n${it.text}" } ?: fallback
+        val authored = constat?.let { "${it.title}\n\n${it.text}" } ?: fallback
+        val outcome = if (deep.echo.isBlank()) authored else "$authored\n\nÉCHOS DE TA VIE\n${deep.echo}"
         val timelineNote = constat?.title ?: fallback
         return Resolution(
             next.copy(timeline = (next.timeline + "↳ $timelineNote").takeLast(180)),
@@ -117,8 +130,10 @@ object GameEngine {
         )
     }
 
-    fun legacyTitle(c: Campaign) = GameRules.legacyTitle(c)
-    fun legacyScore(c: Campaign) = GameRules.legacyScore(c)
+    fun legacyTitle(c: Campaign) = DepthDirector.legacyTitle(c, GameRules.legacyTitle(c))
+    fun legacyScore(c: Campaign) = (GameRules.legacyScore(c) + DepthDirector.legacyScoreBonus(c)).coerceAtLeast(0)
+    fun legacySummary(c: Campaign) = DepthDirector.legacySummary(c)
+    internal fun depthDossier(c: Campaign) = DepthDirector.dossier(c)
 
     internal fun catalogStats() = NarrativeRepository.stats()
     internal fun constatCount() = NarrativeCodec.constatCount()

@@ -200,7 +200,10 @@ fun ProductionMetahumanLegacyApp(context: Context) {
                         },
                         onAnnualAction = { card ->
                             val base = (annualState ?: AnnualActionPersistence.load(context, campaign!!)).synced(campaign!!)
-                            val resolution = AnnualActionEngine.perform(campaign!!, base, card)
+                            val rawResolution = AnnualActionEngine.perform(campaign!!, base, card)
+                            val resolution = rawResolution?.let {
+                                it.copy(campaign = DepthDirector.afterAnnualAction(it.campaign, it.state, card))
+                            }
                             if (resolution != null) {
                                 campaign = resolution.campaign
                                 annualState = resolution.state
@@ -402,9 +405,6 @@ private fun ProductionCareerShell(
     Column(Modifier.fillMaxSize()) {
         ProductionCareerHeader(
             c = c,
-            annualState = annualState,
-            actionsEnabled = outcome == null,
-            onActions = { onScreen("ACTIONS") },
             onHome = onHome,
             onSettings = onSettings,
             onRestart = { confirmRestart = true }
@@ -421,16 +421,19 @@ private fun ProductionCareerShell(
             MhlStatChangePulse(c, Modifier.matchParentSize())
             if (saveFeedbackKey > 0) MhlSaveFeedback(saveFeedbackKey, Modifier.align(Alignment.TopEnd).padding(10.dp))
         }
-        ProductionNavigation(screen, onScreen)
+        ProductionNavigation(
+            screen = screen,
+            c = c,
+            annualState = annualState,
+            actionsEnabled = outcome == null,
+            onScreen = onScreen
+        )
     }
 }
 
 @Composable
 private fun ProductionCareerHeader(
     c: Campaign,
-    annualState: AnnualActionState,
-    actionsEnabled: Boolean,
-    onActions: () -> Unit,
     onHome: () -> Unit,
     onSettings: () -> Unit,
     onRestart: () -> Unit
@@ -441,9 +444,6 @@ private fun ProductionCareerHeader(
         Column(Modifier.weight(1f)) {
             Text(c.alias.ifBlank { c.name }.uppercase(), color = MetahumanColors.Ivory, fontWeight = FontWeight.Black, fontSize = 18.sp)
             Text("${c.age} ANS · ${c.phaseLabel} · ${if (c.powerRevealed) c.scope.label else "CIVIL"}", color = MetahumanColors.Muted, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-        }
-        TextButton(onClick = onActions, enabled = actionsEnabled, contentPadding = PaddingValues(horizontal = 5.dp, vertical = 2.dp)) {
-            Text("AGIR ${annualState.synced(c).remaining}/$ANNUAL_ACTION_LIMIT", color = if (actionsEnabled) MetahumanColors.Gold else MetahumanColors.Muted, fontSize = 9.sp, fontWeight = FontWeight.Black)
         }
         Column(horizontalAlignment = Alignment.End) {
             TextButton(onClick = onHome, contentPadding = PaddingValues(3.dp)) { Text("ACCUEIL", fontSize = 9.sp) }
@@ -456,15 +456,36 @@ private fun ProductionCareerHeader(
 }
 
 @Composable
-private fun ProductionNavigation(screen: String, onScreen: (String) -> Unit) {
+private fun ProductionNavigation(
+    screen: String,
+    c: Campaign,
+    annualState: AnnualActionState,
+    actionsEnabled: Boolean,
+    onScreen: (String) -> Unit
+) {
+    val remaining = annualState.synced(c).remaining
     NavigationBar(containerColor = Color(0xFF0A0E14), tonalElevation = 0.dp) {
-        listOf("DESTIN" to "alt_01", "PERSONNAGE" to "alt_02", "MONDE" to "scope_world", "LIENS" to "relation_family", "CHRONIQUE" to "alt_03").forEach { (item, icon) ->
+        listOf(
+            Triple("DESTIN", "alt_01", "Destin"),
+            Triple("ACTIONS", "alt_04", "Agir $remaining"),
+            Triple("PERSONNAGE", "alt_02", "Perso"),
+            Triple("MONDE", "scope_world", "Monde"),
+            Triple("LIENS", "relation_family", "Liens"),
+            Triple("CHRONIQUE", "alt_03", "Chronique")
+        ).forEach { (item, icon, label) ->
             NavigationBarItem(
                 selected = screen == item,
+                enabled = item != "ACTIONS" || actionsEnabled,
                 onClick = { onScreen(item) },
-                icon = { MhlProductionAsset(icon, item, size = 27.dp) },
-                label = { Text(item.lowercase().replaceFirstChar { it.uppercase() }, fontSize = 9.sp) },
-                colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0x332E83FF), selectedTextColor = MetahumanColors.Gold, unselectedTextColor = MetahumanColors.Muted)
+                icon = { MhlProductionAsset(icon, label, size = 24.dp) },
+                label = { Text(label, fontSize = 8.sp, maxLines = 1) },
+                colors = NavigationBarItemDefaults.colors(
+                    indicatorColor = Color(0x332E83FF),
+                    selectedTextColor = MetahumanColors.Gold,
+                    unselectedTextColor = MetahumanColors.Muted,
+                    disabledTextColor = MetahumanColors.Muted.copy(alpha = .45f),
+                    disabledIconColor = MetahumanColors.Muted.copy(alpha = .35f)
+                )
             )
         }
     }
