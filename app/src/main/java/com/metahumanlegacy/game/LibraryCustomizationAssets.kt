@@ -49,11 +49,9 @@ internal data class LibraryFacePreset(
     val eyes: String,
     val civilianStyle: String
 ) {
-    // One atlas cell is one atomic illustrated head. We never stack incompatible generated
-    // face fragments over it. Editing a facial detail later deliberately switches to free mode.
+    // An illustrated portrait is an atomic identity. It never rewrites the free-mode sliders and
+    // no generated eyes/hair/beard are stacked on top of it.
     fun apply(draft: UltimateCreationDraft): UltimateCreationDraft = draft.copy(
-        skinTone = skinTone,
-        faceShape = faceShape,
         libraryFaceIndex = atlasIndex
     )
 
@@ -110,36 +108,54 @@ internal object LibraryCustomizationCatalog {
     const val COSTUME_ROWS = 2
 
     val facePresets = listOf(
-        LibraryFacePreset("Ovale · Très clair", 0, "Très clair", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Carré · Très clair", 7, "Très clair", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Fin · Très clair", 8, "Très clair", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Rond · Très clair", 12, "Très clair", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Anguleux · Très clair", 13, "Très clair", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Ovale · Clair", 16, "Clair", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Carré · Clair", 19, "Clair", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Fin · Clair", 21, "Clair", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Rond · Clair", 25, "Clair", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Anguleux · Clair", 30, "Clair", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Ovale · Moyen", 3, "Moyen", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Carré · Moyen", 9, "Moyen", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Fin · Moyen", 15, "Moyen", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Rond · Moyen", 23, "Moyen", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Anguleux · Moyen", 33, "Moyen", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Ovale · Mat", 5, "Mat", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Carré · Mat", 11, "Mat", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Fin · Mat", 20, "Mat", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Rond · Mat", 27, "Mat", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Anguleux · Mat", 35, "Mat", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Ovale · Foncé", 6, "Foncé", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Carré · Foncé", 14, "Foncé", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Fin · Foncé", 22, "Foncé", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Rond · Foncé", 29, "Foncé", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Anguleux · Foncé", 36, "Foncé", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Ovale · Très foncé", 2, "Très foncé", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Carré · Très foncé", 10, "Très foncé", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Fin · Très foncé", 18, "Très foncé", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Rond · Très foncé", 24, "Très foncé", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Anguleux · Très foncé", 40, "Très foncé", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre")
+        LibraryFacePreset("Visage 01", 0, "Très clair", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 02", 1, "Très clair", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 03", 2, "Très clair", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 04", 3, "Très clair", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 05", 4, "Très clair", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 06", 5, "Très clair", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 07", 6, "Très clair", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 08", 7, "Très clair", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 09", 8, "Clair", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 10", 9, "Clair", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 11", 10, "Clair", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 12", 11, "Clair", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 13", 12, "Clair", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 14", 13, "Clair", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 15", 14, "Clair", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 16", 15, "Clair", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 17", 16, "Moyen", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 18", 17, "Moyen", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 19", 18, "Moyen", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 20", 19, "Moyen", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 21", 20, "Moyen", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 22", 21, "Moyen", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 23", 22, "Moyen", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 24", 23, "Moyen", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 25", 24, "Mat", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 26", 25, "Mat", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 27", 26, "Mat", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 28", 27, "Mat", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 29", 28, "Mat", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 30", 29, "Mat", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 31", 30, "Mat", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 32", 31, "Mat", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 33", 32, "Foncé", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 34", 33, "Foncé", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 35", 34, "Foncé", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 36", 35, "Foncé", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 37", 36, "Foncé", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 38", 37, "Foncé", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 39", 38, "Foncé", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 40", 39, "Foncé", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 41", 40, "Très foncé", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 42", 41, "Très foncé", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 43", 42, "Très foncé", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 44", 43, "Très foncé", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 45", 44, "Très foncé", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 46", 45, "Très foncé", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 47", 46, "Très foncé", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
+        LibraryFacePreset("Visage 48", 47, "Très foncé", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre")
     )
 
     // The source atlas contains two deliberately non-city fantasy/cosmic cells. They are not
@@ -249,8 +265,8 @@ private fun LibraryPresetHeader(title: String, subtitle: String) {
 @Composable
 internal fun LibraryFacePresetStrip(draft: UltimateCreationDraft, onDraft: (UltimateCreationDraft) -> Unit) {
     LibraryPresetHeader(
-        "Base du visage",
-        "Une vignette = une seule personne. Modifier teint, forme, coiffure, barbe ou yeux repasse automatiquement en mode libre pour éviter tout mauvais assemblage."
+        "Portrait illustré",
+        "48 identités individuelles. Une vignette = une personne complète : aucun morceau de planche, aucun fragment incompatible superposé."
     )
     Row(
         Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
