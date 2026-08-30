@@ -73,6 +73,7 @@ fun ProductionMetahumanLegacyApp(context: Context) {
     CompositionLocalProvider(LocalMetahumanMotion provides controller, LocalDensity provides scaledDensity) {
         MaterialTheme(colorScheme = colors) {
             var campaign by remember { mutableStateOf(loadCampaignV4(context)) }
+            var annualState by remember { mutableStateOf(campaign?.let { AnnualActionPersistence.load(context, it) }) }
             var screen by remember { mutableStateOf("HOME") }
             var hall by remember { mutableStateOf(loadHallV4(context)) }
             var outcome by remember { mutableStateOf(loadPendingOutcome(context)) }
@@ -84,6 +85,8 @@ fun ProductionMetahumanLegacyApp(context: Context) {
 
             fun start(blueprint: CharacterBlueprint) {
                 campaign = GameEngine.newCampaign(System.currentTimeMillis(), blueprint)
+                annualState = AnnualActionState.fresh(campaign!!)
+                AnnualActionPersistence.save(context, annualState!!)
                 saveCampaignV4(context, campaign!!)
                 outcome = null
                 savePendingOutcome(context, null)
@@ -93,9 +96,11 @@ fun ProductionMetahumanLegacyApp(context: Context) {
             }
 
             fun abandonAndCreate() {
+                campaign?.seed?.let { AnnualActionPersistence.clear(context, it) }
                 clearCampaignV4(context)
                 savePendingOutcome(context, null)
                 campaign = null
+                annualState = null
                 outcome = null
                 lastEvent = null
                 draft = GameEngine.randomBlueprint(System.currentTimeMillis() xor 0x77L)
@@ -150,9 +155,11 @@ fun ProductionMetahumanLegacyApp(context: Context) {
                             val who = campaign!!.alias.ifBlank { campaign!!.name }
                             hall = (listOf("$who|${GameEngine.legacyTitle(campaign!!)}|${GameEngine.legacyScore(campaign!!)}|${campaign!!.scope.label}") + hall).distinct().take(40)
                             saveHallV4(context, hall)
+                            AnnualActionPersistence.clear(context, campaign!!.seed)
                             clearCampaignV4(context)
                             savePendingOutcome(context, null)
                             campaign = null
+                            annualState = null
                             outcome = null
                             lastEvent = null
                             screen = "HOME"
@@ -169,6 +176,7 @@ fun ProductionMetahumanLegacyApp(context: Context) {
 
                     else -> ProductionCareerShell(
                         c = campaign!!,
+                        annualState = annualState ?: AnnualActionState.fresh(campaign!!),
                         screen = screen,
                         outcome = outcome,
                         lastEvent = lastEvent,
@@ -183,10 +191,24 @@ fun ProductionMetahumanLegacyApp(context: Context) {
                             lastEvent = event
                             val resolution = GameEngine.resolve(campaign!!, event, choice)
                             campaign = resolution.campaign
+                            annualState = (annualState ?: AnnualActionState.fresh(campaign!!)).synced(campaign!!)
+                            AnnualActionPersistence.save(context, annualState!!)
                             outcome = resolution.outcome
                             saveCampaignV4(context, campaign!!)
                             savePendingOutcome(context, resolution.outcome)
                             markSaved()
+                        },
+                        onAnnualAction = { card ->
+                            val base = (annualState ?: AnnualActionPersistence.load(context, campaign!!)).synced(campaign!!)
+                            val resolution = AnnualActionEngine.perform(campaign!!, base, card)
+                            if (resolution != null) {
+                                campaign = resolution.campaign
+                                annualState = resolution.state
+                                saveCampaignV4(context, resolution.campaign)
+                                AnnualActionPersistence.save(context, resolution.state)
+                                markSaved()
+                            }
+                            resolution
                         },
                         onHome = { screen = "HOME" },
                         onSettings = { screen = "SETTINGS" },
@@ -353,6 +375,7 @@ private fun ProductionAliasScreen(c: Campaign, onConfirm: (String) -> Unit) {
 @Composable
 private fun ProductionCareerShell(
     c: Campaign,
+    annualState: AnnualActionState,
     screen: String,
     outcome: String?,
     lastEvent: EventNode?,
@@ -360,6 +383,7 @@ private fun ProductionCareerShell(
     onScreen: (String) -> Unit,
     onContinue: () -> Unit,
     onChoice: (EventNode, Choice) -> Unit,
+    onAnnualAction: (AnnualActionCard) -> AnnualActionResult?,
     onHome: () -> Unit,
     onSettings: () -> Unit,
     onRestart: () -> Unit
@@ -376,13 +400,22 @@ private fun ProductionCareerShell(
     }
 
     Column(Modifier.fillMaxSize()) {
-        ProductionCareerHeader(c, onHome, onSettings) { confirmRestart = true }
+        ProductionCareerHeader(
+            c = c,
+            annualState = annualState,
+            actionsEnabled = outcome == null,
+            onActions = { onScreen("ACTIONS") },
+            onHome = onHome,
+            onSettings = onSettings,
+            onRestart = { confirmRestart = true }
+        )
         Box(Modifier.weight(1f)) {
             when (screen) {
                 "PERSONNAGE" -> ProductionCharacterScreen(c)
                 "MONDE" -> ProductionWorldScreen(c)
                 "LIENS" -> ProductionLinksScreen(c)
                 "CHRONIQUE" -> ProductionTimelineScreen(c)
+                "ACTIONS" -> ProductionAnnualActionsScreen(c, annualState, onAnnualAction) { onScreen("DESTIN") }
                 else -> ProductionDestinyScreen(c, outcome, lastEvent, onContinue, onChoice)
             }
             MhlStatChangePulse(c, Modifier.matchParentSize())
@@ -393,13 +426,24 @@ private fun ProductionCareerShell(
 }
 
 @Composable
-private fun ProductionCareerHeader(c: Campaign, onHome: () -> Unit, onSettings: () -> Unit, onRestart: () -> Unit) {
+private fun ProductionCareerHeader(
+    c: Campaign,
+    annualState: AnnualActionState,
+    actionsEnabled: Boolean,
+    onActions: () -> Unit,
+    onHome: () -> Unit,
+    onSettings: () -> Unit,
+    onRestart: () -> Unit
+) {
     Row(Modifier.fillMaxWidth().background(Color(0xF2080B10)).padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
         MhlProductionAsset(if (c.powerRevealed) powerVisualProfile(c.powerFamily).iconKey else civilProgressIcon(c.turn), "État de la destinée", size = 50.dp)
         Spacer(Modifier.width(9.dp))
         Column(Modifier.weight(1f)) {
             Text(c.alias.ifBlank { c.name }.uppercase(), color = MetahumanColors.Ivory, fontWeight = FontWeight.Black, fontSize = 18.sp)
             Text("${c.age} ANS · ${c.phaseLabel} · ${if (c.powerRevealed) c.scope.label else "CIVIL"}", color = MetahumanColors.Muted, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+        }
+        TextButton(onClick = onActions, enabled = actionsEnabled, contentPadding = PaddingValues(horizontal = 5.dp, vertical = 2.dp)) {
+            Text("AGIR ${annualState.synced(c).remaining}/$ANNUAL_ACTION_LIMIT", color = if (actionsEnabled) MetahumanColors.Gold else MetahumanColors.Muted, fontSize = 9.sp, fontWeight = FontWeight.Black)
         }
         Column(horizontalAlignment = Alignment.End) {
             TextButton(onClick = onHome, contentPadding = PaddingValues(3.dp)) { Text("ACCUEIL", fontSize = 9.sp) }
