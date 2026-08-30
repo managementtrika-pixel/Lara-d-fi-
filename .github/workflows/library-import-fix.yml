@@ -1,0 +1,36 @@
+name: Library Import Fix
+
+on:
+  push:
+    branches:
+      - feat/library-customization-assets
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: ${{ !contains(github.event.head_commit.message, '[library-fix]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/library-customization-assets
+          fetch-depth: 0
+      - name: Remove incompatible Compose import
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('app/src/main/java/com/metahumanlegacy/game/LibraryCustomizationAssets.kt')
+          s = p.read_text()
+          s = s.replace('import androidx.compose.ui.graphics.drawscope.drawImage\n', '')
+          p.write_text(s)
+          PY
+      - name: Commit fix
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/src/main/java/com/metahumanlegacy/game/LibraryCustomizationAssets.kt
+          git commit -m "[library-fix] Fix Compose atlas draw import"
+          git push origin HEAD:feat/library-customization-assets
