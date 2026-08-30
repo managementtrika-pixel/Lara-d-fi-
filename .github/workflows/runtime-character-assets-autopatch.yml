@@ -1,0 +1,121 @@
+name: Runtime Character Assets Autopatch
+
+on:
+  push:
+    branches:
+      - fix/runtime-character-assets
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, '[runtime-assets-autopatch]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/runtime-character-assets
+          fetch-depth: 0
+
+      - name: Decode validated runtime atlases and wire real portraits
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64
+
+          root = Path('.')
+          staged = root / '.github/runtime-assets'
+          out = root / 'app/src/main/res/drawable-nodpi'
+          out.mkdir(parents=True, exist_ok=True)
+
+          def decode(parts, target, expected_size):
+              encoded = ''.join((staged / p).read_text().strip() for p in parts)
+              data = base64.b64decode(encoded, validate=True)
+              if len(data) != expected_size:
+                  raise SystemExit(f'{target}: unexpected size {len(data)} != {expected_size}')
+              if data[:4] != b'RIFF' or data[8:12] != b'WEBP':
+                  raise SystemExit(f'{target}: decoded payload is not a WebP')
+              (out / target).write_bytes(data)
+
+          decode(['faces.part1.b64', 'faces.part2.b64', 'faces.part3.b64'], 'mhl_library_faces.webp', 23940)
+          decode(['city.part1.b64', 'city.part2a.b64', 'city.part2b.b64'], 'mhl_library_city.webp', 14198)
+          decode(['costumes.part1.b64', 'costumes.part2a.b64', 'costumes.part2b.b64', 'costumes.part2c.b64', 'costumes.part2d.b64'], 'mhl_library_costumes.webp', 9080)
+
+          path = root / 'app/src/main/java/com/metahumanlegacy/game/UltimateVisuals.kt'
+          text = path.read_text()
+
+          def once(old, new, label):
+              global text
+              if new in text:
+                  return
+              if old not in text:
+                  raise SystemExit(f'Expected patch anchor missing: {label}')
+              text = text.replace(old, new, 1)
+
+          once(
+              'import androidx.compose.ui.graphics.Color\n',
+              'import androidx.compose.ui.graphics.Color\nimport androidx.compose.ui.graphics.ImageBitmap\n',
+              'ImageBitmap import'
+          )
+          once(
+              'import androidx.compose.ui.graphics.drawscope.Stroke\n',
+              'import androidx.compose.ui.graphics.drawscope.Stroke\nimport androidx.compose.ui.res.imageResource\n',
+              'imageResource import'
+          )
+          once(
+              'import androidx.compose.ui.unit.Dp\n',
+              'import androidx.compose.ui.unit.Dp\nimport androidx.compose.ui.unit.IntOffset\nimport androidx.compose.ui.unit.IntSize\n',
+              'integer geometry imports'
+          )
+
+          helper = '''private fun libraryFaceIndex(state: UltimateState): Int? =\n    LibraryCustomizationCatalog.facePresets.indexOfFirst { preset ->\n        preset.skinTone == state.skinTone && preset.faceShape == state.faceShape &&\n            preset.hair == state.hair && preset.hairColor == state.hairColor &&\n            preset.facialHair == state.facialHair && preset.eyes == state.eyes\n    }.takeIf { it >= 0 }\n\n'''
+          marker = '@Composable\ninternal fun UltimatePortrait('
+          if helper not in text:
+              if marker not in text:
+                  raise SystemExit('UltimatePortrait marker missing')
+              text = text.replace(marker, helper + marker, 1)
+
+          once(
+              '    val profile = powerVisualProfile(c.powerFamily)\n',
+              '    val profile = powerVisualProfile(c.powerFamily)\n    val libraryIndex = libraryFaceIndex(state)\n    val libraryAtlas = libraryIndex?.let { ImageBitmap.imageResource(id = R.drawable.mhl_library_faces) }\n',
+              'runtime face lookup'
+          )
+
+          branch = '''        if (libraryAtlas != null && libraryIndex != null) {\n            // A validated whole portrait is rendered as one atomic layer. Generated eyes, hair and\n            // masks are deliberately not stacked over it: that is what prevents drifting anchors.\n            val clothes = if (heroMode) paletteColors(state.costumePalette, c.powerFamily)\n                else outfitColor(state.civilianStyle) to Color(0xFF10151C)\n            val bodyWidth = when (state.bodyBuild) {\n                "Fin" -> .34f\n                "Massif" -> .52f\n                "Robuste" -> .48f\n                else -> .42f\n            }\n            val shoulderY = h * .68f\n            val torso = Path().apply {\n                moveTo(w * (.5f - bodyWidth / 2), h)\n                lineTo(w * (.5f - bodyWidth / 2.15f), shoulderY)\n                quadraticBezierTo(w * .5f, h * .61f, w * (.5f + bodyWidth / 2.15f), shoulderY)\n                lineTo(w * (.5f + bodyWidth / 2), h)\n                close()\n            }\n            drawPath(torso, clothes.first)\n            drawPath(torso, clothes.second.copy(alpha = .82f), style = Stroke(w * .018f))\n\n            val sourceW = libraryAtlas.width / LibraryCustomizationCatalog.FACE_COLUMNS\n            val sourceH = libraryAtlas.height / LibraryCustomizationCatalog.FACE_ROWS\n            val col = libraryIndex % LibraryCustomizationCatalog.FACE_COLUMNS\n            val row = libraryIndex / LibraryCustomizationCatalog.FACE_COLUMNS\n            val portraitSide = minOf(w * .86f, h * .64f)\n            val portraitLeft = (w - portraitSide) / 2f\n            val portraitTop = h * .075f\n            drawImage(\n                image = libraryAtlas,\n                srcOffset = IntOffset(col * sourceW, row * sourceH),\n                srcSize = IntSize(sourceW, sourceH),\n                dstOffset = IntOffset(portraitLeft.toInt(), portraitTop.toInt()),\n                dstSize = IntSize(portraitSide.toInt().coerceAtLeast(1), portraitSide.toInt().coerceAtLeast(1))\n            )\n\n            if (heroMode) {\n                drawRoundRect(\n                    color = profile.accent.copy(alpha = .72f),\n                    topLeft = Offset(portraitLeft, portraitTop),\n                    size = Size(portraitSide, portraitSide),\n                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(w * .025f),\n                    style = Stroke(w * .012f)\n                )\n            }\n            if (heroMode && state.emblem != "Aucun") {\n                drawEmblem(state.emblem, clothes.second, Offset(w * .5f, h * .82f), w * .10f)\n            }\n            if (state.injuries.isNotEmpty()) {\n                drawLine(UltimateRed.copy(alpha = .55f), Offset(w * .44f, h * .76f), Offset(w * .57f, h * .90f), w * .006f)\n            }\n            drawRect(UltimateGold.copy(alpha = .7f), topLeft = Offset(0f, h - w * .016f), size = Size(w, w * .016f))\n            return@Canvas\n        }\n\n'''
+          anchor = '        val skin = skinColor(state.skinTone)\n'
+          if branch not in text:
+              if anchor not in text:
+                  raise SystemExit('procedural portrait anchor missing')
+              text = text.replace(anchor, branch + anchor, 1)
+
+          path.write_text(text)
+
+          # Staged transfer data is intentionally temporary and must never ship in the repository.
+          import shutil
+          shutil.rmtree(staged)
+          workflow = root / '.github/workflows/runtime-character-assets-autopatch.yml'
+          workflow.unlink()
+          PY
+
+      - name: Verify decoded resource headers
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for name in ('mhl_library_faces.webp','mhl_library_city.webp','mhl_library_costumes.webp'):
+              p = Path('app/src/main/res/drawable-nodpi') / name
+              b = p.read_bytes()
+              assert b[:4] == b'RIFF' and b[8:12] == b'WEBP', name
+              print(name, len(b))
+          PY
+
+      - name: Commit runtime asset correction
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "[runtime-assets-autopatch] Render validated Library portraits at runtime"
+          git push origin HEAD:fix/runtime-character-assets
