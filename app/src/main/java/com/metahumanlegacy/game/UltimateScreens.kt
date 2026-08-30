@@ -163,9 +163,9 @@ internal fun UltimateCreateScreen(
                         LibraryFacePresetStrip(draft, onDraft)
                         OptionStrip("SILHOUETTE", UltimateCatalog.bodyBuilds, draft.bodyBuild) { onDraft(draft.copy(bodyBuild = it)) }
                         OptionStrip("TAILLE", UltimateCatalog.statures, draft.stature) { onDraft(draft.copy(stature = it)) }
-                        OptionStrip("TEINT", UltimateCatalog.skinTones, draft.skinTone) { onDraft(draft.copy(skinTone = it)) }
-                        OptionStrip("VISAGE", UltimateCatalog.faceShapes, draft.faceShape) { onDraft(draft.copy(faceShape = it)) }
-                        OptionStrip("COIFFURE", UltimateCatalog.hairs, draft.hair) { onDraft(draft.copy(hair = it)) }
+                        OptionStrip("TEINT", UltimateCatalog.skinTones, draft.skinTone) { onDraft(draft.copy(skinTone = it, libraryFaceIndex = -1)) }
+                        OptionStrip("VISAGE", UltimateCatalog.faceShapes, draft.faceShape) { onDraft(draft.copy(faceShape = it, libraryFaceIndex = -1)) }
+                        OptionStrip("COIFFURE", UltimateCatalog.hairs, draft.hair) { onDraft(draft.copy(hair = it, libraryFaceIndex = -1)) }
                     }
                     2 -> {
                         UltimateSectionHeader("3 · style civil", "La personne avant le symbole", "Ce style pourra changer au fil des années, des coiffures et de la carrière.")
@@ -179,9 +179,9 @@ internal fun UltimateCreateScreen(
                                 }
                             }
                         }
-                        OptionStrip("COULEUR DE CHEVEUX", UltimateCatalog.hairColors, draft.hairColor) { onDraft(draft.copy(hairColor = it)) }
-                        OptionStrip("BARBE", UltimateCatalog.facialHairs, draft.facialHair) { onDraft(draft.copy(facialHair = it)) }
-                        OptionStrip("YEUX", UltimateCatalog.eyes, draft.eyes) { onDraft(draft.copy(eyes = it)) }
+                        OptionStrip("COULEUR DE CHEVEUX", UltimateCatalog.hairColors, draft.hairColor) { onDraft(draft.copy(hairColor = it, libraryFaceIndex = -1)) }
+                        OptionStrip("BARBE", UltimateCatalog.facialHairs, draft.facialHair) { onDraft(draft.copy(facialHair = it, libraryFaceIndex = -1)) }
+                        OptionStrip("YEUX", UltimateCatalog.eyes, draft.eyes) { onDraft(draft.copy(eyes = it, libraryFaceIndex = -1)) }
                         OptionStrip("VÊTEMENTS", UltimateCatalog.civilianStyles, draft.civilianStyle) { onDraft(draft.copy(civilianStyle = it)) }
                         OptionStrip("ACCESSOIRE", UltimateCatalog.accessories, draft.accessory) { onDraft(draft.copy(accessory = it)) }
                     }

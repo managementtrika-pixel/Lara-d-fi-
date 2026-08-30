@@ -24,7 +24,8 @@ internal data class UltimateCreationDraft(
     val cityArchetype: String = "Métropole verticale",
     val climate: String = "Quatre saisons",
     val architecture: String = "Contemporaine",
-    val cityMood: String = "Contrastes sociaux"
+    val cityMood: String = "Contrastes sociaux",
+    val libraryFaceIndex: Int = -1
 )
 
 internal data class UltimateRelation(
@@ -121,7 +122,8 @@ internal data class UltimateState(
     val rareMarks: List<String> = emptyList(),
     val memories: List<String> = emptyList(),
     val snapshots: List<String> = emptyList(),
-    val lastProcessedTurn: Int = -1
+    val lastProcessedTurn: Int = -1,
+    val libraryFaceIndex: Int = -1
 ) {
     fun relation(id: String): UltimateRelation? = relations.firstOrNull { it.id == id }
     fun district(name: String): UltimateDistrict? = districts.firstOrNull { it.name == name }
@@ -210,6 +212,7 @@ internal object UltimateStore {
             facialHair = draft.facialHair, eyes = draft.eyes, civilianStyle = draft.civilianStyle,
             accessory = draft.accessory, cityArchetype = draft.cityArchetype, climate = draft.climate,
             architecture = draft.architecture, cityMood = draft.cityMood,
+            libraryFaceIndex = draft.libraryFaceIndex,
             journalist = relations.first { it.id == "journalist" }.name,
             relations = relations,
             districts = districts,
@@ -273,7 +276,7 @@ internal object UltimateStore {
             state.cityTech, state.generationOpinion, state.mysteryStage, state.retirementIntent,
             state.lastProcessedTurn
         ).joinToString("|") { e(it) }
-        return "U1|$scalar|${e(relations(state.relations))}|${e(cases(state.cases))}|${e(districts(state.districts))}|${e(list(state.techniques))}|${e(list(state.injuries))}|${e(list(state.iconicItems))}|${e(list(state.rareMarks))}|${e(list(state.memories))}|${e(list(state.snapshots))}"
+        return "U1|$scalar|${e(relations(state.relations))}|${e(cases(state.cases))}|${e(districts(state.districts))}|${e(list(state.techniques))}|${e(list(state.injuries))}|${e(list(state.iconicItems))}|${e(list(state.rareMarks))}|${e(list(state.memories))}|${e(list(state.snapshots))}|${e(state.libraryFaceIndex)}"
     }
 
     private fun decode(raw: String): UltimateState? = runCatching {
@@ -313,6 +316,7 @@ internal object UltimateStore {
         val districts = decodeDistricts(s())
         val techniques = decodeList(s()); val injuries = decodeList(s()); val iconicItems = decodeList(s())
         val rareMarks = decodeList(s()); val memories = decodeList(s()); val snapshots = decodeList(s())
+        val libraryFaceIndex = s().toIntOrNull() ?: -1
 
         UltimateState(
             seed, bodyBuild, stature, skinTone, faceShape, hair, hairColor, facialHair, eyes,
@@ -322,7 +326,7 @@ internal object UltimateStore {
             protege, romance, nemesis, nemesisAdaptation, combatStyle, powerBranch, powerStrain,
             internationalAttention, metaLaw, cityCondition, cityTech, generationOpinion, mysteryStage,
             retirementIntent, relations, cases, districts, techniques, injuries, iconicItems, rareMarks,
-            memories, snapshots, lastProcessedTurn
+            memories, snapshots, lastProcessedTurn, libraryFaceIndex = libraryFaceIndex
         )
     }.getOrNull()
 }
