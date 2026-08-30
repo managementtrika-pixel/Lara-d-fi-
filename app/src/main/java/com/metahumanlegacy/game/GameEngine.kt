@@ -92,11 +92,15 @@ object GameEngine {
     }
 
     /**
-     * The authored repository still chooses the canonical story beat. The DepthDirector only
-     * decorates it with memory callbacks, imperfect information, pressures and context-dependent
-     * options. Formative/awakening beats are deliberately left structurally untouched.
+     * The authored repository still chooses the canonical story beat. Two deterministic depth
+     * passes then make accumulated life experience relevant without replacing the authored arc.
+     * Formative/awakening beats are deliberately left structurally untouched.
      */
-    fun event(c: Campaign): EventNode = DepthDirector.enrichEvent(c, NarrativeRepository.event(c))
+    fun event(c: Campaign): EventNode {
+        val authored = NarrativeRepository.event(c)
+        val deep = DepthDirector.enrichEvent(c, authored)
+        return CareerVariationDirector.enrich(c, deep)
+    }
 
     fun resolve(c: Campaign, event: EventNode, choice: Choice): Resolution {
         val rawNext = GameRules.apply(c, event, choice)
