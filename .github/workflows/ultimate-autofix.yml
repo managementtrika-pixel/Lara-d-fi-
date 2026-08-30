@@ -1,0 +1,54 @@
+name: Ultimate Expansion Autofix
+
+on:
+  push:
+    branches:
+      - feat/ultimate-legacy-expansion
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: ${{ !contains(github.event.head_commit.message, '[ultimate-autofix]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/ultimate-legacy-expansion
+          fetch-depth: 0
+      - name: Apply compiler-safe corrections
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          director = Path('app/src/main/java/com/metahumanlegacy/game/UltimateDirector.kt')
+          text = director.read_text()
+          text = text.replace('c.seed xor 0xD1B54A32D192ED03L', 'c.seed xor 0xD1B54A32D192ED03UL.toLong()')
+          director.write_text(text)
+
+          visuals = Path('app/src/main/java/com/metahumanlegacy/game/UltimateVisuals.kt')
+          text = visuals.read_text()
+          if 'import kotlin.math.absoluteValue' not in text:
+              text = text.replace('import kotlin.math.PI\n', 'import kotlin.math.PI\nimport kotlin.math.absoluteValue\n')
+          old = '                if ((seed + row) % 3 != 0) drawRect(UltimateGold.copy(alpha = .35f), Offset(x + bw * .18f, y + bh * .12f + row * size.height * .05f), Size(bw * .12f, size.height * .012f))'
+          new = '''                if ((seed + row) % 3 != 0) {
+                    val windowTop = Offset(x + bw * .18f, y + bh * .12f + row.toFloat() * size.height * .05f)
+                    val windowSize = Size(bw * .12f, size.height * .012f)
+                    drawRect(color = UltimateGold.copy(alpha = .35f), topLeft = windowTop, size = windowSize)
+                }'''
+          if old not in text:
+              raise SystemExit('Expected window drawing line not found')
+          text = text.replace(old, new)
+          visuals.write_text(text)
+          PY
+      - name: Commit corrections
+        shell: bash
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/src/main/java/com/metahumanlegacy/game/UltimateDirector.kt app/src/main/java/com/metahumanlegacy/game/UltimateVisuals.kt
+          git commit -m "[ultimate-autofix] Fix Kotlin compilation edge cases"
+          git push origin HEAD:feat/ultimate-legacy-expansion
