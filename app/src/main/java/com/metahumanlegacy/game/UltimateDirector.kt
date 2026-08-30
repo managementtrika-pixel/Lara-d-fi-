@@ -650,7 +650,7 @@ internal object UltimateDirector {
         val cat = event.category.uppercase()
         if (investigationWords.any(cat::contains) && c.turn % 9 == 0) stage = (stage + 1).coerceAtMost(8)
         var marks = initial.rareMarks
-        val rareRoll = positive(c.seed xor 0xD1B54A32D192ED03L, c.turn * 1009 + event.id.hashCode())
+        val rareRoll = positive(c.seed xor 0xD1B54A32D192ED03UL.toLong(), c.turn * 1009 + event.id.hashCode())
         if (rareRoll < 2 && marks.size < 6) {
             val mark = listOf(
                 "le même symbole aperçu dans deux lieux sans lien apparent",

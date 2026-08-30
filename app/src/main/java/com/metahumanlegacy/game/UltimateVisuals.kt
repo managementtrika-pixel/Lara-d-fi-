@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.math.PI
+import kotlin.math.absoluteValue
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -350,7 +351,11 @@ internal fun UltimateCityArtwork(c: Campaign, state: UltimateState, modifier: Mo
             drawRect(Color.Black.copy(alpha = .4f), Offset(x + bw * .78f, y), Size(bw * .22f, bh))
             val rows = (bh / (size.height * .05f)).toInt().coerceAtLeast(2)
             repeat(rows) { row ->
-                if ((seed + row) % 3 != 0) drawRect(UltimateGold.copy(alpha = .35f), Offset(x + bw * .18f, y + bh * .12f + row * size.height * .05f), Size(bw * .12f, size.height * .012f))
+                if ((seed + row) % 3 != 0) {
+          val windowTop = Offset(x + bw * .18f, y + bh * .12f + row.toFloat() * size.height * .05f)
+          val windowSize = Size(bw * .12f, size.height * .012f)
+          drawRect(color = UltimateGold.copy(alpha = .35f), topLeft = windowTop, size = windowSize)
+      }
             }
         }
         // Street and river/road perspective
