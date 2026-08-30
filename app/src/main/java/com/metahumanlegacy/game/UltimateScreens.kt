@@ -160,6 +160,7 @@ internal fun UltimateCreateScreen(
                         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                             UltimatePortrait(previewCampaign, previewState, Modifier.width(190.dp).height(255.dp).clip(CutCornerShape(18.dp)), heroMode = false, showAura = false)
                         }
+                        LibraryFacePresetStrip(draft, onDraft)
                         OptionStrip("SILHOUETTE", UltimateCatalog.bodyBuilds, draft.bodyBuild) { onDraft(draft.copy(bodyBuild = it)) }
                         OptionStrip("TAILLE", UltimateCatalog.statures, draft.stature) { onDraft(draft.copy(stature = it)) }
                         OptionStrip("TEINT", UltimateCatalog.skinTones, draft.skinTone) { onDraft(draft.copy(skinTone = it)) }
@@ -188,6 +189,7 @@ internal fun UltimateCreateScreen(
                         UltimateSectionHeader("4 · ville", "Construis le décor de ta vie", "La ville évoluera ensuite : dégâts, reconstruction, réputation locale, lois, factions et monuments.")
                         Spacer(Modifier.height(10.dp))
                         UltimateCityArtwork(previewCampaign, previewState, Modifier.fillMaxWidth().height(210.dp).clip(CutCornerShape(18.dp)))
+                        LibraryCityPresetStrip(draft, onDraft)
                         OptionStrip("VILLE", GameEngine.cities, draft.blueprint.city) { updateBlueprint(draft.blueprint.copy(city = it)) }
                         OptionStrip("QUARTIER DE DÉPART", GameEngine.districts, draft.blueprint.district) { updateBlueprint(draft.blueprint.copy(district = it)) }
                         OptionStrip("TYPE DE VILLE", UltimateCatalog.cityArchetypes, draft.cityArchetype) { onDraft(draft.copy(cityArchetype = it)) }
@@ -259,6 +261,11 @@ internal fun UltimateAliasScreen(c: Campaign, state: UltimateState, onConfirm: (
             OptionStrip("PRÉSENCE", UltimateCatalog.heroPresentations, presentation) { presentation = it }
             OptionStrip("PALETTE", UltimateCatalog.costumePalettes, palette) { palette = it }
             OptionStrip("MASQUE", UltimateCatalog.maskStyles, mask) { mask = it }
+            LibraryAliasCostumePresetStrip(presentation, palette, mask) { preset ->
+                presentation = preset.presentation
+                palette = preset.palette
+                mask = preset.mask
+            }
             Spacer(Modifier.height(12.dp))
             MhlPrimaryButton("Prendre cette identité", { onConfirm(alias.trim(), presentation, palette, mask) }, Modifier.fillMaxWidth(), alias.trim().isNotBlank())
         }
@@ -567,6 +574,8 @@ private fun UltimateCharacterScreen(c: Campaign, state: UltimateState, onStateCh
                 if (state.techniques.isNotEmpty()) Text("Techniques : ${state.techniques.joinToString(" · ")}", color = UltimateGold, fontSize = 10.sp)
             }
             Spacer(Modifier.height(6.dp))
+            LibraryCostumePresetStrip(state, state.costumeEra.coerceAtLeast(1), onStateChange)
+            Spacer(Modifier.height(8.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                 Box(Modifier.weight(1f)) { UltimateActionTile("Présence", state.heroPresentation, profile.accent, onClick = { onStateChange(state.copy(heroPresentation = cycle(UltimateCatalog.heroPresentations, state.heroPresentation))) }) }
                 Box(Modifier.weight(1f)) { UltimateActionTile("Palette", state.costumePalette, UltimateGold, onClick = { onStateChange(state.copy(costumePalette = cycle(UltimateCatalog.costumePalettes, state.costumePalette))) }) }
