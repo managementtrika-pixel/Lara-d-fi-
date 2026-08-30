@@ -1,0 +1,110 @@
+name: True Character Assets Autopatch
+
+on:
+  push:
+    branches: [ "fix/true-modular-character-assets" ]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/true-modular-character-assets
+      - name: Fix character asset slicing and face persistence
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          assets = Path('app/src/main/java/com/metahumanlegacy/game/LibraryCustomizationAssets.kt')
+          s = assets.read_text()
+          s = s.replace('const val FACE_COLUMNS = 4\n    const val FACE_ROWS = 3', 'const val FACE_COLUMNS = 8\n    const val FACE_ROWS = 6')
+
+          old_apply = '''    fun apply(draft: UltimateCreationDraft): UltimateCreationDraft = draft.copy(
+        skinTone = skinTone,
+        faceShape = faceShape,
+        hair = hair,
+        hairColor = hairColor,
+        facialHair = facialHair,
+        eyes = eyes,
+        civilianStyle = civilianStyle
+    )
+
+    fun matches(draft: UltimateCreationDraft): Boolean =
+        draft.skinTone == skinTone && draft.faceShape == faceShape && draft.hair == hair &&
+            draft.hairColor == hairColor && draft.facialHair == facialHair && draft.eyes == eyes
+'''
+          new_apply = '''    // A face cell selects the immutable facial base only. Hair, beard, eyes and clothes remain
+    // independent controls instead of silently replacing the selected Library identity.
+    fun apply(draft: UltimateCreationDraft): UltimateCreationDraft = draft.copy(
+        skinTone = skinTone,
+        faceShape = faceShape
+    )
+
+    fun matches(draft: UltimateCreationDraft): Boolean =
+        draft.skinTone == skinTone && draft.faceShape == faceShape
+'''
+          if old_apply not in s:
+              raise SystemExit('LibraryFacePreset apply block not found')
+          s = s.replace(old_apply, new_apply)
+
+          tones = ['Très clair','Clair','Moyen','Mat','Foncé','Très foncé']
+          shapes = ['Ovale','Carré','Fin','Rond','Anguleux']
+          # 30 deliberately curated cells from the real 8x6 Library board. We omit the few cells
+          # with large baked hairstyles/beards so later appearance controls remain visually sane.
+          cells = {
+              'Très clair': [0, 7, 8, 12, 13],
+              'Clair': [16, 19, 21, 25, 30],
+              'Moyen': [3, 9, 15, 23, 33],
+              'Mat': [5, 11, 20, 27, 35],
+              'Foncé': [6, 14, 22, 29, 36],
+              'Très foncé': [2, 10, 18, 24, 40],
+          }
+          lines = []
+          for tone in tones:
+              for j, shape in enumerate(shapes):
+                  idx = cells[tone][j]
+                  label = f'{shape} · {tone}'
+                  lines.append(f'        LibraryFacePreset("{label}", {idx}, "{tone}", "{shape}", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre")')
+          new_list = '    val facePresets = listOf(\n' + ',\n'.join(lines) + '\n    )\n\n'
+          s, count = re.subn(r'    val facePresets = listOf\(.*?\n    \)\n\n    // The source atlas', new_list + '    // The source atlas', s, count=1, flags=re.S)
+          if count != 1:
+              raise SystemExit('facePresets list not found')
+
+          s = s.replace('''        "Looks illustrés",
+        "Chaque vignette applique un preset complet aux paramètres stables. Aucun fragment généré n\'est superposé au hasard."''', '''        "Base du visage",
+        "Une vignette = une seule personne. 30 bases individuelles issues de la grille 8×6; jamais de mini-planche ni de bloc de quatre visages."''')
+          assets.write_text(s)
+
+          visuals = Path('app/src/main/java/com/metahumanlegacy/game/UltimateVisuals.kt')
+          v = visuals.read_text()
+          v, count = re.subn(
+              r'''private fun libraryFaceIndex\(state: UltimateState\): Int\? =\n    LibraryCustomizationCatalog\.facePresets\.indexOfFirst \{ preset ->\n        preset\.skinTone == state\.skinTone && preset\.faceShape == state\.faceShape &&\n            preset\.hair == state\.hair && preset\.hairColor == state\.hairColor &&\n            preset\.facialHair == state\.facialHair && preset\.eyes == state\.eyes\n    \}\.takeIf \{ it >= 0 \}''',
+              '''private fun libraryFaceIndex(state: UltimateState): Int? =\n    LibraryCustomizationCatalog.facePresets.firstOrNull { preset ->\n        preset.skinTone == state.skinTone && preset.faceShape == state.faceShape\n    }?.atlasIndex''',
+              v,
+              count=1
+          )
+          if count != 1:
+              raise SystemExit('libraryFaceIndex block not found')
+          visuals.write_text(v)
+
+          tests = Path('app/src/test/java/com/metahumanlegacy/game/LibraryCustomizationAssetTest.kt')
+          t = tests.read_text()
+          marker = '        assertTrue(LibraryCustomizationCatalog.facePresets.isNotEmpty())\n'
+          t = t.replace(marker, marker + '        assertTrue(LibraryCustomizationCatalog.FACE_COLUMNS == 8)\n        assertTrue(LibraryCustomizationCatalog.FACE_ROWS == 6)\n        assertTrue(LibraryCustomizationCatalog.facePresets.size == 30)\n        assertTrue(LibraryCustomizationCatalog.facePresets.map { it.skinTone to it.faceShape }.distinct().size == 30)\n')
+          tests.write_text(t)
+
+      - name: Remove this one-shot workflow
+        run: rm .github/workflows/true-character-assets-autopatch.yml
+      - name: Commit correction
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: use individual Library faces in character creator"
+          git push origin HEAD:fix/true-modular-character-assets
