@@ -1,0 +1,222 @@
+package com.metahumanlegacy.game
+
+import androidx.compose.foundation.Canvas
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import kotlin.math.roundToInt
+
+private fun pxSkin(name: String): Color = when (name) {
+    "Très clair" -> Color(0xFFF3D2BD)
+    "Clair" -> Color(0xFFE8BFA4)
+    "Moyen" -> Color(0xFFC88E67)
+    "Mat" -> Color(0xFFAA714F)
+    "Foncé" -> Color(0xFF794A34)
+    "Très foncé" -> Color(0xFF4C2B22)
+    else -> Color(0xFFC88E67)
+}
+
+private fun pxHair(name: String): Color = when (name) {
+    "Noir" -> Color(0xFF111318)
+    "Brun" -> Color(0xFF3B261E)
+    "Châtain" -> Color(0xFF6A4630)
+    "Blond" -> Color(0xFFD4B06A)
+    "Roux" -> Color(0xFFA9502B)
+    "Gris" -> Color(0xFF9699A0)
+    "Blanc" -> Color(0xFFE8E5DE)
+    else -> Color(0xFF3B261E)
+}
+
+private fun pxOutfit(style: String): Pair<Color, Color> = when {
+    style.contains("Sport", true) -> Color(0xFF2E6CA4) to Color(0xFFB9D9FF)
+    style.contains("Class", true) -> Color(0xFF27303A) to Color(0xFFD7DFEA)
+    style.contains("Créat", true) -> Color(0xFF7A3F7E) to Color(0xFFE3B7F0)
+    style.contains("Profession", true) -> Color(0xFF3B4D68) to Color(0xFFC9D7E8)
+    style.contains("Vintage", true) -> Color(0xFF795B3E) to Color(0xFFE1C49F)
+    else -> Color(0xFF2A415D) to Color(0xFF8AB4E8)
+}
+
+@Composable
+internal fun PixelAvatar(
+    state: UltimateState,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier) {
+        val cols = 18
+        val rows = 28
+        val cell = minOf(size.width / cols, size.height / rows)
+        val ox = (size.width - cols * cell) / 2f
+        val oy = (size.height - rows * cell) / 2f
+
+        fun p(x: Int, y: Int, w: Int = 1, h: Int = 1, color: Color) {
+            drawRect(color, Offset(ox + x * cell, oy + y * cell), Size(w * cell, h * cell))
+        }
+
+        val skin = pxSkin(state.skinTone)
+        val hair = pxHair(state.hairColor)
+        val (shirt, trim) = pxOutfit(state.civilianStyle)
+        val outline = Color(0xFF121820)
+        val white = Color(0xFFF4F4F0)
+        val eyeDark = when (state.eyes) {
+            "Bleus" -> Color(0xFF3E78A8)
+            "Verts" -> Color(0xFF4E7D59)
+            "Noisette" -> Color(0xFF7A5A34)
+            else -> Color(0xFF342821)
+        }
+
+        // Legs / stance
+        val legSpread = if (state.bodyBuild == "Massif") 1 else 0
+        p(6 - legSpread, 21, 3 + legSpread, 6, Color(0xFF1A2532))
+        p(9, 21, 3 + legSpread, 6, Color(0xFF1A2532))
+        p(5 - legSpread, 26, 4 + legSpread, 2, Color(0xFF0D1117))
+        p(9, 26, 4 + legSpread, 2, Color(0xFF0D1117))
+
+        // Torso
+        val torsoX = when (state.bodyBuild) {
+            "Fin" -> 5
+            "Massif", "Robuste" -> 3
+            else -> 4
+        }
+        val torsoW = when (state.bodyBuild) {
+            "Fin" -> 8
+            "Massif" -> 12
+            "Robuste" -> 11
+            else -> 10
+        }
+        p(torsoX, 14, torsoW, 8, outline)
+        p(torsoX + 1, 15, torsoW - 2, 6, shirt)
+        p(torsoX + 1, 20, torsoW - 2, 1, trim.copy(alpha = .85f))
+
+        // Arms
+        p((torsoX - 2).coerceAtLeast(1), 15, 2, 6, outline)
+        p((torsoX - 1).coerceAtLeast(2), 16, 1, 4, skin)
+        p((torsoX + torsoW).coerceAtMost(16), 15, 2, 6, outline)
+        p((torsoX + torsoW).coerceAtMost(16), 16, 1, 4, skin)
+
+        // Neck
+        p(7, 12, 4, 3, outline)
+        p(8, 12, 2, 3, skin)
+
+        // Head silhouette
+        val headX = when (state.faceShape) {
+            "Fin" -> 5
+            "Rond" -> 4
+            else -> 4
+        }
+        val headW = when (state.faceShape) {
+            "Fin" -> 8
+            "Rond" -> 10
+            else -> 10
+        }
+        val headY = 3
+        p(headX, headY, headW, 9, outline)
+        p(headX + 1, headY + 1, headW - 2, 7, skin)
+        if (state.faceShape == "Carré" || state.faceShape == "Anguleux") {
+            p(headX + 1, headY + 7, 2, 1, outline.copy(alpha = .6f))
+            p(headX + headW - 3, headY + 7, 2, 1, outline.copy(alpha = .6f))
+        }
+
+        // Ears
+        p(headX - 1, 6, 1, 3, skin)
+        p(headX + headW, 6, 1, 3, skin)
+
+        // Eyes
+        val eyeY = 7
+        p(headX + 2, eyeY, 2, 1, white)
+        p(headX + headW - 4, eyeY, 2, 1, white)
+        p(headX + 3, eyeY, 1, 1, eyeDark)
+        p(headX + headW - 3, eyeY, 1, 1, eyeDark)
+
+        // Brows
+        p(headX + 2, 6, 2, 1, hair.copy(alpha = .9f))
+        p(headX + headW - 4, 6, 2, 1, hair.copy(alpha = .9f))
+
+        // Nose + mouth
+        p(headX + headW / 2, 8, 1, 2, skin.copy(alpha = .78f))
+        p(headX + 3, 10, headW - 6, 1, Color(0xFF6A3433))
+
+        // Hair
+        drawPixelHair(state.hair, hair, headX, headY, headW, cell, ox, oy)
+
+        // Facial hair
+        if (state.facialHair != "Aucune") {
+            when (state.facialHair) {
+                "Moustache" -> p(headX + 3, 9, headW - 6, 1, hair)
+                "Bouc" -> {
+                    p(headX + 3, 9, headW - 6, 1, hair)
+                    p(headX + headW / 2 - 1, 10, 2, 2, hair)
+                }
+                else -> {
+                    p(headX + 1, 9, headW - 2, 2, hair.copy(alpha = .9f))
+                    p(headX + 2, 11, headW - 4, 1, hair.copy(alpha = .9f))
+                }
+            }
+        }
+
+        // Accessory
+        when {
+            state.accessory.contains("Lun", true) -> {
+                p(headX + 1, 7, 4, 2, Color(0xFF1A1F26))
+                p(headX + headW - 5, 7, 4, 2, Color(0xFF1A1F26))
+                p(headX + 5, 7, (headW - 10).coerceAtLeast(1), 1, Color(0xFF1A1F26))
+            }
+            state.accessory.contains("Casquette", true) -> {
+                p(headX, 2, headW, 2, Color(0xFF384F6C))
+                p(headX + headW - 2, 4, 3, 1, Color(0xFF384F6C))
+            }
+            state.accessory.contains("Bonnet", true) -> {
+                p(headX, 1, headW, 3, Color(0xFF6A4A70))
+            }
+        }
+
+        // Tiny floor shadow
+        p(4, 27, 10, 1, Color.Black.copy(alpha = .28f))
+    }
+}
+
+private fun DrawScope.drawPixelHair(
+    style: String,
+    color: Color,
+    headX: Int,
+    headY: Int,
+    headW: Int,
+    cell: Float,
+    ox: Float,
+    oy: Float
+) {
+    fun p(x: Int, y: Int, w: Int = 1, h: Int = 1) {
+        drawRect(color, Offset(ox + x * cell, oy + y * cell), Size(w * cell, h * cell))
+    }
+    when (style) {
+        "Rasé" -> {
+            p(headX + 1, headY, headW - 2, 1)
+            p(headX + 2, headY + 1, headW - 4, 1)
+        }
+        "Long" -> {
+            p(headX, headY - 1, headW, 3)
+            p(headX, headY + 2, 2, 8)
+            p(headX + headW - 2, headY + 2, 2, 8)
+        }
+        "Tresses" -> {
+            p(headX, headY - 1, headW, 2)
+            repeat(4) { i ->
+                p(headX + 1 + i * 2, headY + 1, 1, 9)
+            }
+        }
+        "Boucles" -> {
+            p(headX, headY - 1, headW, 2)
+            repeat(5) { i -> p(headX + i * 2, headY - 2 + (i % 2), 2, 2) }
+        }
+        "Undercut" -> {
+            p(headX + 2, headY - 2, headW - 2, 2)
+            p(headX + headW - 2, headY, 2, 2)
+        }
+        else -> {
+            p(headX, headY - 1, headW, 2)
+            p(headX + 1, headY + 1, headW - 2, 1)
+        }
+    }
+}
