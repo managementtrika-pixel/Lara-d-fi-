@@ -107,7 +107,7 @@ internal fun UltimateCharacterCreatorV2(
                         Modifier.weight(1f)
                     )
                     MhlPrimaryButton(
-                        if (step == creatorSteps.lastIndex) "COMMENCER L'ANNÉE 1" else creatorNextLabel(step),
+                        if (step == creatorSteps.lastIndex) "COMMENCER À 8 ANS" else creatorNextLabel(step),
                         { if (step == creatorSteps.lastIndex) onStart(draft) else step++ },
                         Modifier.weight(1f),
                         canAdvance
@@ -644,7 +644,7 @@ private fun ValidationStep(draft: UltimateCreationDraft, campaign: Campaign, sta
                     Text("DOSSIER CIVIL", color = UltimateIvory, fontSize = 20.sp, fontWeight = FontWeight.Black)
                 }
                 Column(horizontalAlignment = Alignment.End) {
-                    Text("18 ANS", color = UltimateBlue, fontSize = 10.sp, fontWeight = FontWeight.Black)
+                    Text("7 ANS", color = UltimateBlue, fontSize = 10.sp, fontWeight = FontWeight.Black)
                     Text("AUCUN POUVOIR", color = UltimateMuted, fontSize = 6.sp, fontWeight = FontWeight.Black)
                 }
             }
@@ -1184,7 +1184,7 @@ private fun CreatorCompletionBar(step: Int, total: Int, draft: UltimateCreationD
                     2 -> "DONNE-LUI UN STYLE"
                     3 -> "DONNE-LUI UNE HISTOIRE"
                     4 -> "DONNE-LUI UN MONDE"
-                    else -> "PRÊT POUR L'ANNÉE 1"
+                    else -> "PRÊT POUR SES 8 ANS"
                 },
                 color = UltimateMuted,
                 fontSize = 7.sp,
@@ -1265,15 +1265,15 @@ private fun PixelYearOneTeaser(draft: UltimateCreationDraft) {
             Spacer(Modifier.width(9.dp))
             Column {
                 Text("PROCHAINE ÉTAPE", color = UltimateMuted, fontSize = 6.sp, fontWeight = FontWeight.Black, letterSpacing = .8.sp)
-                Text("ANNÉE 1 · VIE ORDINAIRE", color = UltimateIvory, fontSize = 13.sp, fontWeight = FontWeight.Black)
+                Text("8 ANS · PREMIÈRE ANNÉE FORMATIVE", color = UltimateIvory, fontSize = 13.sp, fontWeight = FontWeight.Black)
             }
         }
         Spacer(Modifier.height(7.dp))
         Text(
             "Pas de costume. Pas de pouvoir. " +
                 draft.blueprint.firstName.ifBlank { "Ton personnage" } +
-                " va d'abord vivre, choisir, perdre, gagner et rencontrer des gens. " +
-                "Ces décisions prépareront silencieusement ce qui viendra ensuite.",
+                " va traverser dix années formatives, de 8 à 17 ans. " +
+                "À 18 ans, ce vécu déterminera silencieusement la première manifestation de son pouvoir.",
             color = UltimateMuted,
             fontSize = 10.sp,
             lineHeight = 15.sp
