@@ -7,7 +7,7 @@ import java.util.Random
 /**
  * Persistent state for the expanded life-simulation layer.
  * Campaign stays the authoritative deterministic narrative state; this store carries the richer
- * personalization/world biography so old saves remain compatible with Campaign V4.
+ * personalization/world biography while Campaign storage migrates legacy chronology explicitly.
  */
 internal data class UltimateCreationDraft(
     val blueprint: CharacterBlueprint,
@@ -216,7 +216,7 @@ internal object UltimateStore {
             journalist = relations.first { it.id == "journalist" }.name,
             relations = relations,
             districts = districts,
-            snapshots = listOf("18|Civil|${draft.hair}|${draft.civilianStyle}")
+            snapshots = listOf("8|Enfance|${draft.hair}|${draft.civilianStyle}")
         )
     }
 
