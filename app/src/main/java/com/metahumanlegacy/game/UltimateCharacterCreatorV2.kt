@@ -39,14 +39,12 @@ import androidx.compose.ui.unit.sp
 private data class CreatorStep(val number: String, val title: String, val subtitle: String)
 
 private val creatorSteps = listOf(
-    CreatorStep("01", "IDENTITÉ", "Chaque légende commence par une personne."),
-    CreatorStep("02", "VISAGE", "Assemble ton visage pixel en quelques choix."),
-    CreatorStep("03", "CORPS", "Choisis une silhouette simple et lisible."),
-    CreatorStep("04", "CHEVEUX", "Change de coiffure et de look en un tap."),
-    CreatorStep("05", "STYLE", "Avant le costume, il y a une façon d'habiter le monde."),
-    CreatorStep("06", "DÉTAILS", "Les petits signes font une identité."),
-    CreatorStep("07", "VILLE", "Ton histoire commence quelque part."),
-    CreatorStep("08", "VALIDATION", "Avant le pouvoir, il y avait une personne.")
+    CreatorStep("01", "QUI ES-TU ?", "Ton nom. Ton visage. Le début de tout."),
+    CreatorStep("02", "TA SILHOUETTE", "Construis une présence immédiatement reconnaissable."),
+    CreatorStep("03", "TON LOOK", "Cheveux, regard, tenue : fais-en quelqu'un."),
+    CreatorStep("04", "TA VIE", "Avant les pouvoirs, tu avais déjà une histoire."),
+    CreatorStep("05", "TA VILLE", "Choisis le décor où tout va commencer."),
+    CreatorStep("06", "TON IDENTITÉ", "Cette personne est prête à vivre sa première année.")
 )
 
 @Composable
@@ -90,13 +88,11 @@ internal fun UltimateCharacterCreatorV2(
                 ) { current ->
                     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
                         when (current) {
-                            0 -> IdentityStep(draft, previewCampaign, previewState, ::updateBlueprint)
-                            1 -> FaceStep(draft, previewCampaign, previewState, onDraft)
-                            2 -> BodyStep(draft, previewCampaign, previewState, onDraft)
-                            3 -> HairStep(draft, previewCampaign, previewState, onDraft)
-                            4 -> StyleStep(draft, previewCampaign, previewState, onDraft)
-                            5 -> DetailsStep(draft, previewCampaign, previewState, ::updateBlueprint)
-                            6 -> CityStep(draft, previewCampaign, previewState, onDraft, ::updateBlueprint)
+                            0 -> IdentityAndFaceStep(draft, previewCampaign, previewState, ::updateBlueprint, onDraft)
+                            1 -> BodyStep(draft, previewCampaign, previewState, onDraft)
+                            2 -> LookStep(draft, previewCampaign, previewState, onDraft)
+                            3 -> DetailsStep(draft, previewCampaign, previewState, ::updateBlueprint)
+                            4 -> CityStep(draft, previewCampaign, previewState, onDraft, ::updateBlueprint)
                             else -> ValidationStep(draft, previewCampaign, previewState)
                         }
                     }
@@ -259,6 +255,106 @@ private fun CharacterStage(campaign: Campaign, state: UltimateState, caption: St
         }
     }
 }
+
+@Composable
+private fun IdentityAndFaceStep(
+    draft: UltimateCreationDraft,
+    campaign: Campaign,
+    state: UltimateState,
+    updateBlueprint: (CharacterBlueprint) -> Unit,
+    onDraft: (UltimateCreationDraft) -> Unit
+) {
+    CharacterStage(campaign, state, draft.blueprint.fullName.ifBlank { "Une personne ordinaire" })
+    Spacer(Modifier.height(10.dp))
+    UltimatePanel(accent = UltimateBlue) {
+        OutlinedTextField(
+            draft.blueprint.firstName,
+            { updateBlueprint(draft.blueprint.copy(firstName = it.take(24))) },
+            label = { Text("Prénom") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.height(7.dp))
+        OutlinedTextField(
+            draft.blueprint.lastName,
+            { updateBlueprint(draft.blueprint.copy(lastName = it.take(24))) },
+            label = { Text("Nom") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+    PixelColorStrip("TEINT", UltimateCatalog.skinTones, draft.skinTone, ::pixelSkinPreview) {
+        onDraft(draft.copy(skinTone = it, libraryFaceIndex = -1))
+    }
+    PixelFaceShapeStrip(draft.faceShape, draft.skinTone) {
+        onDraft(draft.copy(faceShape = it, libraryFaceIndex = -1))
+    }
+    CreatorOptionStrip("PRONOM", GameEngine.pronouns, draft.blueprint.pronouns) {
+        updateBlueprint(draft.blueprint.copy(pronouns = it))
+    }
+    Spacer(Modifier.height(10.dp))
+    MhlSecondaryButton(
+        "SURPRENDS-MOI",
+        {
+            onDraft(
+                draft.copy(
+                    skinTone = nextPixelOption(UltimateCatalog.skinTones, draft.skinTone, 1),
+                    faceShape = nextPixelOption(UltimateCatalog.faceShapes, draft.faceShape, 2),
+                    eyes = nextPixelOption(UltimateCatalog.eyes, draft.eyes, 1),
+                    libraryFaceIndex = -1
+                )
+            )
+        },
+        Modifier.fillMaxWidth()
+    )
+}
+
+@Composable
+private fun LookStep(
+    draft: UltimateCreationDraft,
+    campaign: Campaign,
+    state: UltimateState,
+    onDraft: (UltimateCreationDraft) -> Unit
+) {
+    CharacterStage(campaign, state, draft.civilianStyle + " · " + draft.hair)
+    PixelHairStrip(draft.hair, draft.hairColor, draft.skinTone) {
+        onDraft(draft.copy(hair = it, libraryFaceIndex = -1))
+    }
+    PixelColorStrip("COULEUR DE CHEVEUX", UltimateCatalog.hairColors, draft.hairColor, ::pixelHairPreview) {
+        onDraft(draft.copy(hairColor = it, libraryFaceIndex = -1))
+    }
+    PixelEyesStrip(draft.eyes, draft.skinTone, draft.hairColor) {
+        onDraft(draft.copy(eyes = it, libraryFaceIndex = -1))
+    }
+    PixelFacialHairStrip(draft.facialHair, draft.hairColor, draft.skinTone) {
+        onDraft(draft.copy(facialHair = it, libraryFaceIndex = -1))
+    }
+    PixelStyleStrip(draft.civilianStyle) {
+        onDraft(draft.copy(civilianStyle = it))
+    }
+    PixelAccessoryStrip(draft.accessory, draft.hairColor, draft.skinTone) {
+        onDraft(draft.copy(accessory = it))
+    }
+    Spacer(Modifier.height(10.dp))
+    MhlSecondaryButton(
+        "REMIX COMPLET",
+        {
+            onDraft(
+                draft.copy(
+                    hair = nextPixelOption(UltimateCatalog.hairs, draft.hair, 1),
+                    hairColor = nextPixelOption(UltimateCatalog.hairColors, draft.hairColor, 2),
+                    facialHair = nextPixelOption(UltimateCatalog.facialHairs, draft.facialHair, 1),
+                    eyes = nextPixelOption(UltimateCatalog.eyes, draft.eyes, 2),
+                    civilianStyle = nextPixelOption(UltimateCatalog.civilianStyles, draft.civilianStyle, 1),
+                    accessory = nextPixelOption(UltimateCatalog.accessories, draft.accessory, 1),
+                    libraryFaceIndex = -1
+                )
+            )
+        },
+        Modifier.fillMaxWidth()
+    )
+}
+
 
 @Composable
 private fun IdentityStep(
