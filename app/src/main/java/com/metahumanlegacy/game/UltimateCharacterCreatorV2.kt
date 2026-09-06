@@ -582,6 +582,33 @@ private fun CityStep(
     CreatorOptionStrip("CLIMAT", UltimateCatalog.climates, draft.climate) { onDraft(draft.copy(climate = it)) }
     CreatorOptionStrip("ARCHITECTURE", UltimateCatalog.architectures, draft.architecture) { onDraft(draft.copy(architecture = it)) }
     CreatorOptionStrip("AMBIANCE", UltimateCatalog.cityMoods, draft.cityMood) { onDraft(draft.copy(cityMood = it)) }
+    Spacer(Modifier.height(10.dp))
+    UltimatePanel(accent = UltimateGold) {
+        Text("TON TERRITOIRE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 8.sp, letterSpacing = 1.sp)
+        Text(
+            draft.blueprint.city.uppercase() + " · " + draft.blueprint.district.uppercase(),
+            color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 16.sp
+        )
+        Text(
+            pixelCitySentence(draft),
+            color = UltimateMuted, fontSize = 10.sp, lineHeight = 15.sp
+        )
+    }
+    Spacer(Modifier.height(8.dp))
+    MhlSecondaryButton(
+        "REMIX LA VILLE",
+        {
+            onDraft(
+                draft.copy(
+                    cityArchetype = nextPixelOption(UltimateCatalog.cityArchetypes, draft.cityArchetype, 1),
+                    climate = nextPixelOption(UltimateCatalog.climates, draft.climate, 1),
+                    architecture = nextPixelOption(UltimateCatalog.architectures, draft.architecture, 2),
+                    cityMood = nextPixelOption(UltimateCatalog.cityMoods, draft.cityMood, 1)
+                )
+            )
+        },
+        Modifier.fillMaxWidth()
+    )
 }
 
 @Composable
@@ -662,6 +689,16 @@ private fun ValidationStep(draft: UltimateCreationDraft, campaign: Campaign, sta
                 PixelSummaryTag(draft.bodyBuild, Modifier.weight(1f))
                 PixelSummaryTag(draft.civilianStyle, Modifier.weight(1f))
                 PixelSummaryTag(draft.accessory, Modifier.weight(1f))
+            }
+            Spacer(Modifier.height(8.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                PixelOriginStat("ORIGINE", draft.blueprint.socialBackground, Modifier.weight(1f))
+                PixelOriginStat("MOTEUR", draft.blueprint.motivation, Modifier.weight(1f))
+            }
+            Spacer(Modifier.height(6.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                PixelOriginStat("TEMPÉRAMENT", draft.blueprint.temperament, Modifier.weight(1f))
+                PixelOriginStat("TRAJECTOIRE", draft.blueprint.civilianPath, Modifier.weight(1f))
             }
             Spacer(Modifier.height(8.dp))
             UltimatePanel(accent = UltimateBlue) {
@@ -1090,6 +1127,28 @@ private fun PixelAccessoryStrip(selected: String, hairColor: String, skinTone: S
                 Text(accessory.uppercase(), color=if(active) UltimateIvory else UltimateMuted, fontSize=7.sp, fontWeight=FontWeight.Black, maxLines=2, lineHeight=9.sp)
             }
         }
+    }
+}
+
+
+private fun pixelCitySentence(draft: UltimateCreationDraft): String {
+    return draft.cityArchetype + ", " + draft.architecture.lowercase() +
+        ", sous un climat " + draft.climate.lowercase() +
+        ". L'ambiance générale est " + draft.cityMood.lowercase() + "."
+}
+
+@Composable
+private fun PixelOriginStat(label: String, value: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier
+            .clip(CutCornerShape(topEnd = 9.dp, bottomStart = 9.dp))
+            .background(Color(0xFF0D151E))
+            .border(1.dp, Color(0xFF263544), CutCornerShape(topEnd = 9.dp, bottomStart = 9.dp))
+            .padding(horizontal = 8.dp, vertical = 7.dp)
+    ) {
+        Text(label, color = UltimateBlue, fontSize = 6.sp, fontWeight = FontWeight.Black, letterSpacing = .8.sp)
+        Spacer(Modifier.height(2.dp))
+        Text(value.uppercase(), color = UltimateIvory, fontSize = 8.sp, fontWeight = FontWeight.Black, maxLines = 2, lineHeight = 10.sp)
     }
 }
 
