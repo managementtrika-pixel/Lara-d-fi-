@@ -98,8 +98,8 @@ internal fun UltimateHomeScreen(
                 MhlSecondaryButton("Nouvelle vie", { confirm = true }, Modifier.fillMaxWidth())
             } else {
                 UltimatePanel(Modifier.fillMaxWidth(), accent = UltimateBlue) {
-                    Text("À 18 ans, tu choisis une personne et une ville — pas un pouvoir.", color = UltimateIvory, fontWeight = FontWeight.Black)
-                    Text("Apparence, style civil, environnement et personnalité donnent une identité au départ. Les dix premières décisions construisent ensuite secrètement l'éveil.", color = UltimateMuted, lineHeight = 19.sp)
+                    Text("Tu commences à 8 ans : une personne, une famille, une ville — aucun pouvoir.", color = UltimateIvory, fontWeight = FontWeight.Black)
+                    Text("Apparence, style civil, environnement et personnalité donnent une identité au départ. Les dix décisions de 8 à 17 ans construisent ensuite secrètement l'éveil qui peut se manifester à 18 ans.", color = UltimateMuted, lineHeight = 19.sp)
                 }
                 Spacer(Modifier.height(12.dp))
                 MhlPrimaryButton("Commencer une vie", onNew, Modifier.fillMaxWidth())
