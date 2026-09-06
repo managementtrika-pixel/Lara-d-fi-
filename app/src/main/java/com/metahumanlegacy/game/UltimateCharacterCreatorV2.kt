@@ -289,8 +289,12 @@ private fun HairStep(
     PixelColorStrip("COULEUR", UltimateCatalog.hairColors, draft.hairColor, ::pixelHairPreview) {
         onDraft(draft.copy(hairColor = it, libraryFaceIndex = -1))
     }
-    CreatorOptionStrip("BARBE", UltimateCatalog.facialHairs, draft.facialHair) { onDraft(draft.copy(facialHair = it, libraryFaceIndex = -1)) }
-    CreatorOptionStrip("YEUX", UltimateCatalog.eyes, draft.eyes) { onDraft(draft.copy(eyes = it, libraryFaceIndex = -1)) }
+    PixelFacialHairStrip(draft.facialHair, draft.hairColor, draft.skinTone) {
+        onDraft(draft.copy(facialHair = it, libraryFaceIndex = -1))
+    }
+    PixelEyesStrip(draft.eyes, draft.skinTone, draft.hairColor) {
+        onDraft(draft.copy(eyes = it, libraryFaceIndex = -1))
+    }
 }
 
 @Composable
@@ -302,7 +306,7 @@ private fun StyleStep(
 ) {
     CharacterStage(campaign, state, draft.civilianStyle)
     PixelStyleStrip(draft.civilianStyle) { onDraft(draft.copy(civilianStyle = it)) }
-    CreatorOptionStrip("ACCESSOIRE", UltimateCatalog.accessories, draft.accessory) { onDraft(draft.copy(accessory = it)) }
+    PixelAccessoryStrip(draft.accessory, draft.hairColor, draft.skinTone) { onDraft(draft.copy(accessory = it)) }
 }
 
 @Composable
@@ -655,6 +659,133 @@ private fun PixelStyleStrip(selected: String, onSelect: (String) -> Unit) {
                 }
                 Spacer(Modifier.height(4.dp))
                 Text(style.uppercase(), color = if (active) UltimateIvory else UltimateMuted, fontSize = 7.sp, fontWeight = FontWeight.Black, maxLines = 2, lineHeight = 9.sp)
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun PixelFacialHairStrip(selected: String, hairColor: String, skinTone: String, onSelect: (String) -> Unit) {
+    Spacer(Modifier.height(13.dp))
+    Text("PILOSITÉ", color = UltimateGold, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
+    Spacer(Modifier.height(7.dp))
+    Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
+        UltimateCatalog.facialHairs.forEach { beard ->
+            val active = beard == selected
+            Column(
+                Modifier.width(86.dp)
+                    .clip(CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp))
+                    .background(if (active) Color(0xFF142334) else Color(0xFF0D141C))
+                    .border(1.dp, if (active) UltimateBlue else Color(0xFF2C3948), CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp))
+                    .clickable { onSelect(beard) }.padding(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Canvas(Modifier.size(54.dp)) {
+                    val skin=pixelSkinPreview(skinTone); val hc=pixelHairPreview(hairColor); val out=Color(0xFF11161C)
+                    drawRect(out, Offset(size.width*.22f,size.height*.18f), Size(size.width*.56f,size.height*.64f))
+                    drawRect(skin, Offset(size.width*.26f,size.height*.22f), Size(size.width*.48f,size.height*.56f))
+                    drawRect(Color(0xFF25303A), Offset(size.width*.34f,size.height*.43f), Size(4f,4f))
+                    drawRect(Color(0xFF25303A), Offset(size.width*.62f,size.height*.43f), Size(4f,4f))
+                    when {
+                        beard.contains("Moustache", true) -> drawRect(hc, Offset(size.width*.38f,size.height*.60f), Size(size.width*.24f,4f))
+                        beard.contains("Bouc", true) -> {
+                            drawRect(hc, Offset(size.width*.38f,size.height*.60f), Size(size.width*.24f,4f))
+                            drawRect(hc, Offset(size.width*.46f,size.height*.64f), Size(size.width*.08f,size.height*.15f))
+                        }
+                        beard != "Aucune" -> {
+                            drawRect(hc, Offset(size.width*.28f,size.height*.60f), Size(size.width*.44f,size.height*.18f))
+                            drawRect(hc.copy(alpha=.85f), Offset(size.width*.34f,size.height*.75f), Size(size.width*.32f,size.height*.08f))
+                        }
+                    }
+                }
+                Spacer(Modifier.height(4.dp))
+                Text(beard.uppercase(), color=if(active) UltimateIvory else UltimateMuted, fontSize=7.sp, fontWeight=FontWeight.Black, maxLines=2, lineHeight=9.sp)
+            }
+        }
+    }
+}
+
+@Composable
+private fun PixelEyesStrip(selected: String, skinTone: String, hairColor: String, onSelect: (String) -> Unit) {
+    Spacer(Modifier.height(13.dp))
+    Text("REGARD", color = UltimateGold, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
+    Spacer(Modifier.height(7.dp))
+    Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
+        UltimateCatalog.eyes.forEach { eyes ->
+            val active = eyes == selected
+            val iris = when(eyes) {
+                "Bleus" -> Color(0xFF3E78A8)
+                "Verts" -> Color(0xFF4E7D59)
+                "Noisette" -> Color(0xFF7A5A34)
+                else -> Color(0xFF342821)
+            }
+            Column(
+                Modifier.width(88.dp)
+                    .clip(CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp))
+                    .background(if(active) Color(0xFF142334) else Color(0xFF0D141C))
+                    .border(1.dp, if(active) UltimateBlue else Color(0xFF2C3948), CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp))
+                    .clickable { onSelect(eyes) }.padding(8.dp),
+                horizontalAlignment=Alignment.CenterHorizontally
+            ) {
+                Canvas(Modifier.width(60.dp).height(38.dp)) {
+                    val skin=pixelSkinPreview(skinTone); val hc=pixelHairPreview(hairColor)
+                    drawRect(skin, Offset(0f,0f), Size(size.width,size.height))
+                    drawRect(hc, Offset(size.width*.08f,size.height*.14f), Size(size.width*.25f,4f))
+                    drawRect(hc, Offset(size.width*.67f,size.height*.14f), Size(size.width*.25f,4f))
+                    drawRect(Color(0xFFF1F1ED), Offset(size.width*.10f,size.height*.46f), Size(size.width*.28f,size.height*.22f))
+                    drawRect(Color(0xFFF1F1ED), Offset(size.width*.62f,size.height*.46f), Size(size.width*.28f,size.height*.22f))
+                    drawRect(iris, Offset(size.width*.24f,size.height*.46f), Size(5f,size.height*.22f))
+                    drawRect(iris, Offset(size.width*.72f,size.height*.46f), Size(5f,size.height*.22f))
+                }
+                Spacer(Modifier.height(4.dp))
+                Text(eyes.uppercase(), color=if(active) UltimateIvory else UltimateMuted, fontSize=8.sp, fontWeight=FontWeight.Black, maxLines=1)
+            }
+        }
+    }
+}
+
+@Composable
+private fun PixelAccessoryStrip(selected: String, hairColor: String, skinTone: String, onSelect: (String) -> Unit) {
+    Spacer(Modifier.height(13.dp))
+    Text("ACCESSOIRE", color = UltimateGold, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
+    Spacer(Modifier.height(7.dp))
+    Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
+        UltimateCatalog.accessories.forEach { accessory ->
+            val active=accessory==selected
+            Column(
+                Modifier.width(92.dp)
+                    .clip(CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp))
+                    .background(if(active) Color(0xFF142334) else Color(0xFF0D141C))
+                    .border(1.dp, if(active) UltimateBlue else Color(0xFF2C3948), CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp))
+                    .clickable { onSelect(accessory) }.padding(8.dp),
+                horizontalAlignment=Alignment.CenterHorizontally
+            ) {
+                Canvas(Modifier.size(56.dp)) {
+                    val skin=pixelSkinPreview(skinTone); val hc=pixelHairPreview(hairColor); val out=Color(0xFF11161C)
+                    drawRect(out, Offset(size.width*.22f,size.height*.18f), Size(size.width*.56f,size.height*.64f))
+                    drawRect(skin, Offset(size.width*.26f,size.height*.22f), Size(size.width*.48f,size.height*.56f))
+                    drawRect(hc, Offset(size.width*.26f,size.height*.16f), Size(size.width*.48f,size.height*.12f))
+                    when {
+                        accessory.contains("Lun",true) -> {
+                            drawRect(Color(0xFF18202A), Offset(size.width*.22f,size.height*.42f), Size(size.width*.24f,size.height*.14f))
+                            drawRect(Color(0xFF18202A), Offset(size.width*.54f,size.height*.42f), Size(size.width*.24f,size.height*.14f))
+                            drawRect(Color(0xFF18202A), Offset(size.width*.46f,size.height*.46f), Size(size.width*.08f,4f))
+                        }
+                        accessory.contains("Casquette",true) -> {
+                            drawRect(Color(0xFF38516F), Offset(size.width*.20f,size.height*.10f), Size(size.width*.60f,size.height*.16f))
+                            drawRect(Color(0xFF38516F), Offset(size.width*.68f,size.height*.24f), Size(size.width*.20f,5f))
+                        }
+                        accessory.contains("Bonnet",true) -> drawRect(Color(0xFF6A4A70), Offset(size.width*.20f,size.height*.06f), Size(size.width*.60f,size.height*.22f))
+                        accessory.contains("Boucle",true) -> drawRect(Color(0xFFE0B94F), Offset(size.width*.18f,size.height*.58f), Size(4f,size.height*.18f))
+                        accessory.contains("Chaîne",true) -> {
+                            drawRect(Color(0xFFD3B15A), Offset(size.width*.26f,size.height*.74f), Size(size.width*.48f,4f))
+                            drawRect(Color(0xFFD3B15A), Offset(size.width*.48f,size.height*.74f), Size(4f,size.height*.18f))
+                        }
+                    }
+                }
+                Spacer(Modifier.height(4.dp))
+                Text(accessory.uppercase(), color=if(active) UltimateIvory else UltimateMuted, fontSize=7.sp, fontWeight=FontWeight.Black, maxLines=2, lineHeight=9.sp)
             }
         }
     }
