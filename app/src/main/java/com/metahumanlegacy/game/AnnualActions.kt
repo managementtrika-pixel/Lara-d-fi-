@@ -132,6 +132,17 @@ internal object AnnualActionStore {
 }
 
 internal object AnnualActionEngine {
+    private val childhood = listOf(
+        AnnualActionCard("child_family", "Passer du temps avec les proches", "Un repas, un jeu, une promenade ou juste rester ensemble sans transformer la journée en événement.", AnnualActionCategory.RELATION, "relation_family", "Liens · Présence", "Tu gardes une place réelle dans la vie des tiens.", familyBond = 4, presence = 1),
+        AnnualActionCard("child_friend", "Voir un ami", "Traîner, discuter, jouer, rire ou se disputer pour des choses qui paraissent immenses à cet âge.", AnnualActionCategory.RELATION, "relation_family", "Liens · Présence", "Une amitié se construit surtout dans les heures qui n'ont rien d'historique.", presence = 2),
+        AnnualActionCard("child_hobby", "Approfondir une passion", "Dessin, musique, bricolage, sport, lecture ou obsession du moment : devenir meilleur juste parce que ça te plaît.", AnnualActionCategory.TRAINING, "alt_03", "Discipline · Présence", "Tu découvres ce que la répétition peut faire quand personne ne t'y oblige.", discipline = 2, presence = 1),
+        AnnualActionCard("child_school", "Travailler un sujet qui t'intrigue", "Pas pour une destinée secrète : juste parce qu'une question te reste dans la tête.", AnnualActionCategory.TRAINING, "alt_03", "Enquête · Discipline", "Tu apprends à chercher une réponse plutôt qu'à attendre qu'on te la donne.", investigation = 2, discipline = 1),
+        AnnualActionCard("child_sport", "Bouger et te défouler", "Courir, grimper, jouer, nager ou t'entraîner selon ton âge et tes habitudes.", AnnualActionCategory.TRAINING, "alt_04", "Discipline · Santé", "Ton corps apprend surtout la coordination, l'effort et la récupération.", discipline = 2, health = 2),
+        AnnualActionCard("child_help", "Donner un coup de main", "Aider à la maison, dans l'immeuble, à l'école ou dans une petite action locale avec des adultes autour.", AnnualActionCategory.CIVIL, "scope_district", "Secours · Présence", "Ce n'est pas héroïque. C'est simplement utile.", rescue = 1, presence = 1, familyBond = 1),
+        AnnualActionCard("child_walk", "Découvrir un coin du quartier", "Avec un proche ou des amis selon ton âge, tu observes des rues, habitudes et détails que tu ne connaissais pas.", AnnualActionCategory.INVESTIGATION, "scope_district", "Enquête", "Ton quartier cesse peu à peu d'être seulement le décor de ta maison.", investigation = 2),
+        AnnualActionCard("child_rest", "Ralentir un peu", "Dormir, ne rien prévoir, récupérer d'une semaine trop pleine et laisser ton cerveau respirer.", AnnualActionCategory.RECOVERY, "alt_07", "Santé", "Tu apprends qu'être fatigué n'est pas une preuve de courage.", health = 3)
+    )
+
     private val civilian = listOf(
         AnnualActionCard("civil_barber", "Passer chez le coiffeur", "Changer de coupe, soigner son apparence, prendre une heure pour soi.", AnnualActionCategory.CIVIL, "alt_02", "Présence", "Un détail banal, mais tu te reconnais un peu mieux dans le miroir.", presence = 2),
         AnnualActionCard("civil_first_aid", "Formation premiers secours", "Apprendre les gestes qui comptent avant même d'avoir quoi que ce soit d'extraordinaire.", AnnualActionCategory.TRAINING, "relation_family", "Secours · Discipline", "Tu apprends à agir vite sans transformer la panique en spectacle.", rescue = 4, discipline = 1),
@@ -167,8 +178,11 @@ internal object AnnualActionEngine {
         if (state.remaining <= 0) return emptyList()
         // The awakening itself remains a singular story beat: no errands are inserted inside it.
         if (!c.powerRevealed && c.turn >= 10) return emptyList()
-        val eligible = (if (c.powerRevealed) civilian + metahuman else civilian)
-            .filterNot { it.id in state.usedIds }
+        val eligible = when {
+            c.powerRevealed -> civilian + metahuman
+            c.age < 18 -> childhood
+            else -> civilian
+        }.filterNot { it.id in state.usedIds }
         if (!c.powerRevealed) return deterministicOrder(eligible, c).take(8)
         return deterministicOrder(eligible, c).take(10)
     }
