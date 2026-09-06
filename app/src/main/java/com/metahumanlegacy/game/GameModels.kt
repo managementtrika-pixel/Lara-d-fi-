@@ -164,7 +164,7 @@ data class Campaign(
         else -> "Monstrueux"
     }
 
-    val finished: Boolean get() = turn >= 156 || health <= 0
+    val finished: Boolean get() = turn >= 196 || health <= 0
 }
 
 internal data class FormativeChapter(
