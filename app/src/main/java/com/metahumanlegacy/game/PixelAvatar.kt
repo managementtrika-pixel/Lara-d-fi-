@@ -42,7 +42,8 @@ private fun pxOutfit(style: String): Pair<Color, Color> = when {
 @Composable
 internal fun PixelAvatar(
     state: UltimateState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    age: Int = 18
 ) {
     Canvas(modifier) {
         val cols = 20
@@ -68,12 +69,19 @@ internal fun PixelAvatar(
             else -> Color(0xFF342821)
         }
 
+        val child = age < 13
+        val teen = age in 13..17
+        val torsoY = when { child -> 17; teen -> 15; else -> 14 }
+        val torsoH = when { child -> 6; teen -> 8; else -> 9 }
+        val legY = torsoY + torsoH - 1
+        val legH = when { child -> 5; teen -> 6; else -> 6 }
+
         // Legs / stance
-        val legSpread = if (state.bodyBuild == "Massif") 1 else 0
-        p(6 - legSpread, 22, 3 + legSpread, 6, Color(0xFF1A2532))
-        p(11, 22, 3 + legSpread, 6, Color(0xFF1A2532))
-        p(5 - legSpread, 27, 4 + legSpread, 2, Color(0xFF0D1117))
-        p(11, 27, 4 + legSpread, 2, Color(0xFF0D1117))
+        val legSpread = if (state.bodyBuild == "Massif" && !child) 1 else 0
+        p(6 - legSpread, legY, 3 + legSpread, legH, Color(0xFF1A2532))
+        p(11, legY, 3 + legSpread, legH, Color(0xFF1A2532))
+        p(5 - legSpread, legY + legH - 1, 4 + legSpread, 2, Color(0xFF0D1117))
+        p(11, legY + legH - 1, 4 + legSpread, 2, Color(0xFF0D1117))
 
         // Torso
         val torsoX = when (state.bodyBuild) {
@@ -82,41 +90,44 @@ internal fun PixelAvatar(
             "Robuste" -> 4
             else -> 5
         }
-        val torsoW = when (state.bodyBuild) {
+        val adultTorsoW = when (state.bodyBuild) {
             "Fin" -> 8
             "Massif" -> 14
             "Robuste" -> 12
             else -> 10
         }
-        p(torsoX, 14, torsoW, 9, outline)
-        p(torsoX + 1, 15, torsoW - 2, 7, shirt)
-        p(torsoX + 1, 21, torsoW - 2, 1, trim.copy(alpha = .85f))
+        val torsoW = (adultTorsoW - if (child) 2 else if (teen) 1 else 0).coerceAtLeast(7)
+        val centeredTorsoX = ((20 - torsoW) / 2).coerceAtLeast(2)
+        p(centeredTorsoX, torsoY, torsoW, torsoH, outline)
+        p(centeredTorsoX + 1, torsoY + 1, torsoW - 2, (torsoH - 2).coerceAtLeast(3), shirt)
+        p(centeredTorsoX + 1, torsoY + torsoH - 2, torsoW - 2, 1, trim.copy(alpha = .85f))
         // shirt highlight + archetype details
-        p(torsoX + 2, 16, (torsoW - 4).coerceAtLeast(2), 1, Color.White.copy(alpha = .08f))
+        p(centeredTorsoX + 2, torsoY + 2, (torsoW - 4).coerceAtLeast(2), 1, Color.White.copy(alpha = .08f))
         when {
             state.civilianStyle.contains("Sport", true) -> {
-                p(torsoX + torsoW / 2, 15, 1, 6, trim.copy(alpha = .75f))
+                p(centeredTorsoX + torsoW / 2, 15, 1, 6, trim.copy(alpha = .75f))
             }
             state.civilianStyle.contains("Class", true) || state.civilianStyle.contains("Profession", true) -> {
-                p(torsoX + torsoW / 2, 15, 1, 5, Color(0xFFB7C0CC))
-                p(torsoX + torsoW / 2 - 1, 20, 3, 1, Color(0xFFB7C0CC))
+                p(centeredTorsoX + torsoW / 2, 15, 1, 5, Color(0xFFB7C0CC))
+                p(centeredTorsoX + torsoW / 2 - 1, 20, 3, 1, Color(0xFFB7C0CC))
             }
             state.civilianStyle.contains("Créat", true) -> {
-                p(torsoX + 2, 18, 2, 2, trim.copy(alpha = .9f))
-                p(torsoX + torsoW - 4, 17, 2, 3, trim.copy(alpha = .65f))
+                p(centeredTorsoX + 2, 18, 2, 2, trim.copy(alpha = .9f))
+                p(centeredTorsoX + torsoW - 4, 17, 2, 3, trim.copy(alpha = .65f))
             }
             state.civilianStyle.contains("Vintage", true) -> {
-                p(torsoX + 2, 17, torsoW - 4, 1, Color(0xFF4D3425))
-                p(torsoX + 3, 19, (torsoW - 6).coerceAtLeast(2), 1, Color(0xFF4D3425))
+                p(centeredTorsoX + 2, 17, torsoW - 4, 1, Color(0xFF4D3425))
+                p(centeredTorsoX + 3, 19, (torsoW - 6).coerceAtLeast(2), 1, Color(0xFF4D3425))
             }
         }
-        p(torsoX + 1, 22, torsoW - 2, 1, Color.Black.copy(alpha = .16f))
+        p(centeredTorsoX + 1, 22, torsoW - 2, 1, Color.Black.copy(alpha = .16f))
 
         // Arms
-        p((torsoX - 2).coerceAtLeast(1), 15, 2, 7, outline)
-        p((torsoX - 1).coerceAtLeast(2), 16, 1, 5, skin)
-        p((torsoX + torsoW).coerceAtMost(18), 15, 2, 7, outline)
-        p((torsoX + torsoW).coerceAtMost(18), 16, 1, 5, skin)
+        val armH = (torsoH - 1).coerceAtLeast(4)
+        p((centeredTorsoX - 2).coerceAtLeast(1), torsoY + 1, 2, armH, outline)
+        p((centeredTorsoX - 1).coerceAtLeast(2), torsoY + 2, 1, (armH - 2).coerceAtLeast(2), skin)
+        p((centeredTorsoX + torsoW).coerceAtMost(18), torsoY + 1, 2, armH, outline)
+        p((centeredTorsoX + torsoW).coerceAtMost(18), torsoY + 2, 1, (armH - 2).coerceAtLeast(2), skin)
 
         // Neck
         p(8, 12, 4, 3, outline)
@@ -241,21 +252,21 @@ internal fun PixelAvatar(
                 p(headX - 1, 8, 1, 2, Color(0xFFE0B94F))
             }
             state.accessory.contains("Chaîne", true) -> {
-                p(torsoX + 2, 16, (torsoW - 4).coerceAtLeast(2), 1, Color(0xFFD3B15A))
-                p(torsoX + torsoW / 2, 17, 1, 2, Color(0xFFD3B15A))
+                p(centeredTorsoX + 2, 16, (torsoW - 4).coerceAtLeast(2), 1, Color(0xFFD3B15A))
+                p(centeredTorsoX + torsoW / 2, 17, 1, 2, Color(0xFFD3B15A))
             }
         }
 
         // Hands: one bright pixel makes the pose easier to read at phone size.
-        p((torsoX - 1).coerceAtLeast(2), 20, 1, 1, skin)
-        p((torsoX + torsoW).coerceAtMost(18), 20, 1, 1, skin)
+        p((centeredTorsoX - 1).coerceAtLeast(2), torsoY + armH - 1, 1, 1, skin)
+        p((centeredTorsoX + torsoW).coerceAtMost(18), torsoY + armH - 1, 1, 1, skin)
 
         // Shoes / sole separation.
         p(5 - legSpread, 28, 4 + legSpread, 1, Color(0xFF070A0E))
         p(11, 28, 4 + legSpread, 1, Color(0xFF070A0E))
 
         // Tiny floor shadow
-        p(3, 29, 14, 1, Color.Black.copy(alpha = .30f))
+        p(3, (legY + legH + 1).coerceAtMost(29), 14, 1, Color.Black.copy(alpha = .30f))
     }
 }
 
