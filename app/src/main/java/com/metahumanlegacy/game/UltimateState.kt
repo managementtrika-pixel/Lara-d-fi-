@@ -129,7 +129,9 @@ internal data class UltimateState(
     fun district(name: String): UltimateDistrict? = districts.firstOrNull { it.name == name }
 
     fun ageAppearance(c: Campaign): String = when {
-        c.age < 25 -> "Traits jeunes"
+        c.age < 13 -> "Traits d'enfance"
+        c.age < 18 -> "Traits adolescents"
+        c.age < 25 -> "Jeune adulte"
         c.age < 35 -> "Traits adultes"
         c.age < 50 -> "Traits affirmés"
         c.age < 65 -> "Traits marqués"
