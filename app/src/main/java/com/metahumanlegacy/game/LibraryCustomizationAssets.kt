@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -205,7 +206,8 @@ private fun LibraryAtlasCell(
     }
     Column(
         Modifier
-            .width(if (tall) 86.dp else 104.dp)
+            .width(if (tall) 92.dp else 112.dp)
+            .shadow(if (selected) 12.dp else 0.dp, CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp))
             .clickable(enabled = enabled, onClick = onClick),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -213,8 +215,8 @@ private fun LibraryAtlasCell(
             Modifier
                 .fillMaxWidth()
                 .aspectRatio(if (tall) .72f else 1f)
-                .background(Color(0xFF0B1017), CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp))
-                .border(1.dp, border, CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp))
+                .background(if (selected) Color(0xFF121D28) else Color(0xFF0B1017), CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp))
+                .border(if (selected) 2.dp else 1.dp, border, CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp))
         ) {
             Canvas(Modifier.fillMaxWidth().aspectRatio(if (tall) .72f else 1f)) {
                 val sourceW = bitmap.width / columns
@@ -257,8 +259,8 @@ private fun LibraryAtlasCell(
 private fun LibraryPresetHeader(title: String, subtitle: String) {
     Spacer(Modifier.height(12.dp))
     Text("ASSETS BIBLIOTHÈQUE VALIDÉS", color = UltimateGold, fontSize = 8.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
-    Text(title.uppercase(), color = UltimateIvory, fontSize = 13.sp, fontWeight = FontWeight.Black)
-    Text(subtitle, color = UltimateMuted, fontSize = 9.sp, lineHeight = 13.sp)
+    Text(title.uppercase(), color = UltimateIvory, fontSize = 15.sp, fontWeight = FontWeight.Black, letterSpacing = .6.sp)
+    Text(subtitle, color = UltimateMuted, fontSize = 10.sp, lineHeight = 14.sp)
     Spacer(Modifier.height(6.dp))
 }
 
