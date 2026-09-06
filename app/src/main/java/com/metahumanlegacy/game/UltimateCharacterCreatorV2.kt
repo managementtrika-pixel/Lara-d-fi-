@@ -1,6 +1,7 @@
 package com.metahumanlegacy.game
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -28,6 +29,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -178,6 +180,11 @@ private fun CreatorTopBar(
 
 @Composable
 private fun CharacterStage(campaign: Campaign, state: UltimateState, caption: String) {
+    val avatarScale by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(180),
+        label = "pixelAvatarScale"
+    )
     Box(
         Modifier.fillMaxWidth().height(350.dp)
             .shadow(18.dp, CutCornerShape(topEnd = 30.dp, bottomStart = 30.dp))
@@ -185,6 +192,24 @@ private fun CharacterStage(campaign: Campaign, state: UltimateState, caption: St
             .background(Brush.verticalGradient(listOf(Color(0xFF152231), Color(0xFF080C12))))
             .border(1.dp, UltimateBlue.copy(alpha = .32f), CutCornerShape(topEnd = 30.dp, bottomStart = 30.dp))
     ) {
+        Canvas(Modifier.matchParentSize()) {
+            val step = 18f
+            var x = 0f
+            while (x < size.width) {
+                drawLine(Color.White.copy(alpha = .025f), Offset(x, 0f), Offset(x, size.height), 1f)
+                x += step
+            }
+            var y = 0f
+            while (y < size.height) {
+                drawLine(Color.White.copy(alpha = .025f), Offset(0f, y), Offset(size.width, y), 1f)
+                y += step
+            }
+            drawRect(
+                UltimateBlue.copy(alpha = .05f),
+                Offset(size.width * .08f, size.height * .10f),
+                Size(size.width * .84f, size.height * .76f)
+            )
+        }
         Box(
             Modifier.align(Alignment.Center)
                 .width(260.dp).height(260.dp)
@@ -194,11 +219,24 @@ private fun CharacterStage(campaign: Campaign, state: UltimateState, caption: St
                     )
                 )
         )
-
         PixelAvatar(
             state = state,
-            modifier = Modifier.align(Alignment.Center).width(255.dp).height(335.dp)
+            modifier = Modifier.align(Alignment.Center)
+                .width(255.dp).height(335.dp)
+                .graphicsLayer {
+                    scaleX = avatarScale
+                    scaleY = avatarScale
+                }
         )
+        Box(
+            Modifier.align(Alignment.TopStart)
+                .padding(10.dp)
+                .background(Color(0xFF081018).copy(alpha = .82f), CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp))
+                .border(1.dp, UltimateGold.copy(alpha = .45f), CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp))
+                .padding(horizontal = 8.dp, vertical = 5.dp)
+        ) {
+            Text("PIXEL ID", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 8.sp, letterSpacing = 1.sp)
+        }
         Box(
             Modifier.align(Alignment.BottomStart).fillMaxWidth()
                 .background(Color.Black.copy(alpha = .48f))
@@ -261,6 +299,21 @@ private fun FaceStep(
     PixelFaceShapeStrip(draft.faceShape, draft.skinTone) {
         onDraft(draft.copy(faceShape = it, libraryFaceIndex = -1))
     }
+    Spacer(Modifier.height(10.dp))
+    MhlSecondaryButton(
+        "REMIX VISAGE",
+        {
+            onDraft(
+                draft.copy(
+                    skinTone = nextPixelOption(UltimateCatalog.skinTones, draft.skinTone, 1),
+                    faceShape = nextPixelOption(UltimateCatalog.faceShapes, draft.faceShape, 2),
+                    eyes = nextPixelOption(UltimateCatalog.eyes, draft.eyes, 1),
+                    libraryFaceIndex = -1
+                )
+            )
+        },
+        Modifier.fillMaxWidth()
+    )
 }
 
 @Composable
@@ -295,6 +348,22 @@ private fun HairStep(
     PixelEyesStrip(draft.eyes, draft.skinTone, draft.hairColor) {
         onDraft(draft.copy(eyes = it, libraryFaceIndex = -1))
     }
+    Spacer(Modifier.height(10.dp))
+    MhlSecondaryButton(
+        "REMIX CHEVEUX",
+        {
+            onDraft(
+                draft.copy(
+                    hair = nextPixelOption(UltimateCatalog.hairs, draft.hair, 1),
+                    hairColor = nextPixelOption(UltimateCatalog.hairColors, draft.hairColor, 2),
+                    facialHair = nextPixelOption(UltimateCatalog.facialHairs, draft.facialHair, 1),
+                    eyes = nextPixelOption(UltimateCatalog.eyes, draft.eyes, 2),
+                    libraryFaceIndex = -1
+                )
+            )
+        },
+        Modifier.fillMaxWidth()
+    )
 }
 
 @Composable
@@ -307,6 +376,20 @@ private fun StyleStep(
     CharacterStage(campaign, state, draft.civilianStyle)
     PixelStyleStrip(draft.civilianStyle) { onDraft(draft.copy(civilianStyle = it)) }
     PixelAccessoryStrip(draft.accessory, draft.hairColor, draft.skinTone) { onDraft(draft.copy(accessory = it)) }
+    Spacer(Modifier.height(10.dp))
+    MhlSecondaryButton(
+        "REMIX LOOK",
+        {
+            onDraft(
+                draft.copy(
+                    civilianStyle = nextPixelOption(UltimateCatalog.civilianStyles, draft.civilianStyle, 1),
+                    accessory = nextPixelOption(UltimateCatalog.accessories, draft.accessory, 1),
+                    bodyBuild = nextPixelOption(UltimateCatalog.bodyBuilds, draft.bodyBuild, 2)
+                )
+            )
+        },
+        Modifier.fillMaxWidth()
+    )
 }
 
 @Composable
@@ -789,6 +872,13 @@ private fun PixelAccessoryStrip(selected: String, hairColor: String, skinTone: S
             }
         }
     }
+}
+
+
+private fun nextPixelOption(options: List<String>, current: String, offset: Int): String {
+    if (options.isEmpty()) return current
+    val index = options.indexOf(current).let { if (it < 0) 0 else it }
+    return options[(index + offset).mod(options.size)]
 }
 
 
