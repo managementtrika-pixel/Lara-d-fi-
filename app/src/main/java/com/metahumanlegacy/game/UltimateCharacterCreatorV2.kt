@@ -715,6 +715,8 @@ private fun ValidationStep(draft: UltimateCreationDraft, campaign: Campaign, sta
                 PixelOriginStat("TRAJECTOIRE", draft.blueprint.civilianPath, Modifier.weight(1f))
             }
             Spacer(Modifier.height(8.dp))
+            PixelYearOneTeaser(draft)
+            Spacer(Modifier.height(8.dp))
             UltimatePanel(accent = UltimateBlue) {
                 Text("DOSSIER TERMINÉ", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 7.sp, letterSpacing = 1.sp)
                 Spacer(Modifier.height(4.dp))
@@ -1236,6 +1238,47 @@ private fun pixelLifeSentence(blueprint: CharacterBlueprint): String {
         blueprint.civilianPath + " a façonné son quotidien. " +
         "Motivation : " + blueprint.motivation.lowercase() + ". " +
         "Tempérament : " + blueprint.temperament.lowercase() + "."
+}
+
+
+@Composable
+private fun PixelYearOneTeaser(draft: UltimateCreationDraft) {
+    Column(
+        Modifier.fillMaxWidth()
+            .clip(CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp))
+            .background(
+                Brush.horizontalGradient(
+                    listOf(Color(0xFF121A23), Color(0xFF0A1017))
+                )
+            )
+            .border(1.dp, UltimateGold.copy(alpha = .32f), CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp))
+            .padding(10.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                Modifier.size(34.dp)
+                    .background(UltimateGold, CutCornerShape(topEnd = 8.dp, bottomStart = 8.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("01", color = Color(0xFF11151B), fontWeight = FontWeight.Black, fontSize = 12.sp)
+            }
+            Spacer(Modifier.width(9.dp))
+            Column {
+                Text("PROCHAINE ÉTAPE", color = UltimateMuted, fontSize = 6.sp, fontWeight = FontWeight.Black, letterSpacing = .8.sp)
+                Text("ANNÉE 1 · VIE ORDINAIRE", color = UltimateIvory, fontSize = 13.sp, fontWeight = FontWeight.Black)
+            }
+        }
+        Spacer(Modifier.height(7.dp))
+        Text(
+            "Pas de costume. Pas de pouvoir. " +
+                draft.blueprint.firstName.ifBlank { "Ton personnage" } +
+                " va d'abord vivre, choisir, perdre, gagner et rencontrer des gens. " +
+                "Ces décisions prépareront silencieusement ce qui viendra ensuite.",
+            color = UltimateMuted,
+            fontSize = 10.sp,
+            lineHeight = 15.sp
+        )
+    }
 }
 
 
