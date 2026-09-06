@@ -5,12 +5,14 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -22,6 +24,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -251,8 +255,12 @@ private fun FaceStep(
             color = UltimateMuted, fontSize = 11.sp, lineHeight = 16.sp
         )
     }
-    CreatorOptionStrip("TEINT", UltimateCatalog.skinTones, draft.skinTone) { onDraft(draft.copy(skinTone = it, libraryFaceIndex = -1)) }
-    CreatorOptionStrip("FORME DU VISAGE", UltimateCatalog.faceShapes, draft.faceShape) { onDraft(draft.copy(faceShape = it, libraryFaceIndex = -1)) }
+    PixelColorStrip("TEINT", UltimateCatalog.skinTones, draft.skinTone, ::pixelSkinPreview) {
+        onDraft(draft.copy(skinTone = it, libraryFaceIndex = -1))
+    }
+    PixelFaceShapeStrip(draft.faceShape, draft.skinTone) {
+        onDraft(draft.copy(faceShape = it, libraryFaceIndex = -1))
+    }
 }
 
 @Composable
@@ -263,7 +271,7 @@ private fun BodyStep(
     onDraft: (UltimateCreationDraft) -> Unit
 ) {
     CharacterStage(campaign, state, draft.bodyBuild + " · " + draft.stature)
-    CreatorOptionStrip("SILHOUETTE", UltimateCatalog.bodyBuilds, draft.bodyBuild) { onDraft(draft.copy(bodyBuild = it)) }
+    PixelBodyShapeStrip(draft.bodyBuild, draft.civilianStyle) { onDraft(draft.copy(bodyBuild = it)) }
     CreatorOptionStrip("TAILLE", UltimateCatalog.statures, draft.stature) { onDraft(draft.copy(stature = it)) }
 }
 
@@ -276,7 +284,9 @@ private fun HairStep(
 ) {
     CharacterStage(campaign, state, draft.hair)
     CreatorOptionStrip("COIFFURE", UltimateCatalog.hairs, draft.hair) { onDraft(draft.copy(hair = it, libraryFaceIndex = -1)) }
-    CreatorOptionStrip("COULEUR", UltimateCatalog.hairColors, draft.hairColor) { onDraft(draft.copy(hairColor = it, libraryFaceIndex = -1)) }
+    PixelColorStrip("COULEUR", UltimateCatalog.hairColors, draft.hairColor, ::pixelHairPreview) {
+        onDraft(draft.copy(hairColor = it, libraryFaceIndex = -1))
+    }
     CreatorOptionStrip("BARBE", UltimateCatalog.facialHairs, draft.facialHair) { onDraft(draft.copy(facialHair = it, libraryFaceIndex = -1)) }
     CreatorOptionStrip("YEUX", UltimateCatalog.eyes, draft.eyes) { onDraft(draft.copy(eyes = it, libraryFaceIndex = -1)) }
 }
@@ -365,6 +375,167 @@ private fun ValidationStep(draft: UltimateCreationDraft, campaign: Campaign, sta
         )
     }
 }
+
+private fun pixelSkinPreview(name: String): Color = when (name) {
+    "Très clair" -> Color(0xFFF3D2BD)
+    "Clair" -> Color(0xFFE8BFA4)
+    "Moyen" -> Color(0xFFC88E67)
+    "Mat" -> Color(0xFFAA714F)
+    "Foncé" -> Color(0xFF794A34)
+    "Très foncé" -> Color(0xFF4C2B22)
+    else -> Color(0xFFC88E67)
+}
+
+private fun pixelHairPreview(name: String): Color = when (name) {
+    "Noir" -> Color(0xFF111318)
+    "Brun" -> Color(0xFF3B261E)
+    "Châtain" -> Color(0xFF6A4630)
+    "Blond" -> Color(0xFFD4B06A)
+    "Roux" -> Color(0xFFA9502B)
+    "Gris" -> Color(0xFF9699A0)
+    "Blanc" -> Color(0xFFE8E5DE)
+    else -> Color(0xFF3B261E)
+}
+
+@Composable
+private fun PixelColorStrip(
+    title: String,
+    options: List<String>,
+    selected: String,
+    colorOf: (String) -> Color,
+    onSelect: (String) -> Unit
+) {
+    Spacer(Modifier.height(13.dp))
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Text(title, color = UltimateGold, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
+        Spacer(Modifier.weight(1f))
+        Text(selected.uppercase(), color = UltimateBlue, fontSize = 8.sp, fontWeight = FontWeight.Black)
+    }
+    Spacer(Modifier.height(7.dp))
+    Row(
+        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(9.dp)
+    ) {
+        options.forEach { option ->
+            val isSelected = selected == option
+            Column(
+                Modifier.width(72.dp).clickable { onSelect(option) },
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(
+                    Modifier.size(if (isSelected) 48.dp else 42.dp)
+                        .clip(CircleShape)
+                        .background(colorOf(option))
+                        .border(if (isSelected) 3.dp else 1.dp, if (isSelected) UltimateGold else Color(0xFF394656), CircleShape)
+                )
+                Spacer(Modifier.height(5.dp))
+                Text(
+                    option.uppercase(),
+                    color = if (isSelected) UltimateIvory else UltimateMuted,
+                    fontSize = 7.sp,
+                    fontWeight = FontWeight.Black,
+                    maxLines = 2
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PixelFaceShapeStrip(selected: String, skinTone: String, onSelect: (String) -> Unit) {
+    Spacer(Modifier.height(13.dp))
+    Text("FORME DU VISAGE", color = UltimateGold, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
+    Spacer(Modifier.height(7.dp))
+    Row(
+        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(9.dp)
+    ) {
+        UltimateCatalog.faceShapes.forEach { shape ->
+            val active = shape == selected
+            Column(
+                Modifier.width(86.dp)
+                    .clip(CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp))
+                    .background(if (active) Color(0xFF142334) else Color(0xFF0D141C))
+                    .border(1.dp, if (active) UltimateBlue else Color(0xFF2C3948), CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp))
+                    .clickable { onSelect(shape) }
+                    .padding(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Canvas(Modifier.size(54.dp)) {
+                    val skin = pixelSkinPreview(skinTone)
+                    val outline = Color(0xFF11161C)
+                    val w = when (shape) {
+                        "Fin" -> size.width * .52f
+                        "Rond" -> size.width * .74f
+                        else -> size.width * .66f
+                    }
+                    val h = when (shape) {
+                        "Rond" -> size.height * .58f
+                        "Anguleux" -> size.height * .72f
+                        else -> size.height * .66f
+                    }
+                    val left = (size.width - w) / 2
+                    val top = (size.height - h) / 2
+                    drawRect(outline, Offset(left - 3f, top - 3f), Size(w + 6f, h + 6f))
+                    drawRect(skin, Offset(left, top), Size(w, h))
+                    drawRect(Color(0xFF202833), Offset(size.width*.34f, size.height*.47f), Size(4f,4f))
+                    drawRect(Color(0xFF202833), Offset(size.width*.62f, size.height*.47f), Size(4f,4f))
+                    drawRect(Color(0xFF6A3433), Offset(size.width*.42f, size.height*.66f), Size(size.width*.16f,3f))
+                }
+                Spacer(Modifier.height(4.dp))
+                Text(shape.uppercase(), color = if (active) UltimateIvory else UltimateMuted, fontSize = 8.sp, fontWeight = FontWeight.Black)
+            }
+        }
+    }
+}
+
+@Composable
+private fun PixelBodyShapeStrip(selected: String, civilianStyle: String, onSelect: (String) -> Unit) {
+    Spacer(Modifier.height(13.dp))
+    Text("SILHOUETTE", color = UltimateGold, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
+    Spacer(Modifier.height(7.dp))
+    Row(
+        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(9.dp)
+    ) {
+        UltimateCatalog.bodyBuilds.forEach { build ->
+            val active = build == selected
+            Column(
+                Modifier.width(90.dp)
+                    .clip(CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp))
+                    .background(if (active) Color(0xFF142334) else Color(0xFF0D141C))
+                    .border(1.dp, if (active) UltimateBlue else Color(0xFF2C3948), CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp))
+                    .clickable { onSelect(build) }
+                    .padding(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Canvas(Modifier.width(48.dp).height(68.dp)) {
+                    val outline = Color(0xFF11161C)
+                    val shirt = when {
+                        civilianStyle.contains("Sport", true) -> Color(0xFF2E6CA4)
+                        civilianStyle.contains("Créat", true) -> Color(0xFF7A3F7E)
+                        civilianStyle.contains("Vintage", true) -> Color(0xFF795B3E)
+                        else -> Color(0xFF2A415D)
+                    }
+                    val bodyW = when (build) {
+                        "Fin" -> size.width*.42f
+                        "Massif" -> size.width*.82f
+                        "Robuste" -> size.width*.72f
+                        else -> size.width*.60f
+                    }
+                    val x=(size.width-bodyW)/2
+                    drawRect(outline, Offset(x-3f,size.height*.18f), Size(bodyW+6f,size.height*.56f))
+                    drawRect(shirt, Offset(x,size.height*.22f), Size(bodyW,size.height*.48f))
+                    drawRect(outline, Offset(size.width*.33f,size.height*.72f), Size(size.width*.12f,size.height*.24f))
+                    drawRect(outline, Offset(size.width*.55f,size.height*.72f), Size(size.width*.12f,size.height*.24f))
+                }
+                Spacer(Modifier.height(4.dp))
+                Text(build.uppercase(), color = if (active) UltimateIvory else UltimateMuted, fontSize = 8.sp, fontWeight = FontWeight.Black, maxLines = 1)
+            }
+        }
+    }
+}
+
 
 @Composable
 private fun CreatorOptionStrip(title: String, options: List<String>, selected: String, onSelect: (String) -> Unit) {
