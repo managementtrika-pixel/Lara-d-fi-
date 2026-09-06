@@ -7,13 +7,13 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -391,15 +391,57 @@ private fun ValidationStep(draft: UltimateCreationDraft, campaign: Campaign, sta
 
 @Composable
 private fun CreatorOptionStrip(title: String, options: List<String>, selected: String, onSelect: (String) -> Unit) {
-    Spacer(Modifier.height(11.dp))
-    Text(title, color = UltimateGold, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
-    Spacer(Modifier.height(5.dp))
+    Spacer(Modifier.height(13.dp))
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Text(title, color = UltimateGold, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
+        Spacer(Modifier.weight(1f))
+        Text(selected.uppercase(), color = UltimateBlue, fontSize = 8.sp, fontWeight = FontWeight.Black, maxLines = 1)
+    }
+    Spacer(Modifier.height(7.dp))
     Row(
         Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         options.forEach { option ->
-            FilterChip(selected = selected == option, onClick = { onSelect(option) }, label = { Text(option, fontSize = 11.sp) })
+            val isSelected = selected == option
+            Box(
+                Modifier
+                    .widthIn(min = 108.dp, max = 180.dp)
+                    .heightIn(min = 52.dp)
+                    .clip(CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp))
+                    .background(
+                        if (isSelected) {
+                            Brush.horizontalGradient(
+                                listOf(UltimateBlue.copy(alpha = .24f), UltimateGold.copy(alpha = .12f))
+                            )
+                        } else {
+                            Brush.horizontalGradient(listOf(Color(0xFF111821), Color(0xFF0B1118)))
+                        }
+                    )
+                    .border(
+                        1.dp,
+                        if (isSelected) UltimateBlue.copy(alpha = .75f) else Color(0xFF293544),
+                        CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp)
+                    )
+                    .clickable { onSelect(option) }
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                Column {
+                    Text(
+                        option.uppercase(),
+                        color = if (isSelected) UltimateIvory else Color(0xFFCBD4DE),
+                        fontWeight = FontWeight.Black,
+                        fontSize = 10.sp,
+                        lineHeight = 13.sp,
+                        maxLines = 2
+                    )
+                    if (isSelected) {
+                        Spacer(Modifier.height(4.dp))
+                        Box(Modifier.width(26.dp).height(2.dp).background(UltimateGold))
+                    }
+                }
+            }
         }
     }
 }
