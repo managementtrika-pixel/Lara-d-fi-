@@ -680,12 +680,48 @@ internal fun UltimateHallScreen(hall: List<String>, onBack: () -> Unit) {
         if (hall.isEmpty()) {
             UltimatePanel(accent = UltimateBlue) { Text("Aucune destinée archivée pour l'instant.", color = UltimateMuted) }
         } else hall.forEachIndexed { index, raw ->
-            val p = raw.split('|')
+            val record = LegacyRecord.decode(raw)
             UltimatePanel(accent = when { index == 0 -> UltimateGold; index % 3 == 1 -> UltimateBlue; else -> UltimateViolet }) {
-                Text(p.getOrElse(0) { "Inconnu" }.uppercase(), color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 17.sp)
-                Text(p.getOrElse(1) { "Legacy" }, color = UltimateGold, fontWeight = FontWeight.Bold)
-                Text("Score ${p.getOrElse(2) { "?" }} · ${p.getOrElse(3) { "?" }} · ${p.getOrElse(4) { "Ville inconnue" }}", color = UltimateMuted, fontSize = 10.sp)
-                if (p.size > 5) Text("${p.getOrElse(5) { "" }} · Némésis : ${p.getOrElse(6) { "Aucune" }}", color = UltimateMuted, fontSize = 10.sp)
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(record.name.uppercase(), color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 17.sp)
+                        Text(record.title, color = UltimateGold, fontWeight = FontWeight.Bold)
+                    }
+                    if (record.identityId.isNotBlank()) {
+                        Text(record.identityId, color = UltimateBlue, fontSize = 8.sp, fontWeight = FontWeight.Black)
+                    }
+                }
+                Text(
+                    "Score ${record.score} · ${record.scope} · ${record.city}" +
+                        if (record.finalAge > 0) " · ${record.finalAge} ans" else "",
+                    color = UltimateMuted,
+                    fontSize = 10.sp
+                )
+                if (record.powerFamily.isNotBlank() && record.powerFamily != "Non révélé") {
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "${record.powerFamily.uppercase()} · Moralité ${signed(record.morality)} · Opinion ${signed(record.opinion)} · Peur ${record.fear}",
+                        color = UltimateIvory,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                if (record.bodyBuild.isNotBlank()) {
+                    Text(
+                        "PIXEL DNA · ${record.skinTone} · ${record.faceShape} · ${record.bodyBuild} · ${record.hair} ${record.hairColor.lowercase()} · ${record.civilianStyle}",
+                        color = UltimateMuted,
+                        fontSize = 9.sp,
+                        lineHeight = 13.sp
+                    )
+                }
+                if (record.strongestRelation.isNotBlank()) {
+                    Text("Lien majeur · ${record.strongestRelation}", color = UltimateMuted, fontSize = 9.sp)
+                }
+                Text("Némésis · ${record.nemesis}", color = UltimateMuted, fontSize = 9.sp)
+                if (record.endingSummary.isNotBlank()) {
+                    Spacer(Modifier.height(5.dp))
+                    Text(record.endingSummary, color = UltimateIvory, fontSize = 10.sp, lineHeight = 14.sp, maxLines = 4)
+                }
             }
             Spacer(Modifier.height(6.dp))
         }
