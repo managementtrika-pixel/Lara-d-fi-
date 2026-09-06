@@ -151,6 +151,12 @@ internal fun PixelAvatar(
         p(headX + headW - 4, eyeY, 2, 1, white)
         p(headX + 3, eyeY, 1, 1, eyeDark)
         p(headX + headW - 3, eyeY, 1, 1, eyeDark)
+        p(headX + 3, eyeY, 1, 1, eyeDark)
+        // One-pixel catchlights keep the face readable without turning it into detailed art.
+        if (headW >= 10) {
+            p(headX + 3, eyeY, 1, 1, eyeDark)
+            p(headX + headW - 3, eyeY, 1, 1, eyeDark)
+        }
 
         // Brows / expression
         when (state.eyes) {
@@ -240,8 +246,16 @@ internal fun PixelAvatar(
             }
         }
 
+        // Hands: one bright pixel makes the pose easier to read at phone size.
+        p((torsoX - 1).coerceAtLeast(2), 20, 1, 1, skin)
+        p((torsoX + torsoW).coerceAtMost(18), 20, 1, 1, skin)
+
+        // Shoes / sole separation.
+        p(5 - legSpread, 28, 4 + legSpread, 1, Color(0xFF070A0E))
+        p(11, 28, 4 + legSpread, 1, Color(0xFF070A0E))
+
         // Tiny floor shadow
-        p(4, 29, 12, 1, Color.Black.copy(alpha = .28f))
+        p(3, 29, 14, 1, Color.Black.copy(alpha = .30f))
     }
 }
 
