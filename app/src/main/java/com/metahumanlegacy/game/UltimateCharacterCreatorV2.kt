@@ -107,7 +107,7 @@ internal fun UltimateCharacterCreatorV2(
                         Modifier.weight(1f)
                     )
                     MhlPrimaryButton(
-                        if (step == creatorSteps.lastIndex) "COMMENCER L'AVENTURE" else "Suivant",
+                        if (step == creatorSteps.lastIndex) "COMMENCER L'ANNÉE 1" else creatorNextLabel(step),
                         { if (step == creatorSteps.lastIndex) onStart(draft) else step++ },
                         Modifier.weight(1f),
                         canAdvance
@@ -685,6 +685,13 @@ private fun ValidationStep(draft: UltimateCreationDraft, campaign: Campaign, sta
                             fontWeight = FontWeight.Black,
                             fontSize = 9.sp
                         )
+                        Text(
+                            pixelIdentityCode(draft),
+                            color = UltimateMuted,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 7.sp,
+                            letterSpacing = 1.sp
+                        )
                     }
                 }
             }
@@ -707,6 +714,8 @@ private fun ValidationStep(draft: UltimateCreationDraft, campaign: Campaign, sta
             }
             Spacer(Modifier.height(8.dp))
             UltimatePanel(accent = UltimateBlue) {
+                Text("DOSSIER TERMINÉ", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 7.sp, letterSpacing = 1.sp)
+                Spacer(Modifier.height(4.dp))
                 Text(
                     "AVANT LE POUVOIR, IL Y AVAIT UNE PERSONNE.",
                     color = UltimateIvory,
@@ -1133,6 +1142,23 @@ private fun PixelAccessoryStrip(selected: String, hairColor: String, skinTone: S
             }
         }
     }
+}
+
+
+private fun creatorNextLabel(step: Int): String = when (step) {
+    0 -> "CHOISIR MA SILHOUETTE"
+    1 -> "CRÉER MON LOOK"
+    2 -> "RACONTER MA VIE"
+    3 -> "CHOISIR MA VILLE"
+    4 -> "VOIR MON IDENTITÉ"
+    else -> "SUIVANT"
+}
+
+private fun pixelIdentityCode(draft: UltimateCreationDraft): String {
+    val source = draft.blueprint.fullName + "|" + draft.faceShape + "|" + draft.bodyBuild + "|" +
+        draft.hair + "|" + draft.civilianStyle + "|" + draft.blueprint.city
+    val value = source.hashCode().toUInt().toString(16).uppercase().takeLast(6)
+    return "ID-" + value.padStart(6, '0')
 }
 
 
