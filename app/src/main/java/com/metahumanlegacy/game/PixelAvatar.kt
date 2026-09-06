@@ -91,8 +91,25 @@ internal fun PixelAvatar(
         p(torsoX, 14, torsoW, 9, outline)
         p(torsoX + 1, 15, torsoW - 2, 7, shirt)
         p(torsoX + 1, 21, torsoW - 2, 1, trim.copy(alpha = .85f))
-        // shirt highlight + waist break
+        // shirt highlight + archetype details
         p(torsoX + 2, 16, (torsoW - 4).coerceAtLeast(2), 1, Color.White.copy(alpha = .08f))
+        when {
+            state.civilianStyle.contains("Sport", true) -> {
+                p(torsoX + torsoW / 2, 15, 1, 6, trim.copy(alpha = .75f))
+            }
+            state.civilianStyle.contains("Class", true) || state.civilianStyle.contains("Profession", true) -> {
+                p(torsoX + torsoW / 2, 15, 1, 5, Color(0xFFB7C0CC))
+                p(torsoX + torsoW / 2 - 1, 20, 3, 1, Color(0xFFB7C0CC))
+            }
+            state.civilianStyle.contains("Créat", true) -> {
+                p(torsoX + 2, 18, 2, 2, trim.copy(alpha = .9f))
+                p(torsoX + torsoW - 4, 17, 2, 3, trim.copy(alpha = .65f))
+            }
+            state.civilianStyle.contains("Vintage", true) -> {
+                p(torsoX + 2, 17, torsoW - 4, 1, Color(0xFF4D3425))
+                p(torsoX + 3, 19, (torsoW - 6).coerceAtLeast(2), 1, Color(0xFF4D3425))
+            }
+        }
         p(torsoX + 1, 22, torsoW - 2, 1, Color.Black.copy(alpha = .16f))
 
         // Arms
@@ -135,17 +152,45 @@ internal fun PixelAvatar(
         p(headX + 3, eyeY, 1, 1, eyeDark)
         p(headX + headW - 3, eyeY, 1, 1, eyeDark)
 
-        // Brows
-        p(headX + 2, 6, 2, 1, hair.copy(alpha = .9f))
-        p(headX + headW - 4, 6, 2, 1, hair.copy(alpha = .9f))
+        // Brows / expression
+        when (state.eyes) {
+            "Bleus" -> {
+                p(headX + 2, 6, 2, 1, hair.copy(alpha = .95f))
+                p(headX + headW - 4, 6, 2, 1, hair.copy(alpha = .95f))
+            }
+            "Verts" -> {
+                p(headX + 2, 6, 2, 1, hair.copy(alpha = .9f))
+                p(headX + headW - 4, 5, 2, 1, hair.copy(alpha = .9f))
+            }
+            "Noisette" -> {
+                p(headX + 2, 5, 2, 1, hair.copy(alpha = .9f))
+                p(headX + headW - 4, 6, 2, 1, hair.copy(alpha = .9f))
+            }
+            else -> {
+                p(headX + 2, 6, 2, 1, hair.copy(alpha = .9f))
+                p(headX + headW - 4, 6, 2, 1, hair.copy(alpha = .9f))
+            }
+        }
 
-        // Nose + mouth
+        // Nose + mouth / attitude
         p(headX + headW / 2, 8, 1, 2, skin.copy(alpha = .72f))
         val mouth = when {
             state.civilianStyle.contains("Créat", true) -> Color(0xFF8A4550)
+            state.civilianStyle.contains("Sport", true) -> Color(0xFF6D3A36)
             else -> Color(0xFF6A3433)
         }
-        p(headX + 3, 10, headW - 6, 1, mouth)
+        when (state.eyes) {
+            "Verts" -> {
+                p(headX + 3, 10, headW - 6, 1, mouth)
+                p(headX + headW - 4, 11, 1, 1, mouth)
+            }
+            "Bleus" -> {
+                p(headX + 3, 10, headW - 6, 1, mouth)
+                p(headX + 3, 11, 1, 1, mouth)
+                p(headX + headW - 4, 11, 1, 1, mouth)
+            }
+            else -> p(headX + 3, 10, headW - 6, 1, mouth)
+        }
         if (state.bodyBuild == "Massif") {
             p(headX + 2, 11, headW - 4, 1, Color.Black.copy(alpha = .10f))
         }
@@ -174,13 +219,24 @@ internal fun PixelAvatar(
                 p(headX + 1, 7, 4, 2, Color(0xFF1A1F26))
                 p(headX + headW - 5, 7, 4, 2, Color(0xFF1A1F26))
                 p(headX + 5, 7, (headW - 10).coerceAtLeast(1), 1, Color(0xFF1A1F26))
+                p(headX + 2, 7, 2, 1, Color(0xFF5C7FA1))
+                p(headX + headW - 4, 7, 2, 1, Color(0xFF5C7FA1))
             }
             state.accessory.contains("Casquette", true) -> {
                 p(headX, 2, headW, 2, Color(0xFF384F6C))
                 p(headX + headW - 2, 4, 3, 1, Color(0xFF384F6C))
+                p(headX + 1, 2, headW - 2, 1, Color.White.copy(alpha = .08f))
             }
             state.accessory.contains("Bonnet", true) -> {
                 p(headX, 1, headW, 3, Color(0xFF6A4A70))
+                p(headX + 1, 1, headW - 2, 1, Color.White.copy(alpha = .08f))
+            }
+            state.accessory.contains("Boucle", true) -> {
+                p(headX - 1, 8, 1, 2, Color(0xFFE0B94F))
+            }
+            state.accessory.contains("Chaîne", true) -> {
+                p(torsoX + 2, 16, (torsoW - 4).coerceAtLeast(2), 1, Color(0xFFD3B15A))
+                p(torsoX + torsoW / 2, 17, 1, 2, Color(0xFFD3B15A))
             }
         }
 
