@@ -78,7 +78,7 @@ internal fun UltimateCharacterCreatorV2(
             CreatorBackdrop()
 
             Column(Modifier.fillMaxSize().padding(horizontal = 14.dp, vertical = 10.dp)) {
-                CreatorTopBar(step, creatorSteps.size, meta.number, meta.title, meta.subtitle, onRandomize)
+                CreatorTopBar(step, creatorSteps.size, meta.number, meta.title, meta.subtitle, draft, onRandomize)
                 Spacer(Modifier.height(8.dp))
                 AnimatedContent(
                     targetState = step,
@@ -142,6 +142,7 @@ private fun CreatorTopBar(
     number: String,
     title: String,
     subtitle: String,
+    draft: UltimateCreationDraft,
     onRandomize: () -> Unit
 ) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
@@ -159,6 +160,25 @@ private fun CreatorTopBar(
         TextButton(onClick = onRandomize) {
             Text("ALÉATOIRE", color = UltimateBlue, fontSize = 9.sp, fontWeight = FontWeight.Black)
         }
+    }
+    Spacer(Modifier.height(7.dp))
+    Row(
+        Modifier.fillMaxWidth()
+            .clip(CutCornerShape(topEnd = 9.dp, bottomStart = 9.dp))
+            .background(Color(0xFF0B121A))
+            .border(1.dp, Color(0xFF202D3B), CutCornerShape(topEnd = 9.dp, bottomStart = 9.dp))
+            .padding(horizontal = 8.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            draft.blueprint.fullName.ifBlank { "PERSONNAGE SANS NOM" }.uppercase(),
+            color = UltimateIvory, fontSize = 8.sp, fontWeight = FontWeight.Black,
+            modifier = Modifier.weight(1f), maxLines = 1
+        )
+        Text(
+            (draft.faceShape + " · " + draft.bodyBuild + " · " + draft.civilianStyle).uppercase(),
+            color = UltimateMuted, fontSize = 6.sp, maxLines = 1
+        )
     }
     Spacer(Modifier.height(7.dp))
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -435,6 +455,19 @@ private fun BodyStep(
     CharacterStage(campaign, state, draft.bodyBuild + " · " + draft.stature)
     PixelBodyShapeStrip(draft.bodyBuild, draft.civilianStyle) { onDraft(draft.copy(bodyBuild = it)) }
     CreatorOptionStrip("TAILLE", UltimateCatalog.statures, draft.stature) { onDraft(draft.copy(stature = it)) }
+    Spacer(Modifier.height(10.dp))
+    UltimatePanel(accent = UltimateGold) {
+        Text("SILHOUETTE ACTIVE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 8.sp, letterSpacing = 1.sp)
+        Text(draft.bodyBuild.uppercase() + " · " + draft.stature.uppercase(), color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 16.sp)
+        Text("La silhouette reste civile. Ton évolution physique pourra venir plus tard dans l'histoire.", color = UltimateMuted, fontSize = 10.sp, lineHeight = 14.sp)
+    }
+    Spacer(Modifier.height(8.dp))
+    MhlSecondaryButton("REMIX SILHOUETTE", {
+        onDraft(draft.copy(
+            bodyBuild = nextPixelOption(UltimateCatalog.bodyBuilds, draft.bodyBuild, 1),
+            stature = nextPixelOption(UltimateCatalog.statures, draft.stature, 1)
+        ))
+    }, Modifier.fillMaxWidth())
 }
 
 @Composable
@@ -520,6 +553,11 @@ private fun DetailsStep(
     }
     CreatorOptionStrip("TEMPÉRAMENT", GameEngine.temperaments, draft.blueprint.temperament) {
         updateBlueprint(draft.blueprint.copy(temperament = it))
+    }
+    Spacer(Modifier.height(10.dp))
+    UltimatePanel(accent = UltimateBlue) {
+        Text("QUI ÉTAIS-TU ?", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 8.sp, letterSpacing = 1.sp)
+        Text(pixelLifeSentence(draft.blueprint), color = UltimateIvory, fontWeight = FontWeight.Bold, fontSize = 12.sp, lineHeight = 17.sp)
     }
 }
 
@@ -1053,6 +1091,15 @@ private fun PixelAccessoryStrip(selected: String, hairColor: String, skinTone: S
             }
         }
     }
+}
+
+
+private fun pixelLifeSentence(blueprint: CharacterBlueprint): String {
+    val name = blueprint.firstName.ifBlank { "Tu" }
+    return name + " vient de " + blueprint.socialBackground.lowercase() + ". " +
+        blueprint.civilianPath + " a façonné son quotidien. " +
+        "Motivation : " + blueprint.motivation.lowercase() + ". " +
+        "Tempérament : " + blueprint.temperament.lowercase() + "."
 }
 
 
