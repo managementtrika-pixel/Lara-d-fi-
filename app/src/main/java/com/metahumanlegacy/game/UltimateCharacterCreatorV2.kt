@@ -98,6 +98,8 @@ internal fun UltimateCharacterCreatorV2(
                     }
                 }
                 Spacer(Modifier.height(8.dp))
+                CreatorCompletionBar(step = step, total = creatorSteps.size, draft = draft)
+                Spacer(Modifier.height(7.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     MhlSecondaryButton(
                         if (step == 0) "Retour" else "Précédent",
@@ -641,7 +643,10 @@ private fun ValidationStep(draft: UltimateCreationDraft, campaign: Campaign, sta
                     Text("METAHUMAN LEGACY", color = UltimateMuted, fontSize = 8.sp, fontWeight = FontWeight.Black, letterSpacing = 1.2.sp)
                     Text("DOSSIER CIVIL", color = UltimateIvory, fontSize = 20.sp, fontWeight = FontWeight.Black)
                 }
-                Text("18 ANS", color = UltimateBlue, fontSize = 10.sp, fontWeight = FontWeight.Black)
+                Column(horizontalAlignment = Alignment.End) {
+                    Text("18 ANS", color = UltimateBlue, fontSize = 10.sp, fontWeight = FontWeight.Black)
+                    Text("AUCUN POUVOIR", color = UltimateMuted, fontSize = 6.sp, fontWeight = FontWeight.Black)
+                }
             }
 
             Spacer(Modifier.height(10.dp))
@@ -1136,6 +1141,50 @@ private fun pixelCitySentence(draft: UltimateCreationDraft): String {
         ", sous un climat " + draft.climate.lowercase() +
         ". L'ambiance générale est " + draft.cityMood.lowercase() + "."
 }
+
+@Composable
+private fun CreatorCompletionBar(step: Int, total: Int, draft: UltimateCreationDraft) {
+    val progress = ((step + 1).toFloat() / total.toFloat()).coerceIn(0f, 1f)
+    Column {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                when (step) {
+                    0 -> "FAIS-EN QUELQU'UN"
+                    1 -> "DONNE-LUI UNE PRÉSENCE"
+                    2 -> "DONNE-LUI UN STYLE"
+                    3 -> "DONNE-LUI UNE HISTOIRE"
+                    4 -> "DONNE-LUI UN MONDE"
+                    else -> "PRÊT POUR L'ANNÉE 1"
+                },
+                color = UltimateMuted,
+                fontSize = 7.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = .7.sp
+            )
+            Spacer(Modifier.weight(1f))
+            Text(
+                (((step + 1) * 100) / total).toString() + "%",
+                color = if (step == total - 1) UltimateGold else UltimateBlue,
+                fontSize = 8.sp,
+                fontWeight = FontWeight.Black
+            )
+        }
+        Spacer(Modifier.height(4.dp))
+        Box(
+            Modifier.fillMaxWidth().height(4.dp)
+                .background(Color(0xFF1A2430), RoundedCornerShape(2.dp))
+        ) {
+            Box(
+                Modifier.fillMaxWidth(progress).height(4.dp)
+                    .background(
+                        if (step == total - 1) UltimateGold else UltimateBlue,
+                        RoundedCornerShape(2.dp)
+                    )
+            )
+        }
+    }
+}
+
 
 @Composable
 private fun PixelOriginStat(label: String, value: String, modifier: Modifier = Modifier) {
