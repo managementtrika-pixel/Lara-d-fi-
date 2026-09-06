@@ -697,6 +697,8 @@ private fun ValidationStep(draft: UltimateCreationDraft, campaign: Campaign, sta
             }
 
             Spacer(Modifier.height(10.dp))
+            PixelDnaStrip(draft)
+            Spacer(Modifier.height(8.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 PixelSummaryTag(draft.bodyBuild, Modifier.weight(1f))
                 PixelSummaryTag(draft.civilianStyle, Modifier.weight(1f))
@@ -1234,6 +1236,45 @@ private fun pixelLifeSentence(blueprint: CharacterBlueprint): String {
         blueprint.civilianPath + " a façonné son quotidien. " +
         "Motivation : " + blueprint.motivation.lowercase() + ". " +
         "Tempérament : " + blueprint.temperament.lowercase() + "."
+}
+
+
+@Composable
+private fun PixelDnaStrip(draft: UltimateCreationDraft) {
+    Column(
+        Modifier.fillMaxWidth()
+            .clip(CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp))
+            .background(Color(0xFF0B1219))
+            .border(1.dp, Color(0xFF253342), CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp))
+            .padding(9.dp)
+    ) {
+        Text("PIXEL DNA", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 7.sp, letterSpacing = 1.sp)
+        Spacer(Modifier.height(6.dp))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+            PixelDnaCell("PEAU", pixelSkinPreview(draft.skinTone), Modifier.weight(1f))
+            PixelDnaCell("CHEV.", pixelHairPreview(draft.hairColor), Modifier.weight(1f))
+            PixelDnaCell("VISAGE", UltimateBlue.copy(alpha = .8f), Modifier.weight(1f))
+            PixelDnaCell("CORPS", UltimateGold.copy(alpha = .8f), Modifier.weight(1f))
+            PixelDnaCell("LOOK", Color(0xFF7A3F7E), Modifier.weight(1f))
+        }
+        Spacer(Modifier.height(5.dp))
+        Text(
+            (draft.skinTone + " · " + draft.hair + " · " + draft.faceShape + " · " + draft.bodyBuild).uppercase(),
+            color = UltimateMuted, fontSize = 6.sp, maxLines = 1
+        )
+    }
+}
+
+@Composable
+private fun PixelDnaCell(label: String, color: Color, modifier: Modifier = Modifier) {
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            Modifier.fillMaxWidth().height(12.dp)
+                .background(color, CutCornerShape(topEnd = 4.dp, bottomStart = 4.dp))
+        )
+        Spacer(Modifier.height(3.dp))
+        Text(label, color = UltimateMuted, fontSize = 5.sp, fontWeight = FontWeight.Black)
+    }
 }
 
 
