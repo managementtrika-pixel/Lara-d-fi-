@@ -191,7 +191,9 @@ internal object NarrativeCodec {
             }
             MajorBeat(
                 id = p[0], arc = p[1], stage = p[2].toInt(),
-                minAge = p[3].toInt(), maxAge = p[4].toInt(), minScope = scopeOf(p[5]),
+                minAge = (p[3].toInt() - 10).coerceAtLeast(18),
+                maxAge = (p[4].toInt() - 10).coerceAtLeast(18),
+                minScope = scopeOf(p[5]),
                 requiresFlags = csv(p[6]).toSet(), tags = csv(p[7]),
                 title = restore(p[8]), text = restore(p[9]), callbacks = p[10].split("||").filter { it.isNotBlank() }.map(::restore),
                 choices = choices
