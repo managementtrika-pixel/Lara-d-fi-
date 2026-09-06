@@ -283,7 +283,9 @@ private fun HairStep(
     onDraft: (UltimateCreationDraft) -> Unit
 ) {
     CharacterStage(campaign, state, draft.hair)
-    CreatorOptionStrip("COIFFURE", UltimateCatalog.hairs, draft.hair) { onDraft(draft.copy(hair = it, libraryFaceIndex = -1)) }
+    PixelHairStrip(draft.hair, draft.hairColor, draft.skinTone) {
+        onDraft(draft.copy(hair = it, libraryFaceIndex = -1))
+    }
     PixelColorStrip("COULEUR", UltimateCatalog.hairColors, draft.hairColor, ::pixelHairPreview) {
         onDraft(draft.copy(hairColor = it, libraryFaceIndex = -1))
     }
@@ -299,7 +301,7 @@ private fun StyleStep(
     onDraft: (UltimateCreationDraft) -> Unit
 ) {
     CharacterStage(campaign, state, draft.civilianStyle)
-    CreatorOptionStrip("STYLE CIVIL", UltimateCatalog.civilianStyles, draft.civilianStyle) { onDraft(draft.copy(civilianStyle = it)) }
+    PixelStyleStrip(draft.civilianStyle) { onDraft(draft.copy(civilianStyle = it)) }
     CreatorOptionStrip("ACCESSOIRE", UltimateCatalog.accessories, draft.accessory) { onDraft(draft.copy(accessory = it)) }
 }
 
@@ -531,6 +533,128 @@ private fun PixelBodyShapeStrip(selected: String, civilianStyle: String, onSelec
                 }
                 Spacer(Modifier.height(4.dp))
                 Text(build.uppercase(), color = if (active) UltimateIvory else UltimateMuted, fontSize = 8.sp, fontWeight = FontWeight.Black, maxLines = 1)
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun PixelHairStrip(selected: String, hairColor: String, skinTone: String, onSelect: (String) -> Unit) {
+    Spacer(Modifier.height(13.dp))
+    Text("COIFFURE", color = UltimateGold, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
+    Spacer(Modifier.height(7.dp))
+    Row(
+        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(9.dp)
+    ) {
+        UltimateCatalog.hairs.forEach { hair ->
+            val active = hair == selected
+            Column(
+                Modifier.width(90.dp)
+                    .clip(CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp))
+                    .background(if (active) Color(0xFF142334) else Color(0xFF0D141C))
+                    .border(1.dp, if (active) UltimateBlue else Color(0xFF2C3948), CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp))
+                    .clickable { onSelect(hair) }
+                    .padding(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Canvas(Modifier.size(56.dp)) {
+                    val skin = pixelSkinPreview(skinTone)
+                    val hc = pixelHairPreview(hairColor)
+                    val outline = Color(0xFF11161C)
+                    val x = size.width*.22f
+                    val y = size.height*.20f
+                    val fw = size.width*.56f
+                    val fh = size.height*.62f
+                    drawRect(outline, Offset(x-3f,y-3f), Size(fw+6f,fh+6f))
+                    drawRect(skin, Offset(x,y), Size(fw,fh))
+                    when(hair) {
+                        "Rasé" -> {
+                            drawRect(hc, Offset(x,y-3f), Size(fw,5f))
+                        }
+                        "Long" -> {
+                            drawRect(hc, Offset(x-5f,y-8f), Size(fw+10f,size.height*.22f))
+                            drawRect(hc, Offset(x-5f,y+size.height*.10f), Size(7f,size.height*.50f))
+                            drawRect(hc, Offset(x+fw-2f,y+size.height*.10f), Size(7f,size.height*.50f))
+                        }
+                        "Tresses" -> {
+                            drawRect(hc, Offset(x,y-6f), Size(fw,9f))
+                            repeat(4){i ->
+                                drawRect(hc, Offset(x+4f+i*(fw-8f)/4f,y+4f), Size(3f,size.height*.46f))
+                            }
+                        }
+                        "Boucles" -> {
+                            repeat(6){i ->
+                                val cx=x+(i%3)*fw*.32f
+                                val cy=y-8f+(i/3)*size.height*.12f
+                                drawRect(hc, Offset(cx,cy), Size(fw*.38f,size.height*.14f))
+                            }
+                        }
+                        "Undercut" -> {
+                            drawRect(hc, Offset(x+fw*.18f,y-10f), Size(fw*.82f,size.height*.15f))
+                            drawRect(hc.copy(alpha=.6f), Offset(x,y), Size(fw*.16f,size.height*.18f))
+                        }
+                        else -> {
+                            drawRect(hc, Offset(x,y-7f), Size(fw,size.height*.16f))
+                            drawRect(hc, Offset(x,y), Size(fw*.18f,size.height*.12f))
+                        }
+                    }
+                    drawRect(Color(0xFF26303A), Offset(x+fw*.25f,y+fh*.38f), Size(4f,4f))
+                    drawRect(Color(0xFF26303A), Offset(x+fw*.68f,y+fh*.38f), Size(4f,4f))
+                }
+                Spacer(Modifier.height(4.dp))
+                Text(hair.uppercase(), color = if (active) UltimateIvory else UltimateMuted, fontSize = 8.sp, fontWeight = FontWeight.Black, maxLines = 1)
+            }
+        }
+    }
+}
+
+@Composable
+private fun PixelStyleStrip(selected: String, onSelect: (String) -> Unit) {
+    Spacer(Modifier.height(13.dp))
+    Text("STYLE CIVIL", color = UltimateGold, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
+    Spacer(Modifier.height(7.dp))
+    Row(
+        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(9.dp)
+    ) {
+        UltimateCatalog.civilianStyles.forEach { style ->
+            val active = style == selected
+            Column(
+                Modifier.width(98.dp)
+                    .clip(CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp))
+                    .background(if (active) Color(0xFF142334) else Color(0xFF0D141C))
+                    .border(1.dp, if (active) UltimateBlue else Color(0xFF2C3948), CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp))
+                    .clickable { onSelect(style) }
+                    .padding(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Canvas(Modifier.width(58.dp).height(64.dp)) {
+                    val main = when {
+                        style.contains("Sport", true) -> Color(0xFF2E6CA4)
+                        style.contains("Class", true) -> Color(0xFF27303A)
+                        style.contains("Créat", true) -> Color(0xFF7A3F7E)
+                        style.contains("Profession", true) -> Color(0xFF3B4D68)
+                        style.contains("Vintage", true) -> Color(0xFF795B3E)
+                        else -> Color(0xFF2A415D)
+                    }
+                    val accent = when {
+                        style.contains("Sport", true) -> Color(0xFFB9D9FF)
+                        style.contains("Créat", true) -> Color(0xFFE3B7F0)
+                        style.contains("Vintage", true) -> Color(0xFFE1C49F)
+                        else -> Color(0xFFB9C7D8)
+                    }
+                    val outline=Color(0xFF10151B)
+                    drawRect(outline, Offset(size.width*.18f,size.height*.16f), Size(size.width*.64f,size.height*.70f))
+                    drawRect(main, Offset(size.width*.22f,size.height*.20f), Size(size.width*.56f,size.height*.62f))
+                    drawRect(accent, Offset(size.width*.22f,size.height*.56f), Size(size.width*.56f,size.height*.08f))
+                    if(style.contains("Class", true) || style.contains("Profession", true)) {
+                        drawRect(accent, Offset(size.width*.47f,size.height*.20f), Size(size.width*.06f,size.height*.36f))
+                    }
+                }
+                Spacer(Modifier.height(4.dp))
+                Text(style.uppercase(), color = if (active) UltimateIvory else UltimateMuted, fontSize = 7.sp, fontWeight = FontWeight.Black, maxLines = 2, lineHeight = 9.sp)
             }
         }
     }
