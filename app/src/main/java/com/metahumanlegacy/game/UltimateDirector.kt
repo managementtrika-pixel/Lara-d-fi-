@@ -668,7 +668,7 @@ internal object UltimateDirector {
 
     private fun addMilestoneSnapshot(c: Campaign, state: UltimateState): List<String> {
         val milestone = when {
-            c.age == 28 && c.powerRevealed -> "Éveil"
+            c.age == 18 && c.powerRevealed -> "Éveil"
             c.age in listOf(35, 50, 65) -> "${c.age} ans"
             c.scope == Scope.WORLD && state.snapshots.none { it.contains("Monde") } -> "Portée Monde"
             else -> null
@@ -756,7 +756,7 @@ internal object UltimateDirector {
             if (solved > 0) append(" $solved dossier${if (solved > 1) "s" else ""} ont trouvé une conclusion grâce à des années d'enquête.")
             if (s.techniques.isNotEmpty()) append(" Tes techniques signatures — ${s.techniques.joinToString(", ")} — survivent dans les récits de ceux qui t'ont vu agir.")
             if (s.iconicItems.isNotEmpty()) append(" Des objets de différentes époques de ta carrière finissent archivés comme des morceaux d'histoire.")
-            append(" ${s.cityArchetype}, ${s.climate.lowercase()}, ne ressemble plus tout à fait à la ville de tes 18 ans.")
+            append(" ${s.cityArchetype}, ${s.climate.lowercase()}, ne ressemble plus tout à fait à la ville de ton enfance.")
         }
     }
 
