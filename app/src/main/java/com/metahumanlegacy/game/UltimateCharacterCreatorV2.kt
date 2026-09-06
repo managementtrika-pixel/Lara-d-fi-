@@ -1,7 +1,9 @@
 package com.metahumanlegacy.game
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -180,17 +182,28 @@ private fun CreatorTopBar(
 
 @Composable
 private fun CharacterStage(campaign: Campaign, state: UltimateState, caption: String) {
+    var pulse by remember { mutableStateOf(false) }
+    LaunchedEffect(state.hashCode()) {
+        pulse = true
+        kotlinx.coroutines.delay(90)
+        pulse = false
+    }
     val avatarScale by animateFloatAsState(
-        targetValue = 1f,
-        animationSpec = tween(180),
+        targetValue = if (pulse) 1.035f else 1f,
+        animationSpec = tween(120),
         label = "pixelAvatarScale"
+    )
+    val frameAccent by animateColorAsState(
+        targetValue = if (pulse) UltimateGold else UltimateBlue.copy(alpha = .32f),
+        animationSpec = tween(140),
+        label = "pixelFrameAccent"
     )
     Box(
         Modifier.fillMaxWidth().height(350.dp)
             .shadow(18.dp, CutCornerShape(topEnd = 30.dp, bottomStart = 30.dp))
             .clip(CutCornerShape(topEnd = 30.dp, bottomStart = 30.dp))
             .background(Brush.verticalGradient(listOf(Color(0xFF152231), Color(0xFF080C12))))
-            .border(1.dp, UltimateBlue.copy(alpha = .32f), CutCornerShape(topEnd = 30.dp, bottomStart = 30.dp))
+            .border(if (pulse) 2.dp else 1.dp, frameAccent, CutCornerShape(topEnd = 30.dp, bottomStart = 30.dp))
     ) {
         Canvas(Modifier.matchParentSize()) {
             val step = 18f
@@ -439,29 +452,101 @@ private fun CityStep(
 
 @Composable
 private fun ValidationStep(draft: UltimateCreationDraft, campaign: Campaign, state: UltimateState) {
-    CharacterStage(campaign, state, "Avant le pouvoir, il y avait une personne.")
-    Spacer(Modifier.height(10.dp))
-    UltimatePanel(accent = UltimateGold) {
-        Text("DOSSIER D'IDENTITÉ", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 9.sp, letterSpacing = 1.sp)
-        Text(draft.blueprint.fullName.uppercase(), color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 22.sp)
-        Spacer(Modifier.height(5.dp))
-        Text(
-            draft.bodyBuild + " · " + draft.stature + "\n" +
-                draft.civilianStyle + " · " + draft.accessory + "\n" +
-                draft.blueprint.city + ", " + draft.blueprint.district + "\n" +
-                draft.cityArchetype + " · " + draft.cityMood + "\n" +
-                draft.blueprint.socialBackground + " · " + draft.blueprint.civilianPath + "\n" +
-                draft.blueprint.motivation + " · " + draft.blueprint.temperament,
-            color = UltimateMuted, fontSize = 11.sp, lineHeight = 17.sp
-        )
-    }
-    Spacer(Modifier.height(8.dp))
-    UltimatePanel(accent = UltimateBlue) {
-        Text("PREMIÈRE ANNÉE", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 9.sp)
-        Text(
-            "Tu ne choisis toujours aucun pouvoir. Tes dix premières décisions construiront secrètement l'éveil.",
-            color = UltimateIvory, fontWeight = FontWeight.Bold, fontSize = 12.sp, lineHeight = 18.sp
-        )
+    var reveal by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { reveal = true }
+
+    Box(
+        Modifier.fillMaxWidth()
+            .clip(CutCornerShape(topEnd = 28.dp, bottomStart = 28.dp))
+            .background(
+                Brush.verticalGradient(
+                    listOf(Color(0xFF111A24), Color(0xFF090D13))
+                )
+            )
+            .border(1.dp, UltimateGold.copy(alpha = .55f), CutCornerShape(topEnd = 28.dp, bottomStart = 28.dp))
+            .padding(12.dp)
+    ) {
+        Column {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    Modifier.size(42.dp)
+                        .background(UltimateGold, CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("ID", color = Color(0xFF11151B), fontWeight = FontWeight.Black, fontSize = 15.sp)
+                }
+                Spacer(Modifier.width(10.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("METAHUMAN LEGACY", color = UltimateMuted, fontSize = 8.sp, fontWeight = FontWeight.Black, letterSpacing = 1.2.sp)
+                    Text("DOSSIER CIVIL", color = UltimateIvory, fontSize = 20.sp, fontWeight = FontWeight.Black)
+                }
+                Text("18 ANS", color = UltimateBlue, fontSize = 10.sp, fontWeight = FontWeight.Black)
+            }
+
+            Spacer(Modifier.height(10.dp))
+            Box(
+                Modifier.fillMaxWidth().height(300.dp)
+                    .clip(CutCornerShape(topEnd = 20.dp, bottomStart = 20.dp))
+                    .background(Color(0xFF0B1118))
+                    .border(1.dp, Color(0xFF263342), CutCornerShape(topEnd = 20.dp, bottomStart = 20.dp))
+            ) {
+                Canvas(Modifier.matchParentSize()) {
+                    val step = 16f
+                    var x=0f
+                    while(x<size.width){ drawLine(Color.White.copy(alpha=.025f),Offset(x,0f),Offset(x,size.height),1f); x+=step }
+                    var y=0f
+                    while(y<size.height){ drawLine(Color.White.copy(alpha=.025f),Offset(0f,y),Offset(size.width,y),1f); y+=step }
+                }
+                PixelAvatar(
+                    state,
+                    Modifier.align(Alignment.Center).width(230.dp).height(285.dp)
+                )
+                Box(
+                    Modifier.align(Alignment.BottomCenter).fillMaxWidth()
+                        .background(Color.Black.copy(alpha=.62f))
+                        .padding(10.dp)
+                ) {
+                    Column {
+                        Text(
+                            draft.blueprint.fullName.uppercase(),
+                            color = UltimateIvory,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 19.sp
+                        )
+                        Text(
+                            draft.blueprint.city.uppercase() + " · " + draft.blueprint.district.uppercase(),
+                            color = UltimateGold,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 9.sp
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(10.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                PixelSummaryTag(draft.bodyBuild, Modifier.weight(1f))
+                PixelSummaryTag(draft.civilianStyle, Modifier.weight(1f))
+                PixelSummaryTag(draft.accessory, Modifier.weight(1f))
+            }
+            Spacer(Modifier.height(8.dp))
+            UltimatePanel(accent = UltimateBlue) {
+                Text(
+                    "AVANT LE POUVOIR, IL Y AVAIT UNE PERSONNE.",
+                    color = UltimateIvory,
+                    fontWeight = FontWeight.Black,
+                    fontSize = 13.sp,
+                    lineHeight = 17.sp
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "Tu ne choisis aucun pouvoir ici. Les dix premières décisions de ta vie construiront secrètement ton éveil.",
+                    color = UltimateMuted,
+                    fontSize = 11.sp,
+                    lineHeight = 16.sp
+                )
+            }
+        }
     }
 }
 
@@ -871,6 +956,29 @@ private fun PixelAccessoryStrip(selected: String, hairColor: String, skinTone: S
                 Text(accessory.uppercase(), color=if(active) UltimateIvory else UltimateMuted, fontSize=7.sp, fontWeight=FontWeight.Black, maxLines=2, lineHeight=9.sp)
             }
         }
+    }
+}
+
+
+@Composable
+private fun PixelSummaryTag(text: String, modifier: Modifier = Modifier) {
+    Box(
+        modifier
+            .heightIn(min = 42.dp)
+            .clip(CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp))
+            .background(Color(0xFF111923))
+            .border(1.dp, Color(0xFF2D3A49), CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp))
+            .padding(horizontal = 8.dp, vertical = 7.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text.uppercase(),
+            color = UltimateMuted,
+            fontSize = 7.sp,
+            fontWeight = FontWeight.Black,
+            maxLines = 2,
+            lineHeight = 9.sp
+        )
     }
 }
 
