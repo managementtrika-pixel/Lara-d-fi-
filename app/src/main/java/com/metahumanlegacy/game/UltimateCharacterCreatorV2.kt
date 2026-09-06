@@ -6,10 +6,12 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.OutlinedTextField
@@ -19,6 +21,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -65,6 +68,8 @@ internal fun UltimateCharacterCreatorV2(
                 Brush.verticalGradient(listOf(Color(0xFF05080D), Color(0xFF0A1018), Color(0xFF05080D)))
             )
         ) {
+            CreatorBackdrop()
+
             Column(Modifier.fillMaxSize().padding(horizontal = 14.dp, vertical = 10.dp)) {
                 CreatorTopBar(step, creatorSteps.size, meta.number, meta.title, meta.subtitle, onRandomize)
                 Spacer(Modifier.height(8.dp))
@@ -105,6 +110,25 @@ internal fun UltimateCharacterCreatorV2(
         }
     }
 }
+
+@Composable
+private fun CreatorBackdrop() {
+    Box(Modifier.fillMaxSize()) {
+        Box(
+            Modifier.align(Alignment.TopEnd)
+                .offset(x = 70.dp, y = (-45).dp)
+                .size(210.dp)
+                .background(UltimateBlue.copy(alpha = .035f), RoundedCornerShape(105.dp))
+        )
+        Box(
+            Modifier.align(Alignment.BottomStart)
+                .offset(x = (-80).dp, y = 70.dp)
+                .size(240.dp)
+                .background(UltimateGold.copy(alpha = .025f), RoundedCornerShape(120.dp))
+        )
+    }
+}
+
 
 @Composable
 private fun CreatorTopBar(
@@ -150,14 +174,26 @@ private fun CreatorTopBar(
 @Composable
 private fun CharacterStage(campaign: Campaign, state: UltimateState, caption: String) {
     Box(
-        Modifier.fillMaxWidth().height(330.dp)
-            .clip(CutCornerShape(topEnd = 26.dp, bottomStart = 26.dp))
-            .background(Brush.verticalGradient(listOf(Color(0xFF101A26), Color(0xFF080C12))))
+        Modifier.fillMaxWidth().height(350.dp)
+            .shadow(18.dp, CutCornerShape(topEnd = 30.dp, bottomStart = 30.dp))
+            .clip(CutCornerShape(topEnd = 30.dp, bottomStart = 30.dp))
+            .background(Brush.verticalGradient(listOf(Color(0xFF152231), Color(0xFF080C12))))
+            .border(1.dp, UltimateBlue.copy(alpha = .32f), CutCornerShape(topEnd = 30.dp, bottomStart = 30.dp))
     ) {
+        Box(
+            Modifier.align(Alignment.Center)
+                .width(260.dp).height(260.dp)
+                .background(
+                    Brush.radialGradient(
+                        listOf(UltimateBlue.copy(alpha = .18f), Color.Transparent)
+                    )
+                )
+        )
+
         UltimatePortrait(
             campaign,
             state,
-            Modifier.align(Alignment.Center).width(235.dp).height(315.dp),
+            Modifier.align(Alignment.Center).width(255.dp).height(335.dp),
             heroMode = false,
             showAura = false
         )
