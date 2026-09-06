@@ -123,6 +123,34 @@ class ReleaseReadinessTest {
     }
 
     @Test
+    fun everyConfiguredPowerAndWeaknessHasAPlayableRuntimeProfile() {
+        val powers = PowerResolver.powerCatalog()
+        val weaknesses = PowerResolver.weaknessCatalog()
+        assertTrue("At least the promised 26 distinct power outcomes must exist", powers.size >= 26)
+        assertTrue("Weakness catalog must remain meaningfully varied", weaknesses.size >= 8)
+
+        powers.forEach { power ->
+            val profile = powerVisualProfile(power)
+            assertTrue(power + " must have a non-empty visual profile label", profile.iconKey.isNotBlank())
+        }
+
+        repeat(160) { seedIndex ->
+            var c = GameEngine.newCampaign(50_000L + seedIndex)
+            repeat(10) { turn ->
+                val event = GameEngine.event(c)
+                c = GameEngine.resolve(c, event, event.choices[(seedIndex + turn) % event.choices.size]).campaign
+            }
+            assertTrue(c.powerFamily in powers)
+            assertTrue(c.weakness in weaknesses)
+            assertTrue(c.powerSignature.isNotBlank())
+            assertTrue(c.powerRevealText.isNotBlank())
+            assertTrue(c.powerCostText.isNotBlank())
+            assertTrue(c.power in 24..58)
+            assertTrue(c.control in 18..55)
+        }
+    }
+
+    @Test
     fun scopeThresholdsRemainOrderedAndReachWorld() {
         val base = GameEngine.newCampaign(777L).copy(
             powerFamily = "Énergie",
