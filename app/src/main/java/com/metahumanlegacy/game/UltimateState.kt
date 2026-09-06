@@ -194,10 +194,10 @@ internal object UltimateStore {
         val relations = listOf(
             UltimateRelation("family", first[0], "Famille", ageOffset = 24, trust = c.familyBond, affection = c.familyBond + 5),
             UltimateRelation("friend", first[1], "Ami·e", ageOffset = 0, trust = 58, affection = 62),
-            UltimateRelation("journalist", first[2], "Journaliste", ageOffset = 4, trust = 35, admiration = 10),
-            UltimateRelation("rival", first[3], "Rival potentiel", ageOffset = 1, trust = 15, grudge = 15),
-            UltimateRelation("mentor", first[4], "Mentor potentiel", ageOffset = 16, trust = 45, admiration = 20),
-            UltimateRelation("peer", first[5], "Pair métahumain potentiel", ageOffset = 2, trust = 40, admiration = 10)
+            UltimateRelation("journalist", first[2], "Journaliste local potentiel", ageOffset = 18, trust = 35, admiration = 10),
+            UltimateRelation("rival", first[3], "Camarade / rival potentiel", ageOffset = 1, trust = 15, grudge = 15),
+            UltimateRelation("mentor", first[4], "Mentor potentiel", ageOffset = 20, trust = 45, admiration = 20),
+            UltimateRelation("peer", first[5], "Camarade métahumain potentiel", ageOffset = 2, trust = 40, admiration = 10)
         )
         val districts = GameEngine.districts.take(6).mapIndexed { i, d ->
             UltimateDistrict(
