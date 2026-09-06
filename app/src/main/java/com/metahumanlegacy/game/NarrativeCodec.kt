@@ -132,7 +132,7 @@ internal object NarrativeCodec {
                     costDelta = csv(c[6])
                 )
             }
-            FormativeChapter(p[0], p[1].toInt(), restore(p[2]), restore(p[3]), choices)
+            FormativeChapter(p[0], (p[1].toInt() - 10).coerceIn(8, 17), restore(p[2]), restore(p[3]), choices)
         }.toList()
 
     private fun parseAwakening(text: String): AwakeningScene {
@@ -152,7 +152,7 @@ internal object NarrativeCodec {
             )
         }
         return AwakeningScene(
-            p[0], p[1].toInt(), restore(p[2]), restore(p[3]),
+            p[0], (p[1].toInt() - 10).coerceAtLeast(18), restore(p[2]), restore(p[3]),
             csv(p[4]).toSet(), choices
         )
     }
