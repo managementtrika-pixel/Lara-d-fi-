@@ -205,7 +205,7 @@ private fun LibraryAtlasCell(
     }
     Column(
         Modifier
-            .width(if (tall) 82.dp else 92.dp)
+            .width(if (tall) 86.dp else 104.dp)
             .clickable(enabled = enabled, onClick = onClick),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -266,7 +266,7 @@ private fun LibraryPresetHeader(title: String, subtitle: String) {
 internal fun LibraryFacePresetStrip(draft: UltimateCreationDraft, onDraft: (UltimateCreationDraft) -> Unit) {
     LibraryPresetHeader(
         "Portrait illustré",
-        "48 identités individuelles. Une vignette = une personne complète : aucun morceau de planche, aucun fragment incompatible superposé."
+        "Fais défiler les identités puis touche un portrait pour le projeter immédiatement sur ton personnage."
     )
     Row(
         Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
