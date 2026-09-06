@@ -7,7 +7,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import kotlin.math.roundToInt
+import kotlin.math.floor
 
 private fun pxSkin(name: String): Color = when (name) {
     "Très clair" -> Color(0xFFF3D2BD)
@@ -45,11 +45,12 @@ internal fun PixelAvatar(
     modifier: Modifier = Modifier
 ) {
     Canvas(modifier) {
-        val cols = 18
-        val rows = 28
-        val cell = minOf(size.width / cols, size.height / rows)
-        val ox = (size.width - cols * cell) / 2f
-        val oy = (size.height - rows * cell) / 2f
+        val cols = 20
+        val rows = 30
+        val rawCell = minOf(size.width / cols, size.height / rows)
+        val cell = floor(rawCell).coerceAtLeast(1f)
+        val ox = floor((size.width - cols * cell) / 2f)
+        val oy = floor((size.height - rows * cell) / 2f)
 
         fun p(x: Int, y: Int, w: Int = 1, h: Int = 1, color: Color) {
             drawRect(color, Offset(ox + x * cell, oy + y * cell), Size(w * cell, h * cell))
@@ -69,42 +70,46 @@ internal fun PixelAvatar(
 
         // Legs / stance
         val legSpread = if (state.bodyBuild == "Massif") 1 else 0
-        p(6 - legSpread, 21, 3 + legSpread, 6, Color(0xFF1A2532))
-        p(9, 21, 3 + legSpread, 6, Color(0xFF1A2532))
-        p(5 - legSpread, 26, 4 + legSpread, 2, Color(0xFF0D1117))
-        p(9, 26, 4 + legSpread, 2, Color(0xFF0D1117))
+        p(6 - legSpread, 22, 3 + legSpread, 6, Color(0xFF1A2532))
+        p(11, 22, 3 + legSpread, 6, Color(0xFF1A2532))
+        p(5 - legSpread, 27, 4 + legSpread, 2, Color(0xFF0D1117))
+        p(11, 27, 4 + legSpread, 2, Color(0xFF0D1117))
 
         // Torso
         val torsoX = when (state.bodyBuild) {
-            "Fin" -> 5
-            "Massif", "Robuste" -> 3
-            else -> 4
+            "Fin" -> 6
+            "Massif" -> 3
+            "Robuste" -> 4
+            else -> 5
         }
         val torsoW = when (state.bodyBuild) {
             "Fin" -> 8
-            "Massif" -> 12
-            "Robuste" -> 11
+            "Massif" -> 14
+            "Robuste" -> 12
             else -> 10
         }
-        p(torsoX, 14, torsoW, 8, outline)
-        p(torsoX + 1, 15, torsoW - 2, 6, shirt)
-        p(torsoX + 1, 20, torsoW - 2, 1, trim.copy(alpha = .85f))
+        p(torsoX, 14, torsoW, 9, outline)
+        p(torsoX + 1, 15, torsoW - 2, 7, shirt)
+        p(torsoX + 1, 21, torsoW - 2, 1, trim.copy(alpha = .85f))
+        // shirt highlight + waist break
+        p(torsoX + 2, 16, (torsoW - 4).coerceAtLeast(2), 1, Color.White.copy(alpha = .08f))
+        p(torsoX + 1, 22, torsoW - 2, 1, Color.Black.copy(alpha = .16f))
 
         // Arms
-        p((torsoX - 2).coerceAtLeast(1), 15, 2, 6, outline)
-        p((torsoX - 1).coerceAtLeast(2), 16, 1, 4, skin)
-        p((torsoX + torsoW).coerceAtMost(16), 15, 2, 6, outline)
-        p((torsoX + torsoW).coerceAtMost(16), 16, 1, 4, skin)
+        p((torsoX - 2).coerceAtLeast(1), 15, 2, 7, outline)
+        p((torsoX - 1).coerceAtLeast(2), 16, 1, 5, skin)
+        p((torsoX + torsoW).coerceAtMost(18), 15, 2, 7, outline)
+        p((torsoX + torsoW).coerceAtMost(18), 16, 1, 5, skin)
 
         // Neck
-        p(7, 12, 4, 3, outline)
-        p(8, 12, 2, 3, skin)
+        p(8, 12, 4, 3, outline)
+        p(9, 12, 2, 3, skin)
 
         // Head silhouette
         val headX = when (state.faceShape) {
-            "Fin" -> 5
-            "Rond" -> 4
-            else -> 4
+            "Fin" -> 6
+            "Rond" -> 5
+            else -> 5
         }
         val headW = when (state.faceShape) {
             "Fin" -> 8
@@ -135,8 +140,15 @@ internal fun PixelAvatar(
         p(headX + headW - 4, 6, 2, 1, hair.copy(alpha = .9f))
 
         // Nose + mouth
-        p(headX + headW / 2, 8, 1, 2, skin.copy(alpha = .78f))
-        p(headX + 3, 10, headW - 6, 1, Color(0xFF6A3433))
+        p(headX + headW / 2, 8, 1, 2, skin.copy(alpha = .72f))
+        val mouth = when {
+            state.civilianStyle.contains("Créat", true) -> Color(0xFF8A4550)
+            else -> Color(0xFF6A3433)
+        }
+        p(headX + 3, 10, headW - 6, 1, mouth)
+        if (state.bodyBuild == "Massif") {
+            p(headX + 2, 11, headW - 4, 1, Color.Black.copy(alpha = .10f))
+        }
 
         // Hair
         drawPixelHair(state.hair, hair, headX, headY, headW, cell, ox, oy)
@@ -173,7 +185,7 @@ internal fun PixelAvatar(
         }
 
         // Tiny floor shadow
-        p(4, 27, 10, 1, Color.Black.copy(alpha = .28f))
+        p(4, 29, 12, 1, Color.Black.copy(alpha = .28f))
     }
 }
 
