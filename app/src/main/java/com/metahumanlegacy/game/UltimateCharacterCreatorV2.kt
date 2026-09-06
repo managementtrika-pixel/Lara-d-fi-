@@ -32,9 +32,9 @@ private data class CreatorStep(val number: String, val title: String, val subtit
 
 private val creatorSteps = listOf(
     CreatorStep("01", "IDENTITÉ", "Chaque légende commence par une personne."),
-    CreatorStep("02", "VISAGE", "Choisis une apparence forte ou crée la tienne."),
-    CreatorStep("03", "CORPS", "Construis une silhouette immédiatement reconnaissable."),
-    CreatorStep("04", "CHEVEUX", "Coiffure, pilosité et regard façonnent la présence."),
+    CreatorStep("02", "VISAGE", "Assemble ton visage pixel en quelques choix."),
+    CreatorStep("03", "CORPS", "Choisis une silhouette simple et lisible."),
+    CreatorStep("04", "CHEVEUX", "Change de coiffure et de look en un tap."),
     CreatorStep("05", "STYLE", "Avant le costume, il y a une façon d'habiter le monde."),
     CreatorStep("06", "DÉTAILS", "Les petits signes font une identité."),
     CreatorStep("07", "VILLE", "Ton histoire commence quelque part."),
@@ -53,6 +53,7 @@ internal fun UltimateCharacterCreatorV2(
     fun updateBlueprint(next: CharacterBlueprint) = onDraft(draft.copy(blueprint = next))
     val previewCampaign = remember(draft) { GameEngine.newCampaign(10101L, draft.blueprint) }
     val previewState = remember(draft) { UltimateStore.create(previewCampaign, draft) }
+    LaunchedEffect(Unit) { if (draft.libraryFaceIndex >= 0) onDraft(draft.copy(libraryFaceIndex = -1)) }
     val meta = creatorSteps[step]
     val canAdvance = draft.blueprint.fullName.isNotBlank()
 
@@ -190,12 +191,9 @@ private fun CharacterStage(campaign: Campaign, state: UltimateState, caption: St
                 )
         )
 
-        UltimatePortrait(
-            campaign,
-            state,
-            Modifier.align(Alignment.Center).width(255.dp).height(335.dp),
-            heroMode = false,
-            showAura = false
+        PixelAvatar(
+            state = state,
+            modifier = Modifier.align(Alignment.Center).width(255.dp).height(335.dp)
         )
         Box(
             Modifier.align(Alignment.BottomStart).fillMaxWidth()
@@ -245,27 +243,16 @@ private fun FaceStep(
     state: UltimateState,
     onDraft: (UltimateCreationDraft) -> Unit
 ) {
-    CharacterStage(campaign, state, if (draft.libraryFaceIndex >= 0) "Identité illustrée" else "Création libre")
-    LibraryFacePresetStrip(draft, onDraft)
-    Spacer(Modifier.height(9.dp))
-    if (draft.libraryFaceIndex >= 0) {
-        UltimatePanel(accent = UltimateGold) {
-            Text("APPARENCE PRÉDÉFINIE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 9.sp)
-            Text(
-                "Le portrait reste une identité complète pour garantir un rendu propre et cohérent.",
-                color = UltimateMuted, fontSize = 11.sp, lineHeight = 16.sp
-            )
-            Spacer(Modifier.height(8.dp))
-            MhlSecondaryButton("CRÉER LIBREMENT", { onDraft(draft.copy(libraryFaceIndex = -1)) }, Modifier.fillMaxWidth())
-        }
-    } else {
-        UltimatePanel(accent = UltimateBlue) {
-            Text("CRÉATION LIBRE", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 9.sp)
-            Text("Les réglages sont gérés par le renderer du jeu.", color = UltimateMuted, fontSize = 11.sp)
-        }
-        CreatorOptionStrip("TEINT", UltimateCatalog.skinTones, draft.skinTone) { onDraft(draft.copy(skinTone = it)) }
-        CreatorOptionStrip("FORME DU VISAGE", UltimateCatalog.faceShapes, draft.faceShape) { onDraft(draft.copy(faceShape = it)) }
+    CharacterStage(campaign, state, "Avatar pixel")
+    UltimatePanel(accent = UltimateBlue) {
+        Text("100 % SANS ASSET", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 9.sp)
+        Text(
+            "Ton personnage est dessiné directement par le jeu. Chaque option s'assemble proprement et instantanément.",
+            color = UltimateMuted, fontSize = 11.sp, lineHeight = 16.sp
+        )
     }
+    CreatorOptionStrip("TEINT", UltimateCatalog.skinTones, draft.skinTone) { onDraft(draft.copy(skinTone = it, libraryFaceIndex = -1)) }
+    CreatorOptionStrip("FORME DU VISAGE", UltimateCatalog.faceShapes, draft.faceShape) { onDraft(draft.copy(faceShape = it, libraryFaceIndex = -1)) }
 }
 
 @Composable
@@ -287,21 +274,11 @@ private fun HairStep(
     state: UltimateState,
     onDraft: (UltimateCreationDraft) -> Unit
 ) {
-    CharacterStage(campaign, state, if (draft.libraryFaceIndex >= 0) "Cheveux intégrés au portrait" else draft.hair)
-    if (draft.libraryFaceIndex >= 0) {
-        UltimatePanel(accent = UltimateGold) {
-            Text("IDENTITÉ ILLUSTRÉE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 9.sp)
-            Text(
-                "Coiffure, yeux et pilosité appartiennent au portrait choisi afin d'éviter les superpositions incohérentes.",
-                color = UltimateMuted, fontSize = 11.sp, lineHeight = 16.sp
-            )
-        }
-    } else {
-        CreatorOptionStrip("COIFFURE", UltimateCatalog.hairs, draft.hair) { onDraft(draft.copy(hair = it)) }
-        CreatorOptionStrip("COULEUR", UltimateCatalog.hairColors, draft.hairColor) { onDraft(draft.copy(hairColor = it)) }
-        CreatorOptionStrip("BARBE", UltimateCatalog.facialHairs, draft.facialHair) { onDraft(draft.copy(facialHair = it)) }
-        CreatorOptionStrip("YEUX", UltimateCatalog.eyes, draft.eyes) { onDraft(draft.copy(eyes = it)) }
-    }
+    CharacterStage(campaign, state, draft.hair)
+    CreatorOptionStrip("COIFFURE", UltimateCatalog.hairs, draft.hair) { onDraft(draft.copy(hair = it, libraryFaceIndex = -1)) }
+    CreatorOptionStrip("COULEUR", UltimateCatalog.hairColors, draft.hairColor) { onDraft(draft.copy(hairColor = it, libraryFaceIndex = -1)) }
+    CreatorOptionStrip("BARBE", UltimateCatalog.facialHairs, draft.facialHair) { onDraft(draft.copy(facialHair = it, libraryFaceIndex = -1)) }
+    CreatorOptionStrip("YEUX", UltimateCatalog.eyes, draft.eyes) { onDraft(draft.copy(eyes = it, libraryFaceIndex = -1)) }
 }
 
 @Composable
