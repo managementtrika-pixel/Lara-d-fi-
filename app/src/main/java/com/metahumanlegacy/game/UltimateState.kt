@@ -214,7 +214,7 @@ internal object UltimateStore {
             facialHair = draft.facialHair, eyes = draft.eyes, civilianStyle = draft.civilianStyle,
             accessory = draft.accessory, cityArchetype = draft.cityArchetype, climate = draft.climate,
             architecture = draft.architecture, cityMood = draft.cityMood,
-            libraryFaceIndex = draft.libraryFaceIndex,
+            libraryFaceIndex = -1,
             journalist = relations.first { it.id == "journalist" }.name,
             relations = relations,
             districts = districts,
@@ -239,7 +239,8 @@ internal object UltimateStore {
 
     fun load(context: Context, c: Campaign): UltimateState {
         val raw = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(c.seed.toString(), null)
-        return raw?.let(::decode)?.takeIf { it.seed == c.seed } ?: fallback(c)
+        return (raw?.let(::decode)?.takeIf { it.seed == c.seed } ?: fallback(c))
+            .copy(libraryFaceIndex = -1)
     }
 
     fun save(context: Context, state: UltimateState) {
