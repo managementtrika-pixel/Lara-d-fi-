@@ -643,7 +643,7 @@ private fun ValidationStep(draft: UltimateCreationDraft, campaign: Campaign, sta
                     Text("DOSSIER CIVIL", color = UltimateIvory, fontSize = 20.sp, fontWeight = FontWeight.Black)
                 }
                 Column(horizontalAlignment = Alignment.End) {
-                    Text("7 ANS", color = UltimateBlue, fontSize = 10.sp, fontWeight = FontWeight.Black)
+                    Text("DÉPART · 8 ANS", color = UltimateBlue, fontSize = 10.sp, fontWeight = FontWeight.Black)
                     Text("AUCUN POUVOIR", color = UltimateMuted, fontSize = 6.sp, fontWeight = FontWeight.Black)
                 }
             }
