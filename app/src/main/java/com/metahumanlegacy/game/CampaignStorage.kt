@@ -26,7 +26,7 @@ internal fun saveCampaignV4(context: Context, c: Campaign) {
         c.powerRevealText, c.powerCostText, c.powerSignature
     ).joinToString("|") { e(it) }
     context.getSharedPreferences("legacy", Context.MODE_PRIVATE)
-        .edit().putString("campaign", "V4|$fields").apply()
+        .edit().putString("campaign", "V5|$fields").apply()
 }
 
 internal fun loadCampaignV4(context: Context): Campaign? {
@@ -34,7 +34,8 @@ internal fun loadCampaignV4(context: Context): Campaign? {
         .getString("campaign", null) ?: return null
     return runCatching {
         when {
-            raw.startsWith("V4|") -> parseV4(raw.removePrefix("V4|"))
+            raw.startsWith("V5|") -> parseV4(raw.removePrefix("V5|"))
+            raw.startsWith("V4|") -> migrateV4Chronology(parseV4(raw.removePrefix("V4|")))
             raw.startsWith("V3|") -> migrateV3(raw.removePrefix("V3|"))
             else -> null
         }
@@ -79,6 +80,43 @@ private fun parseV4(raw: String): Campaign {
     )
 }
 
+
+private fun migrateV4Chronology(old: Campaign): Campaign {
+    fun shiftAgeText(line: String): String {
+        val match = Regex("""^(\d{1,3}) ans""").find(line) ?: return line
+        val oldAge = match.groupValues[1].toIntOrNull() ?: return line
+        if (oldAge < 18) return line
+        val newAge = (oldAge - 10).coerceAtLeast(8)
+        return line.replaceRange(match.range, "$newAge ans")
+    }
+
+    fun shiftDeepMemory(flag: String): String {
+        if (!flag.startsWith("deep:memory=")) return flag
+        val payload = flag.substringAfter('=')
+        val parts = payload.split(',').toMutableList()
+        if (parts.size < 2) return flag
+        val age = parts[1].toIntOrNull() ?: return flag
+        parts[1] = (age - 10).coerceAtLeast(8).toString()
+        return "deep:memory=" + parts.joinToString(",")
+    }
+
+    val migratedFlags = old.flags
+        .map(::shiftDeepMemory)
+        .toSet() + setOf("MIGRATED_V4_TO_CHILDHOOD_CANON", "CHRONOLOGY_8_TO_18")
+
+    val migratedTimeline = old.timeline
+        .map(::shiftAgeText)
+        .let { timeline ->
+            (timeline + "↳ Sauvegarde migrée vers la chronologie canonique : années formatives de 8 à 17 ans, éveil à 18 ans.")
+                .takeLast(180)
+        }
+
+    return old.copy(
+        flags = migratedFlags,
+        timeline = migratedTimeline
+    )
+}
+
 private fun migrateV3(raw: String): Campaign {
     val p = raw.split('|').map(Uri::decode)
     val oldFlags = p.getOrElse(29) { "" }.split(';').filter { it.isNotBlank() }.toSet()
@@ -102,10 +140,21 @@ private fun migrateV3(raw: String): Campaign {
         familyBond = p[24].toInt(), rivalStanding = p[25].toInt(),
         governmentStanding = p[26].toInt(), factionStanding = p[27].toInt(),
         mediaStanding = p[28].toInt(),
-        flags = oldFlags + setOf("POWER_REVEALED", "FORMATIVE_DECADE_COMPLETE", "ALIAS_CHOSEN", "MIGRATED_V3"),
+        flags = oldFlags + setOf(
+            "POWER_REVEALED", "FORMATIVE_DECADE_COMPLETE", "ALIAS_CHOSEN",
+            "MIGRATED_V3", "CHRONOLOGY_8_TO_18"
+        ),
         threads = oldThreads,
         lastCategory = p.getOrElse(31) { "" }, lastApproach = p.getOrElse(32) { "" },
-        timeline = p.getOrElse(33) { "" }.lines().filter { it.isNotBlank() },
+        timeline = p.getOrElse(33) { "" }.lines().filter { it.isNotBlank() }
+            .map { line ->
+                val m = Regex("""^(\d{1,3}) ans""").find(line)
+                if (m == null) line else {
+                    val age = m.groupValues[1].toIntOrNull()
+                    if (age == null || age < 18) line
+                    else line.replaceRange(m.range, "${(age - 10).coerceAtLeast(8)} ans")
+                }
+            },
         powerRevealText = "Ton pouvoir s'était déjà manifesté avant cette version de la destinée.",
         powerCostText = "Ta faiblesse connue reste ${p[5]}.",
         powerSignature = "Le monde reconnaît déjà ta signature métahumaine."

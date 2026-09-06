@@ -113,7 +113,7 @@ internal object NarrativeRepository {
 
     private fun formativeNode(ch: FormativeChapter) = EventNode(
         ch.id, ch.title, ch.text, ch.choices, "VIE", "ANNÉE FORMATIVE", 1,
-        "PROLOGUE_NOBODY_DECADE", ch.age - 17, "FORMATIVE"
+        "PROLOGUE_NOBODY_DECADE", ch.age - 7, "FORMATIVE"
     )
 
     private fun awakeningNode(c: Campaign): EventNode {
@@ -192,7 +192,7 @@ internal object NarrativeRepository {
             val matched = tokens.firstOrNull { it in c.flags }
             if (matched != null) {
                 val year = matched.substring(2, 4).toIntOrNull() ?: 1
-                val age = 17 + year
+                val age = 7 + year
                 return "\n\nÀ $age ans, bien avant que ton pouvoir ne se révèle, tu avais déjà pris une décision qui revient aujourd'hui dans cette histoire."
             }
         }

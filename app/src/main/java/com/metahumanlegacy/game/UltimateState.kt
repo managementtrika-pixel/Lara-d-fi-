@@ -7,7 +7,7 @@ import java.util.Random
 /**
  * Persistent state for the expanded life-simulation layer.
  * Campaign stays the authoritative deterministic narrative state; this store carries the richer
- * personalization/world biography so old saves remain compatible with Campaign V4.
+ * personalization/world biography while Campaign storage migrates legacy chronology explicitly.
  */
 internal data class UltimateCreationDraft(
     val blueprint: CharacterBlueprint,
@@ -129,7 +129,9 @@ internal data class UltimateState(
     fun district(name: String): UltimateDistrict? = districts.firstOrNull { it.name == name }
 
     fun ageAppearance(c: Campaign): String = when {
-        c.age < 25 -> "Traits jeunes"
+        c.age < 13 -> "Traits d'enfance"
+        c.age < 18 -> "Traits adolescents"
+        c.age < 25 -> "Jeune adulte"
         c.age < 35 -> "Traits adultes"
         c.age < 50 -> "Traits affirmés"
         c.age < 65 -> "Traits marqués"
@@ -192,10 +194,10 @@ internal object UltimateStore {
         val relations = listOf(
             UltimateRelation("family", first[0], "Famille", ageOffset = 24, trust = c.familyBond, affection = c.familyBond + 5),
             UltimateRelation("friend", first[1], "Ami·e", ageOffset = 0, trust = 58, affection = 62),
-            UltimateRelation("journalist", first[2], "Journaliste", ageOffset = 4, trust = 35, admiration = 10),
-            UltimateRelation("rival", first[3], "Rival potentiel", ageOffset = 1, trust = 15, grudge = 15),
-            UltimateRelation("mentor", first[4], "Mentor potentiel", ageOffset = 16, trust = 45, admiration = 20),
-            UltimateRelation("peer", first[5], "Pair métahumain potentiel", ageOffset = 2, trust = 40, admiration = 10)
+            UltimateRelation("journalist", first[2], "Journaliste local potentiel", ageOffset = 18, trust = 35, admiration = 10),
+            UltimateRelation("rival", first[3], "Camarade / rival potentiel", ageOffset = 1, trust = 15, grudge = 15),
+            UltimateRelation("mentor", first[4], "Mentor potentiel", ageOffset = 20, trust = 45, admiration = 20),
+            UltimateRelation("peer", first[5], "Camarade métahumain potentiel", ageOffset = 2, trust = 40, admiration = 10)
         )
         val districts = GameEngine.districts.take(6).mapIndexed { i, d ->
             UltimateDistrict(
@@ -212,11 +214,11 @@ internal object UltimateStore {
             facialHair = draft.facialHair, eyes = draft.eyes, civilianStyle = draft.civilianStyle,
             accessory = draft.accessory, cityArchetype = draft.cityArchetype, climate = draft.climate,
             architecture = draft.architecture, cityMood = draft.cityMood,
-            libraryFaceIndex = draft.libraryFaceIndex,
+            libraryFaceIndex = -1,
             journalist = relations.first { it.id == "journalist" }.name,
             relations = relations,
             districts = districts,
-            snapshots = listOf("18|Civil|${draft.hair}|${draft.civilianStyle}")
+            snapshots = listOf("8|Enfance|${draft.hair}|${draft.civilianStyle}")
         )
     }
 
@@ -237,7 +239,8 @@ internal object UltimateStore {
 
     fun load(context: Context, c: Campaign): UltimateState {
         val raw = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(c.seed.toString(), null)
-        return raw?.let(::decode)?.takeIf { it.seed == c.seed } ?: fallback(c)
+        return (raw?.let(::decode)?.takeIf { it.seed == c.seed } ?: fallback(c))
+            .copy(libraryFaceIndex = -1)
     }
 
     fun save(context: Context, state: UltimateState) {

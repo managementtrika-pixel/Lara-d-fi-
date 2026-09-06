@@ -98,8 +98,8 @@ internal fun UltimateHomeScreen(
                 MhlSecondaryButton("Nouvelle vie", { confirm = true }, Modifier.fillMaxWidth())
             } else {
                 UltimatePanel(Modifier.fillMaxWidth(), accent = UltimateBlue) {
-                    Text("À 18 ans, tu choisis une personne et une ville — pas un pouvoir.", color = UltimateIvory, fontWeight = FontWeight.Black)
-                    Text("Apparence, style civil, environnement et personnalité donnent une identité au départ. Les dix premières décisions construisent ensuite secrètement l'éveil.", color = UltimateMuted, lineHeight = 19.sp)
+                    Text("Tu commences à 8 ans : une personne, une famille, une ville — aucun pouvoir.", color = UltimateIvory, fontWeight = FontWeight.Black)
+                    Text("Apparence, style civil, environnement et personnalité donnent une identité au départ. Les dix décisions de 8 à 17 ans construisent ensuite secrètement l'éveil qui peut se manifester à 18 ans.", color = UltimateMuted, lineHeight = 19.sp)
                 }
                 Spacer(Modifier.height(12.dp))
                 MhlPrimaryButton("Commencer une vie", onNew, Modifier.fillMaxWidth())
@@ -118,135 +118,13 @@ internal fun UltimateCreateScreen(
     onBack: () -> Unit,
     onStart: (UltimateCreationDraft) -> Unit
 ) {
-    var step by remember(draft.blueprint.fullName) { mutableIntStateOf(0) }
-    fun updateBlueprint(next: CharacterBlueprint) = onDraft(draft.copy(blueprint = next))
-    val previewCampaign = remember(draft) {
-        GameEngine.newCampaign(10101L, draft.blueprint)
-    }
-    val previewState = remember(draft) { UltimateStore.create(previewCampaign, draft) }
-    val total = 5
-    MhlSceneFrame("ultimate-create-$step-${draft.hashCode()}", MotionBoard.PANEL_TRANSITION, MetahumanMotionLevel.MOTION_STANDARD, Modifier.fillMaxSize(), UltimateBlue) {
-        Column(Modifier.fillMaxSize().padding(14.dp)) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text("CRÉATION", color = UltimateGold, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
-                    Text("PERSONNE ORDINAIRE · ${step + 1}/$total", color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 20.sp)
-                }
-                TextButton(onClick = onRandomize) { Text("ALÉATOIRE", color = UltimateBlue, fontSize = 10.sp) }
-            }
-            Spacer(Modifier.height(8.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                repeat(total) { i -> Box(Modifier.weight(1f).height(4.dp).background(if (i <= step) UltimateGold else Color(0xFF28313C))) }
-            }
-            Spacer(Modifier.height(10.dp))
-            Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
-                when (step) {
-                    0 -> {
-                        UltimateSectionHeader("1 · identité", "Qui es-tu à 18 ans ?", "Aucun masque. Aucun pouvoir. Juste une personne dans une ville.")
-                        Spacer(Modifier.height(10.dp))
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            UltimatePortrait(previewCampaign, previewState, Modifier.width(128.dp).height(178.dp).clip(CutCornerShape(14.dp)), heroMode = false, showAura = false)
-                            Column(Modifier.weight(1f)) {
-                                OutlinedTextField(draft.blueprint.firstName, { updateBlueprint(draft.blueprint.copy(firstName = it.take(24))) }, label = { Text("Prénom") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                                Spacer(Modifier.height(6.dp))
-                                OutlinedTextField(draft.blueprint.lastName, { updateBlueprint(draft.blueprint.copy(lastName = it.take(24))) }, label = { Text("Nom") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                            }
-                        }
-                        OptionStrip("PRONOM", GameEngine.pronouns, draft.blueprint.pronouns) { updateBlueprint(draft.blueprint.copy(pronouns = it)) }
-                    }
-                    1 -> {
-                        UltimateSectionHeader("2 · apparence", "Ton visage, ton corps", "Assez de choix pour être identifiable, sans éditeur à 150 curseurs.")
-                        Spacer(Modifier.height(10.dp))
-                        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                            UltimatePortrait(previewCampaign, previewState, Modifier.width(190.dp).height(255.dp).clip(CutCornerShape(18.dp)), heroMode = false, showAura = false)
-                        }
-                        LibraryFacePresetStrip(draft, onDraft)
-                        Spacer(Modifier.height(8.dp))
-                        if (draft.libraryFaceIndex >= 0) {
-                            UltimatePanel(accent = UltimateGold) {
-                                Text("MODE ILLUSTRÉ", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 10.sp)
-                                Text("Ce visage est une illustration complète. Le jeu ne colle jamais des yeux, cheveux ou barbes incompatibles par-dessus.", color = UltimateMuted, fontSize = 11.sp, lineHeight = 16.sp)
-                                Spacer(Modifier.height(8.dp))
-                                MhlSecondaryButton("PASSER EN MODE LIBRE", { onDraft(draft.copy(libraryFaceIndex = -1)) }, Modifier.fillMaxWidth())
-                            }
-                        } else {
-                            UltimatePanel(accent = UltimateBlue) {
-                                Text("MODE LIBRE", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 10.sp)
-                                Text("Construis le visage avec les paramètres compatibles du renderer. Choisis un portrait ci-dessus pour revenir au mode illustré.", color = UltimateMuted, fontSize = 11.sp, lineHeight = 16.sp)
-                            }
-                        }
-                        OptionStrip("SILHOUETTE", UltimateCatalog.bodyBuilds, draft.bodyBuild) { onDraft(draft.copy(bodyBuild = it)) }
-                        OptionStrip("TAILLE", UltimateCatalog.statures, draft.stature) { onDraft(draft.copy(stature = it)) }
-                        if (draft.libraryFaceIndex < 0) {
-                            OptionStrip("TEINT", UltimateCatalog.skinTones, draft.skinTone) { onDraft(draft.copy(skinTone = it)) }
-                            OptionStrip("VISAGE", UltimateCatalog.faceShapes, draft.faceShape) { onDraft(draft.copy(faceShape = it)) }
-                            OptionStrip("COIFFURE", UltimateCatalog.hairs, draft.hair) { onDraft(draft.copy(hair = it)) }
-                        }
-                    }
-                    2 -> {
-                        UltimateSectionHeader("3 · style civil", "La personne avant le symbole", "Ce style pourra changer au fil des années, des coiffures et de la carrière.")
-                        Spacer(Modifier.height(10.dp))
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            UltimatePortrait(previewCampaign, previewState, Modifier.width(128.dp).height(190.dp).clip(CutCornerShape(14.dp)), heroMode = false, showAura = false)
-                            Column(Modifier.weight(1f)) {
-                                UltimatePanel(accent = UltimateGold) {
-                                    Text(draft.blueprint.fullName.uppercase(), color = UltimateIvory, fontWeight = FontWeight.Black)
-                                    Text("${draft.civilianStyle}\n${draft.hairColor} · ${draft.eyes}\n${draft.accessory}", color = UltimateMuted, fontSize = 11.sp)
-                                }
-                            }
-                        }
-                        if (draft.libraryFaceIndex < 0) {
-                            OptionStrip("COULEUR DE CHEVEUX", UltimateCatalog.hairColors, draft.hairColor) { onDraft(draft.copy(hairColor = it)) }
-                            OptionStrip("BARBE", UltimateCatalog.facialHairs, draft.facialHair) { onDraft(draft.copy(facialHair = it)) }
-                            OptionStrip("YEUX", UltimateCatalog.eyes, draft.eyes) { onDraft(draft.copy(eyes = it)) }
-                        } else {
-                            UltimatePanel(accent = UltimateGold) {
-                                Text("IDENTITÉ VISUELLE CONSERVÉE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 10.sp)
-                                Text("Cheveux, yeux et pilosité appartiennent au portrait illustré choisi. Les vêtements et accessoires restent personnalisables indépendamment.", color = UltimateMuted, fontSize = 11.sp, lineHeight = 16.sp)
-                            }
-                        }
-                        OptionStrip("VÊTEMENTS", UltimateCatalog.civilianStyles, draft.civilianStyle) { onDraft(draft.copy(civilianStyle = it)) }
-                        OptionStrip("ACCESSOIRE", UltimateCatalog.accessories, draft.accessory) { onDraft(draft.copy(accessory = it)) }
-                    }
-                    3 -> {
-                        UltimateSectionHeader("4 · ville", "Construis le décor de ta vie", "La ville évoluera ensuite : dégâts, reconstruction, réputation locale, lois, factions et monuments.")
-                        Spacer(Modifier.height(10.dp))
-                        UltimateCityArtwork(previewCampaign, previewState, Modifier.fillMaxWidth().height(210.dp).clip(CutCornerShape(18.dp)))
-                        LibraryCityPresetStrip(draft, onDraft)
-                        OptionStrip("VILLE", GameEngine.cities, draft.blueprint.city) { updateBlueprint(draft.blueprint.copy(city = it)) }
-                        OptionStrip("QUARTIER DE DÉPART", GameEngine.districts, draft.blueprint.district) { updateBlueprint(draft.blueprint.copy(district = it)) }
-                        OptionStrip("TYPE DE VILLE", UltimateCatalog.cityArchetypes, draft.cityArchetype) { onDraft(draft.copy(cityArchetype = it)) }
-                        OptionStrip("CLIMAT", UltimateCatalog.climates, draft.climate) { onDraft(draft.copy(climate = it)) }
-                        OptionStrip("ARCHITECTURE", UltimateCatalog.architectures, draft.architecture) { onDraft(draft.copy(architecture = it)) }
-                        OptionStrip("AMBIANCE", UltimateCatalog.cityMoods, draft.cityMood) { onDraft(draft.copy(cityMood = it)) }
-                    }
-                    else -> {
-                        UltimateSectionHeader("5 · vie civile", "Ce qui te construit", "Ces éléments influencent ton départ humain. Ils ne sont jamais un sélecteur de pouvoir.")
-                        OptionStrip("CONTEXTE SOCIAL", GameEngine.socialBackgrounds, draft.blueprint.socialBackground) { updateBlueprint(draft.blueprint.copy(socialBackground = it)) }
-                        OptionStrip("TRAJECTOIRE", GameEngine.civilianPaths, draft.blueprint.civilianPath) { updateBlueprint(draft.blueprint.copy(civilianPath = it)) }
-                        OptionStrip("MOTIVATION", GameEngine.motivations, draft.blueprint.motivation) { updateBlueprint(draft.blueprint.copy(motivation = it)) }
-                        OptionStrip("TEMPÉRAMENT", GameEngine.temperaments, draft.blueprint.temperament) { updateBlueprint(draft.blueprint.copy(temperament = it)) }
-                        Spacer(Modifier.height(12.dp))
-                        UltimatePanel(accent = UltimateGold) {
-                            Text("DOSSIER DE DÉPART", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 10.sp)
-                            Text(draft.blueprint.fullName.uppercase(), color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 20.sp)
-                            Text("${draft.bodyBuild} · ${draft.stature} · ${draft.skinTone} · ${draft.hair} ${draft.hairColor.lowercase()}\n${draft.civilianStyle} · ${draft.accessory}\n${draft.blueprint.city}, ${draft.blueprint.district} · ${draft.cityArchetype}\n${draft.climate} · ${draft.architecture} · ${draft.cityMood}\n${draft.blueprint.socialBackground} · ${draft.blueprint.civilianPath}\n${draft.blueprint.motivation} · ${draft.blueprint.temperament}", color = UltimateMuted, lineHeight = 19.sp)
-                        }
-                        Spacer(Modifier.height(8.dp))
-                        UltimatePanel(accent = UltimateRed) {
-                            Text("TOUJOURS AUCUN POUVOIR À CHOISIR", color = UltimateRed, fontWeight = FontWeight.Black)
-                            Text("Les dix décisions formatives restent le seul chemin vers l'éveil. Apparence, ville et interludes civils ne manipulent jamais les vecteurs cachés du pouvoir.", color = UltimateMuted, lineHeight = 18.sp)
-                        }
-                    }
-                }
-            }
-            Spacer(Modifier.height(8.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                MhlSecondaryButton(if (step == 0) "Retour" else "Précédent", { if (step == 0) onBack() else step-- }, Modifier.weight(1f))
-                MhlPrimaryButton(if (step == total - 1) "Commencer à 18 ans" else "Suivant", { if (step == total - 1) onStart(draft) else step++ }, Modifier.weight(1f), draft.blueprint.fullName.isNotBlank())
-            }
-        }
-    }
+    UltimateCharacterCreatorV2(
+        draft = draft,
+        onDraft = onDraft,
+        onRandomize = onRandomize,
+        onBack = onBack,
+        onStart = onStart
+    )
 }
 
 @Composable
@@ -802,12 +680,48 @@ internal fun UltimateHallScreen(hall: List<String>, onBack: () -> Unit) {
         if (hall.isEmpty()) {
             UltimatePanel(accent = UltimateBlue) { Text("Aucune destinée archivée pour l'instant.", color = UltimateMuted) }
         } else hall.forEachIndexed { index, raw ->
-            val p = raw.split('|')
+            val record = LegacyRecord.decode(raw)
             UltimatePanel(accent = when { index == 0 -> UltimateGold; index % 3 == 1 -> UltimateBlue; else -> UltimateViolet }) {
-                Text(p.getOrElse(0) { "Inconnu" }.uppercase(), color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 17.sp)
-                Text(p.getOrElse(1) { "Legacy" }, color = UltimateGold, fontWeight = FontWeight.Bold)
-                Text("Score ${p.getOrElse(2) { "?" }} · ${p.getOrElse(3) { "?" }} · ${p.getOrElse(4) { "Ville inconnue" }}", color = UltimateMuted, fontSize = 10.sp)
-                if (p.size > 5) Text("${p.getOrElse(5) { "" }} · Némésis : ${p.getOrElse(6) { "Aucune" }}", color = UltimateMuted, fontSize = 10.sp)
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(record.name.uppercase(), color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 17.sp)
+                        Text(record.title, color = UltimateGold, fontWeight = FontWeight.Bold)
+                    }
+                    if (record.identityId.isNotBlank()) {
+                        Text(record.identityId, color = UltimateBlue, fontSize = 8.sp, fontWeight = FontWeight.Black)
+                    }
+                }
+                Text(
+                    "Score ${record.score} · ${record.scope} · ${record.city}" +
+                        if (record.finalAge > 0) " · ${record.finalAge} ans" else "",
+                    color = UltimateMuted,
+                    fontSize = 10.sp
+                )
+                if (record.powerFamily.isNotBlank() && record.powerFamily != "Non révélé") {
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "${record.powerFamily.uppercase()} · Moralité ${signed(record.morality)} · Opinion ${signed(record.opinion)} · Peur ${record.fear}",
+                        color = UltimateIvory,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                if (record.bodyBuild.isNotBlank()) {
+                    Text(
+                        "PIXEL DNA · ${record.skinTone} · ${record.faceShape} · ${record.bodyBuild} · ${record.hair} ${record.hairColor.lowercase()} · ${record.civilianStyle}",
+                        color = UltimateMuted,
+                        fontSize = 9.sp,
+                        lineHeight = 13.sp
+                    )
+                }
+                if (record.strongestRelation.isNotBlank()) {
+                    Text("Lien majeur · ${record.strongestRelation}", color = UltimateMuted, fontSize = 9.sp)
+                }
+                Text("Némésis · ${record.nemesis}", color = UltimateMuted, fontSize = 9.sp)
+                if (record.endingSummary.isNotBlank()) {
+                    Spacer(Modifier.height(5.dp))
+                    Text(record.endingSummary, color = UltimateIvory, fontSize = 10.sp, lineHeight = 14.sp, maxLines = 4)
+                }
             }
             Spacer(Modifier.height(6.dp))
         }

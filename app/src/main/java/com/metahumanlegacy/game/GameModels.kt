@@ -129,12 +129,12 @@ data class Campaign(
     val needsAlias: Boolean get() = powerRevealed && alias.isBlank()
 
     val age: Int get() = when {
-        turn <= 9 -> 18 + turn
-        turn == 10 -> 28
-        turn == 11 -> 28
-        turn in 12..13 -> 29
-        turn in 14..15 -> 30
-        else -> 30 + (turn - 16).coerceAtLeast(0) / 4
+        turn <= 9 -> 8 + turn
+        turn == 10 -> 18
+        turn == 11 -> 18
+        turn in 12..13 -> 19
+        turn in 14..15 -> 20
+        else -> 20 + (turn - 16).coerceAtLeast(0) / 4
     }
 
     val phaseLabel: String get() = when {
@@ -164,7 +164,7 @@ data class Campaign(
         else -> "Monstrueux"
     }
 
-    val finished: Boolean get() = turn >= 156 || health <= 0
+    val finished: Boolean get() = turn >= 196 || health <= 0
 }
 
 internal data class FormativeChapter(

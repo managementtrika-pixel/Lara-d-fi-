@@ -1,6 +1,6 @@
 # METAHUMAN LEGACY
 
-Simulateur Android solo de destinée de super-être, en français. Le joueur commence à 18 ans et façonne une carrière pouvant rester locale ou atteindre une portée mondiale.
+Simulateur Android solo de destinée de super-être, en français. Le joueur commence à 8 ans, traverse dix années formatives de 8 à 17 ans, puis connaît sa première manifestation potentielle à 18 ans. Sa carrière métahumaine peut ensuite rester locale ou atteindre une portée mondiale.
 
 ## Principes
 
