@@ -164,6 +164,13 @@ data class Campaign(
         else -> "Monstrueux"
     }
 
+    val alignmentLabel: String get() = when {
+        morality <= -30 || civilianCasualties >= 8 || (fear >= 70 && opinion <= -25) -> "Vilain"
+        morality >= 30 && opinion >= 0 && civilianCasualties <= 2 -> "Héros"
+        morality >= 0 && (fear >= 35 || opinion < 0 || governmentStanding < -25) -> "Anti-héros"
+        else -> "Neutre"
+    }
+
     val finished: Boolean get() = turn >= 196 || health <= 0
 }
 
