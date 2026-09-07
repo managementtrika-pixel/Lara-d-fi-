@@ -449,6 +449,12 @@ private fun UltimateCharacterScreen(c: Campaign, state: UltimateState, onStateCh
         }
         Spacer(Modifier.height(9.dp))
         UltimatePanel(accent = profile.accent) {
+            Text("DOSSIER D'ALIGNEMENT", color = profile.accent, fontWeight = FontWeight.Black, fontSize = 9.sp)
+            Text(c.alignmentLabel.uppercase(), color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 16.sp)
+            Text("Moralité ${signed(c.morality)} · Opinion ${signed(c.opinion)} · Peur ${c.fear} · Prestige ${c.prestige}\nGouvernement ${signed(c.governmentStanding)} · Médias ${signed(c.mediaStanding)} · victimes civiles ${c.civilianCasualties}", color = UltimateMuted, fontSize = 10.sp, lineHeight = 15.sp)
+        }
+        Spacer(Modifier.height(8.dp))
+        UltimatePanel(accent = profile.accent) {
             Text("APPARENCE ACTUELLE", color = profile.accent, fontWeight = FontWeight.Black, fontSize = 9.sp)
             Text("${state.ageAppearance(c)} · ${state.bodyBuild} · ${state.stature} · ${state.skinTone}", color = UltimateIvory, fontWeight = FontWeight.Black)
             Text("${state.faceShape} · ${state.hair} ${state.hairColor.lowercase()} · ${state.facialHair} · yeux ${state.eyes.lowercase()}\nStyle civil : ${state.civilianStyle} · ${state.accessory}", color = UltimateMuted, fontSize = 11.sp, lineHeight = 17.sp)
@@ -462,7 +468,7 @@ private fun UltimateCharacterScreen(c: Campaign, state: UltimateState, onStateCh
         }
         Spacer(Modifier.height(5.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-            Box(Modifier.weight(1f)) { UltimateActionTile("Barbe", state.facialHair, UltimateMuted, onClick = { onStateChange(state.copy(facialHair = cycle(UltimateCatalog.facialHairs, state.facialHair))) }) }
+            Box(Modifier.weight(1f)) { UltimateActionTile("Barbe", if (c.age < 16) "Indisponible" else state.facialHair, UltimateMuted, enabled = c.age >= 16, onClick = { onStateChange(state.copy(facialHair = cycle(UltimateCatalog.facialHairs, state.facialHair))) }) }
             Box(Modifier.weight(1f)) { UltimateActionTile("Style", state.civilianStyle, UltimateMuted, onClick = { onStateChange(state.copy(civilianStyle = cycle(UltimateCatalog.civilianStyles, state.civilianStyle))) }) }
         }
         if (c.powerRevealed) {
