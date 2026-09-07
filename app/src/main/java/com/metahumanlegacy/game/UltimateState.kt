@@ -178,7 +178,7 @@ internal object UltimateCatalog {
             blueprint = blueprint,
             bodyBuild = pick(bodyBuilds), stature = pick(statures), skinTone = pick(skinTones),
             faceShape = pick(faceShapes), hair = pick(hairs), hairColor = pick(hairColors),
-            facialHair = pick(facialHairs), eyes = pick(eyes), civilianStyle = pick(civilianStyles),
+            facialHair = "Aucune", eyes = pick(eyes), civilianStyle = pick(civilianStyles),
             accessory = pick(accessories), cityArchetype = pick(cityArchetypes), climate = pick(climates),
             architecture = pick(architectures), cityMood = pick(cityMoods)
         )
