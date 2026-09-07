@@ -294,6 +294,15 @@ class ReleaseReadinessTest {
         )
     }
 
+    @Test
+    fun systemicAlignmentDistinguishesFourCareerProfiles() {
+        val base = GameEngine.newCampaign(414141L)
+        assertEquals("Neutre", base.copy(morality = 0, opinion = 0, fear = 0, civilianCasualties = 0).alignmentLabel)
+        assertEquals("Héros", base.copy(morality = 60, opinion = 40, fear = 10, civilianCasualties = 0).alignmentLabel)
+        assertEquals("Anti-héros", base.copy(morality = 15, opinion = -20, fear = 50, governmentStanding = -40).alignmentLabel)
+        assertEquals("Vilain", base.copy(morality = -60, opinion = -50, fear = 80, civilianCasualties = 10).alignmentLabel)
+    }
+
     private fun assertStateBounds(c: Campaign) {
         assertTrue(c.morality in -100..100)
         assertTrue(c.opinion in -100..100)
