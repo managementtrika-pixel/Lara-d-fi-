@@ -168,4 +168,25 @@ class GameEngineTest {
         assertTrue(seen.size > 35)
         assertTrue(c.timeline.size > 100)
     }
+    @Test fun v1CareerReachesAValidLegacyEndingAcrossSeeds() {
+        (1L..12L).forEach { seed ->
+            var c = GameEngine.newCampaign(seed)
+            var guard = 0
+
+            while (!c.finished && guard < 220) {
+                val event = GameEngine.event(c)
+                assertTrue("event has no choices", event.choices.isNotEmpty())
+                val choice = event.choices[(seed.toInt() + guard) % event.choices.size]
+                c = GameEngine.resolve(c, event, choice).campaign
+                if (c.needsAlias) c = GameEngine.setAlias(c, "Legacy-$seed")
+                guard++
+            }
+
+            assertTrue("career did not reach an ending", c.finished)
+            assertTrue("career produced no timeline", c.timeline.isNotEmpty())
+            assertTrue("legacy title is blank", GameEngine.legacyTitle(c).isNotBlank())
+            assertTrue("legacy score is invalid", GameEngine.legacyScore(c) >= 0)
+        }
+    }
+
 }
