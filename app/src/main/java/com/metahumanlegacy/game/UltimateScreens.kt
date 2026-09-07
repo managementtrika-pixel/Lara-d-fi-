@@ -648,7 +648,7 @@ internal fun UltimateFinalScreen(c: Campaign, state: UltimateState, onArchive: (
     val profile = powerVisualProfile(c.powerFamily)
     MhlSceneFrame("ultimate-final-${c.seed}", MotionBoard.LEGACY, MetahumanMotionLevel.MOTION_LEGENDARY, Modifier.fillMaxSize(), profile.accent) {
         Column(Modifier.fillMaxSize().padding(14.dp).verticalScroll(rememberScrollState())) {
-            UltimateSectionHeader("Legacy", GameEngine.legacyTitle(c), "${c.age} ans · ${c.scope.label} · score ${GameEngine.legacyScore(c)}", UltimateGold)
+            UltimateSectionHeader("Legacy", GameEngine.legacyTitle(c), "${legacyEndingKind(c)} · ${c.age} ans · ${c.scope.label} · score ${GameEngine.legacyScore(c)}", UltimateGold)
             Spacer(Modifier.height(9.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 UltimatePortrait(c, state, Modifier.weight(1f).height(240.dp).clip(CutCornerShape(18.dp)), heroMode = c.powerRevealed)
@@ -718,6 +718,9 @@ internal fun UltimateHallScreen(hall: List<String>, onBack: () -> Unit) {
                     Text("Lien majeur · ${record.strongestRelation}", color = UltimateMuted, fontSize = 9.sp)
                 }
                 Text("Némésis · ${record.nemesis}", color = UltimateMuted, fontSize = 9.sp)
+                if (record.endingKind.isNotBlank()) {
+                    Text("Fin · ${record.endingKind}", color = UltimateGold, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                }
                 if (record.endingSummary.isNotBlank()) {
                     Spacer(Modifier.height(5.dp))
                     Text(record.endingSummary, color = UltimateIvory, fontSize = 10.sp, lineHeight = 14.sp, maxLines = 4)
