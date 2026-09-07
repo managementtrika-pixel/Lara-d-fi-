@@ -313,6 +313,15 @@ class ReleaseReadinessTest {
         assertEquals(7, pixelLegHeight(30, "Grande"))
     }
 
+    @Test
+    fun pixelAgeTiersProgressThroughAdultLife() {
+        assertEquals(0, pixelAgeTier(8))
+        assertEquals(1, pixelAgeTier(20))
+        assertEquals(2, pixelAgeTier(40))
+        assertEquals(3, pixelAgeTier(55))
+        assertEquals(4, pixelAgeTier(65))
+    }
+
     private fun assertStateBounds(c: Campaign) {
         assertTrue(c.morality in -100..100)
         assertTrue(c.opinion in -100..100)
