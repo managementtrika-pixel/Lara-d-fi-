@@ -278,6 +278,22 @@ class ReleaseReadinessTest {
         }
     }
 
+    @Test
+    fun endOfLifeClassificationCoversRetirementDeathAndSacrifice() {
+        val base = GameEngine.newCampaign(808080L).copy(
+            powerFamily = "Énergie",
+            flags = setOf("POWER_REVEALED", "ALIAS_CHOSEN"),
+            prestige = 50
+        )
+        assertEquals("Retraite", legacyEndingKind(base.copy(turn = 196, health = 100)))
+        assertEquals("Mort en activité", legacyEndingKind(base.copy(health = 0, lastApproach = "ORDER")))
+        assertEquals("Sacrifice", legacyEndingKind(base.copy(health = 0, lastApproach = "CARE", prestige = 60)))
+        assertEquals(
+            "Victoire puis retraite",
+            legacyEndingKind(base.copy(turn = 196, influence = 950, prestige = 80, morality = 60))
+        )
+    }
+
     private fun assertStateBounds(c: Campaign) {
         assertTrue(c.morality in -100..100)
         assertTrue(c.opinion in -100..100)
