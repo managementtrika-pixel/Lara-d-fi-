@@ -43,7 +43,8 @@ private fun pxOutfit(style: String): Pair<Color, Color> = when {
 internal fun PixelAvatar(
     state: UltimateState,
     modifier: Modifier = Modifier,
-    age: Int = 18
+    age: Int = 18,
+    temperament: String = "Prudent"
 ) {
     Canvas(modifier) {
         val cols = 20
@@ -169,19 +170,20 @@ internal fun PixelAvatar(
             p(headX + headW - 3, eyeY, 1, 1, eyeDark)
         }
 
-        // Brows / expression
-        when (state.eyes) {
-            "Bleus" -> {
-                p(headX + 2, 6, 2, 1, hair.copy(alpha = .95f))
-                p(headX + headW - 4, 6, 2, 1, hair.copy(alpha = .95f))
-            }
-            "Verts" -> {
-                p(headX + 2, 6, 2, 1, hair.copy(alpha = .9f))
-                p(headX + headW - 4, 5, 2, 1, hair.copy(alpha = .9f))
-            }
-            "Noisette" -> {
+        // Brows / expression. Temperament changes the readable attitude without adding
+        // another fragile asset layer: the same Pixel DNA remains identifiable across ages.
+        when (temperament) {
+            "Curieux" -> {
                 p(headX + 2, 5, 2, 1, hair.copy(alpha = .9f))
                 p(headX + headW - 4, 6, 2, 1, hair.copy(alpha = .9f))
+            }
+            "Méfiant" -> {
+                p(headX + 2, 6, 2, 1, hair.copy(alpha = .95f))
+                p(headX + headW - 4, 5, 2, 1, hair.copy(alpha = .95f))
+            }
+            "Impulsif", "Ambitieux" -> {
+                p(headX + 2, 5, 2, 1, hair.copy(alpha = .95f))
+                p(headX + headW - 4, 5, 2, 1, hair.copy(alpha = .95f))
             }
             else -> {
                 p(headX + 2, 6, 2, 1, hair.copy(alpha = .9f))
@@ -216,7 +218,7 @@ internal fun PixelAvatar(
         drawPixelHair(state.hair, hair, headX, headY, headW, cell, ox, oy)
 
         // Facial hair
-        if (state.facialHair != "Aucune") {
+        if (age >= 16 && state.facialHair != "Aucune") {
             when (state.facialHair) {
                 "Moustache" -> p(headX + 3, 9, headW - 6, 1, hair)
                 "Bouc" -> {
