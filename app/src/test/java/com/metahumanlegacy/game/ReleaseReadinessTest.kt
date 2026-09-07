@@ -262,6 +262,22 @@ class ReleaseReadinessTest {
         assertFalse(base.copy(turn = 195, health = 1).finished)
     }
 
+    @Test
+    fun creatorDraftStartsWithAgeSafePixelIdentity() {
+        repeat(40) { index ->
+            val seed = 700_000L + index
+            val blueprint = GameEngine.randomBlueprint(seed)
+            val draft = UltimateCatalog.randomDraft(seed, blueprint)
+            assertEquals("Aucune", draft.facialHair)
+            assertEquals(-1, draft.libraryFaceIndex)
+            val campaign = GameEngine.newCampaign(seed, draft.blueprint)
+            val state = UltimateStore.create(campaign, draft)
+            assertEquals(8, campaign.age)
+            assertEquals("Aucune", state.facialHair)
+            assertEquals(-1, state.libraryFaceIndex)
+        }
+    }
+
     private fun assertStateBounds(c: Campaign) {
         assertTrue(c.morality in -100..100)
         assertTrue(c.opinion in -100..100)
