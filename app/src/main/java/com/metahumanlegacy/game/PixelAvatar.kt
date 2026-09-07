@@ -39,6 +39,20 @@ private fun pxOutfit(style: String): Pair<Color, Color> = when {
     else -> Color(0xFF2A415D) to Color(0xFF8AB4E8)
 }
 
+internal fun pixelLegHeight(age: Int, stature: String): Int {
+    val base = when {
+        age < 13 -> 5
+        age < 18 -> 6
+        else -> 6
+    }
+    val delta = when (stature) {
+        "Petite" -> -1
+        "Grande" -> 1
+        else -> 0
+    }
+    return (base + delta).coerceIn(4, 7)
+}
+
 @Composable
 internal fun PixelAvatar(
     state: UltimateState,
@@ -75,7 +89,7 @@ internal fun PixelAvatar(
         val torsoY = when { child -> 17; teen -> 15; else -> 14 }
         val torsoH = when { child -> 6; teen -> 8; else -> 9 }
         val legY = torsoY + torsoH - 1
-        val legH = when { child -> 5; teen -> 6; else -> 6 }
+        val legH = pixelLegHeight(age, state.stature)
 
         // Legs / stance
         val legSpread = if (state.bodyBuild == "Massif" && !child) 1 else 0
