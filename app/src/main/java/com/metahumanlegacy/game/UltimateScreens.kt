@@ -706,7 +706,8 @@ internal fun UltimateHallScreen(hall: List<String>, onBack: () -> Unit) {
                 if (record.powerFamily.isNotBlank() && record.powerFamily != "Non révélé") {
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        "${record.powerFamily.uppercase()} · Moralité ${signed(record.morality)} · Opinion ${signed(record.opinion)} · Peur ${record.fear}",
+                        (if (record.alignment.isNotBlank()) "${record.alignment.uppercase()} · " else "") +
+                            "${record.powerFamily.uppercase()} · Moralité ${signed(record.morality)} · Opinion ${signed(record.opinion)} · Peur ${record.fear}",
                         color = UltimateIvory,
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold
