@@ -24,15 +24,11 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.math.PI
@@ -145,11 +141,6 @@ private fun paletteColors(palette: String, power: String): Pair<Color, Color> = 
     else -> powerVisualProfile(power).accent to Color(0xFF171C25)
 }
 
-private fun libraryFaceIndex(state: UltimateState): Int? =
-    state.libraryFaceIndex.takeIf {
-        it in 0 until LibraryCustomizationCatalog.FACE_COLUMNS * LibraryCustomizationCatalog.FACE_ROWS
-    }
-
 @Composable
 internal fun UltimatePortrait(
     c: Campaign,
@@ -160,8 +151,6 @@ internal fun UltimatePortrait(
     contentDescription: String = "Portrait évolutif du personnage"
 ) {
     val profile = powerVisualProfile(c.powerFamily)
-    val libraryIndex = libraryFaceIndex(state)
-    val libraryAtlas = libraryIndex?.let { ImageBitmap.imageResource(id = R.drawable.mhl_library_faces) }
     val motion = LocalMetahumanMotion.current.settings
     val inf = rememberInfiniteTransition(label = "ultimate-portrait")
     val pulse by inf.animateFloat(
@@ -181,65 +170,6 @@ internal fun UltimatePortrait(
         if (showAura) {
             drawCircle(profile.accent.copy(alpha = if (motion.reduceMotion) .15f else .10f + .11f * pulse), radius = w * .42f, center = Offset(w * .5f, h * .42f))
             drawCircle(profile.secondary.copy(alpha = .18f), radius = w * .32f, center = Offset(w * .5f, h * .42f), style = Stroke(w * .014f))
-        }
-
-        if (libraryAtlas != null && libraryIndex != null) {
-            // Illustrated mode: one transparent head from the curated 8x6 Library atlas is placed
-            // on a coherent game-rendered torso. No square card, no atlas background, no facial
-            // fragments or procedural mask are drawn over the identity.
-            val clothes = if (heroMode) paletteColors(state.costumePalette, c.powerFamily)
-                else outfitColor(state.civilianStyle) to Color(0xFF10151C)
-            val bodyWidth = when (state.bodyBuild) {
-                "Fin" -> .68f
-                "Massif" -> .90f
-                "Robuste" -> .86f
-                else -> .78f
-            }
-            val shoulderY = h * .62f
-            val torso = Path().apply {
-                moveTo(w * (.5f - bodyWidth / 2), h)
-                lineTo(w * (.5f - bodyWidth / 2.05f), shoulderY)
-                quadraticBezierTo(w * .5f, h * .57f, w * (.5f + bodyWidth / 2.05f), shoulderY)
-                lineTo(w * (.5f + bodyWidth / 2), h)
-                close()
-            }
-            drawPath(torso, clothes.first)
-            drawPath(torso, clothes.second.copy(alpha = .90f), style = Stroke(w * .014f))
-            if (heroMode) {
-                drawLine(clothes.second.copy(alpha = .80f), Offset(w * .36f, h * .73f), Offset(w * .64f, h * .73f), w * .012f)
-                drawLine(profile.accent.copy(alpha = .60f), Offset(w * .40f, h * .78f), Offset(w * .60f, h * .78f), w * .006f)
-            }
-
-            val sourceW = libraryAtlas.width / LibraryCustomizationCatalog.FACE_COLUMNS
-            val sourceH = libraryAtlas.height / LibraryCustomizationCatalog.FACE_ROWS
-            val col = libraryIndex % LibraryCustomizationCatalog.FACE_COLUMNS
-            val row = libraryIndex / LibraryCustomizationCatalog.FACE_COLUMNS
-            val faceSide = minOf(w * .82f, h * .61f)
-            val faceLeft = (w - faceSide) / 2f
-            val faceTop = h * .075f
-            drawImage(
-                image = libraryAtlas,
-                srcOffset = IntOffset(col * sourceW, row * sourceH),
-                srcSize = IntSize(sourceW, sourceH),
-                dstOffset = IntOffset(faceLeft.toInt(), faceTop.toInt()),
-                dstSize = IntSize(faceSide.toInt().coerceAtLeast(1), faceSide.toInt().coerceAtLeast(1))
-            )
-
-            drawRoundRect(
-                color = (if (heroMode) profile.accent else UltimateGold).copy(alpha = .55f),
-                topLeft = Offset(w * .035f, h * .025f),
-                size = Size(w * .93f, h * .95f),
-                cornerRadius = androidx.compose.ui.geometry.CornerRadius(w * .04f),
-                style = Stroke(w * .008f)
-            )
-            if (heroMode && state.emblem != "Aucun") {
-                drawEmblem(state.emblem, clothes.second, Offset(w * .5f, h * .845f), w * .09f)
-            }
-            if (showAura && heroMode) {
-                drawCircle(profile.accent.copy(alpha = .22f), radius = w * .32f, center = Offset(w * .5f, h * .40f), style = Stroke(w * .010f))
-            }
-            drawRect(UltimateGold.copy(alpha = .72f), topLeft = Offset(w * .08f, h - w * .018f), size = Size(w * .84f, w * .018f))
-            return@Canvas
         }
 
         val skin = skinColor(state.skinTone)
@@ -281,7 +211,7 @@ internal fun UltimatePortrait(
         drawCircle(Color(0xFF1C2733), w * .012f, Offset(w * .565f, h * .407f))
 
         drawHair(state.hair, hair, w, h)
-        if (state.facialHair != "Aucune") drawFacialHair(state.facialHair, hair, w, h)
+        if (c.age >= 16 && state.facialHair != "Aucune") drawFacialHair(state.facialHair, hair, w, h)
 
         if (heroMode) drawMask(state.maskStyle, clothes.second, w, h)
         if (heroMode && state.emblem != "Aucun") drawEmblem(state.emblem, clothes.second, Offset(w * .5f, h * .79f), w * .10f)
