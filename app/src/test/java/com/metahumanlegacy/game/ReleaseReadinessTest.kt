@@ -246,6 +246,22 @@ class ReleaseReadinessTest {
         assertEquals(record.hair, decoded.hair)
     }
 
+    @Test
+    fun agingMilestonesAndMortalityRemainCoherent() {
+        val base = GameEngine.newCampaign(606060L)
+        assertEquals(8, base.copy(turn = 0).age)
+        assertEquals(18, base.copy(turn = 10).age)
+        assertEquals(20, base.copy(turn = 16).age)
+        assertEquals(30, base.copy(turn = 56).age)
+        assertEquals(40, base.copy(turn = 96).age)
+        assertEquals(50, base.copy(turn = 136).age)
+        assertEquals(60, base.copy(turn = 176).age)
+        assertEquals(65, base.copy(turn = 196).age)
+        assertTrue(base.copy(turn = 196).finished)
+        assertTrue(base.copy(health = 0).finished)
+        assertFalse(base.copy(turn = 195, health = 1).finished)
+    }
+
     private fun assertStateBounds(c: Campaign) {
         assertTrue(c.morality in -100..100)
         assertTrue(c.opinion in -100..100)
