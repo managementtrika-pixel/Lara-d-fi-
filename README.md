@@ -2,6 +2,10 @@
 
 Simulateur Android solo de destinée de super-être, en français. Le joueur commence à 18 ans et façonne une carrière pouvant rester locale ou atteindre une portée mondiale.
 
+## Version
+
+**1.0.0** — première version complète candidate. La CI vérifie les tests unitaires, Android Lint, l'assemblage APK et un smoke test multi-seeds qui doit mener plusieurs carrières jusqu'à une fin avec titre et Legacy Score valides.
+
 ## Principes
 
 - Moralité, prestige, opinion publique, peur, puissance et portée sont indépendants.
@@ -14,7 +18,7 @@ Simulateur Android solo de destinée de super-être, en français. Le joueur com
 
 ## Build
 
-Stack vérifiée en août 2026 : AGP 9.3.0, Gradle 9.5.0, API 37, JDK 17, Compose BOM 2026.08.00.
+Stack vérifiée en août 2026 : Gradle 9.5.0, API 36, JDK 17 et Jetpack Compose.
 
 ```bash
 gradle testDebugUnitTest
