@@ -257,7 +257,8 @@ private fun CharacterStage(campaign: Campaign, state: UltimateState, caption: St
                     scaleX = avatarScale
                     scaleY = avatarScale
                 },
-            age = campaign.age
+            age = campaign.age,
+            temperament = campaign.temperament
         )
         Box(
             Modifier.align(Alignment.TopStart)
@@ -667,7 +668,8 @@ private fun ValidationStep(draft: UltimateCreationDraft, campaign: Campaign, sta
                 PixelAvatar(
                     state,
                     Modifier.align(Alignment.Center).width(230.dp).height(285.dp),
-                    age = campaign.age
+                    age = campaign.age,
+                    temperament = campaign.temperament
                 )
                 Box(
                     Modifier.align(Alignment.BottomCenter).fillMaxWidth()
