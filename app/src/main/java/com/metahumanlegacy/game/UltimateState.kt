@@ -239,8 +239,11 @@ internal object UltimateStore {
 
     fun load(context: Context, c: Campaign): UltimateState {
         val raw = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(c.seed.toString(), null)
-        return (raw?.let(::decode)?.takeIf { it.seed == c.seed } ?: fallback(c))
-            .copy(libraryFaceIndex = -1)
+        val loaded = raw?.let(::decode)?.takeIf { it.seed == c.seed } ?: fallback(c)
+        return loaded.copy(
+            libraryFaceIndex = -1,
+            facialHair = if (c.age < 16) "Aucune" else loaded.facialHair
+        )
     }
 
     fun save(context: Context, state: UltimateState) {
