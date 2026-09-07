@@ -304,6 +304,15 @@ class ReleaseReadinessTest {
         assertEquals("Vilain", base.copy(morality = -60, opinion = -50, fear = 80, civilianCasualties = 10).alignmentLabel)
     }
 
+    @Test
+    fun pixelStatureChangesBodyProportionsAcrossAges() {
+        assertTrue(pixelLegHeight(8, "Petite") < pixelLegHeight(8, "Grande"))
+        assertTrue(pixelLegHeight(16, "Petite") < pixelLegHeight(16, "Grande"))
+        assertTrue(pixelLegHeight(30, "Petite") < pixelLegHeight(30, "Grande"))
+        assertEquals(4, pixelLegHeight(8, "Petite"))
+        assertEquals(7, pixelLegHeight(30, "Grande"))
+    }
+
     private fun assertStateBounds(c: Campaign) {
         assertTrue(c.morality in -100..100)
         assertTrue(c.opinion in -100..100)
