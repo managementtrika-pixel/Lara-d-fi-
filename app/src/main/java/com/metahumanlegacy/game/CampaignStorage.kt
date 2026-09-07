@@ -35,7 +35,7 @@ internal fun loadCampaignV4(context: Context): Campaign? {
     return runCatching {
         when {
             raw.startsWith("V5|") -> parseV4(raw.removePrefix("V5|"))
-            raw.startsWith("V4|") -> migrateV4Chronology(parseV4(raw.removePrefix("V4|")))
+            raw.startsWith("V4|") -> migrateLegacyV4Chronology(parseV4(raw.removePrefix("V4|")))
             raw.startsWith("V3|") -> migrateV3(raw.removePrefix("V3|"))
             else -> null
         }
@@ -81,7 +81,7 @@ private fun parseV4(raw: String): Campaign {
 }
 
 
-private fun migrateV4Chronology(old: Campaign): Campaign {
+internal fun migrateLegacyV4Chronology(old: Campaign): Campaign {
     fun shiftAgeText(line: String): String {
         val match = Regex("""^(\d{1,3}) ans""").find(line) ?: return line
         val oldAge = match.groupValues[1].toIntOrNull() ?: return line
