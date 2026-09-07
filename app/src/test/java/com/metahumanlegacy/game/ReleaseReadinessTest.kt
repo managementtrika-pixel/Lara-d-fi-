@@ -164,6 +164,88 @@ class ReleaseReadinessTest {
         assertEquals(Scope.WORLD, base.copy(influence = 900).scope)
     }
 
+    @Test
+    fun canonicalChildhoodEventsAreAgeAppropriateAndFullyInteractive() {
+        var c = GameEngine.newCampaign(817181L)
+        val expectedTitles = listOf(
+            "LE SAC DANS LA COUR",
+            "UNE PLACE À TABLE",
+            "LE DÉFI DU TOIT",
+            "CE QUE TU AS VU",
+            "LA PORTE FERMÉE",
+            "LE GROUPE",
+            "LE MESSAGE QUI TOURNE",
+            "APRÈS LES COURS",
+            "LA NUIT DU QUARTIER",
+            "CE QUE TU VEUX DEVENIR"
+        )
+
+        repeat(10) { index ->
+            val event = GameEngine.event(c)
+            assertEquals(8 + index, c.age)
+            assertEquals(expectedTitles[index], event.title)
+            assertEquals("FORMATIVE", event.kind)
+            assertEquals(4, event.choices.size)
+            assertTrue(event.text.isNotBlank())
+            assertTrue(event.choices.all { it.label.isNotBlank() })
+            c = GameEngine.resolve(c, event, event.choices[index % 4]).campaign
+        }
+
+        val awakening = GameEngine.event(c)
+        assertEquals(18, c.age)
+        assertEquals("LA PREMIÈRE MANIFESTATION", awakening.title)
+        assertTrue(awakening.text.contains("18 ans"))
+        assertTrue(awakening.text.contains("pas un pouvoir choisi", ignoreCase = true))
+        assertEquals(setOf("CARE", "ORDER", "TRUTH", "ASCEND"), awakening.choices.map { it.approach }.toSet())
+    }
+
+    @Test
+    fun legacyV4ChronologyMigrationPreservesProgressAndShiftsAgeReferences() {
+        val old = GameEngine.newCampaign(303030L).copy(
+            turn = 10,
+            powerFamily = "Énergie",
+            weakness = "Surcharge",
+            flags = setOf("POWER_REVEALED", "deep:memory=evt,28,Care"),
+            timeline = listOf("28 ans — Ancienne scène", "↳ souvenir sans âge")
+        )
+
+        val migrated = migrateLegacyV4Chronology(old)
+
+        assertEquals(old.turn, migrated.turn)
+        assertEquals(18, migrated.age)
+        assertTrue("MIGRATED_V4_TO_CHILDHOOD_CANON" in migrated.flags)
+        assertTrue("CHRONOLOGY_8_TO_18" in migrated.flags)
+        assertTrue("deep:memory=evt,18,Care" in migrated.flags)
+        assertTrue(migrated.timeline.any { it.startsWith("18 ans") })
+        assertTrue(migrated.timeline.any { it.contains("8 à 17 ans") })
+    }
+
+    @Test
+    fun pixelIdentityIdIsDeterministicAndLegacyArchiveKeepsCoreIdentity() {
+        val c = GameEngine.newCampaign(919191L)
+        val s = UltimateStore.fallback(c)
+        val a = stablePixelIdentityId(c, s)
+        val b = stablePixelIdentityId(c, s)
+        assertEquals(a, b)
+        assertTrue(a.startsWith("ID-"))
+
+        val finished = c.copy(
+            turn = 196,
+            alias = "Vector",
+            powerFamily = "Énergie",
+            flags = setOf("POWER_REVEALED", "ALIAS_CHOSEN")
+        )
+        val record = LegacyRecord.from(finished, s)
+        val decoded = LegacyRecord.decode(record.encode())
+
+        assertEquals(record.identityId, decoded.identityId)
+        assertEquals(record.powerFamily, decoded.powerFamily)
+        assertEquals(record.finalAge, decoded.finalAge)
+        assertEquals(record.bodyBuild, decoded.bodyBuild)
+        assertEquals(record.skinTone, decoded.skinTone)
+        assertEquals(record.hair, decoded.hair)
+    }
+
     private fun assertStateBounds(c: Campaign) {
         assertTrue(c.morality in -100..100)
         assertTrue(c.opinion in -100..100)
