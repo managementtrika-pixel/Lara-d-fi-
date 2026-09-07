@@ -256,7 +256,8 @@ private fun CharacterStage(campaign: Campaign, state: UltimateState, caption: St
                 .graphicsLayer {
                     scaleX = avatarScale
                     scaleY = avatarScale
-                }
+                },
+            age = campaign.age
         )
         Box(
             Modifier.align(Alignment.TopStart)
@@ -347,8 +348,9 @@ private fun LookStep(
     PixelEyesStrip(draft.eyes, draft.skinTone, draft.hairColor) {
         onDraft(draft.copy(eyes = it, libraryFaceIndex = -1))
     }
-    PixelFacialHairStrip(draft.facialHair, draft.hairColor, draft.skinTone) {
-        onDraft(draft.copy(facialHair = it, libraryFaceIndex = -1))
+    UltimatePanel(accent = UltimateBlue) {
+        Text("PILOSITÉ", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 8.sp)
+        Text("À 8 ans, aucune pilosité faciale n'est appliquée. Elle pourra évoluer plus tard avec l'âge.", color = UltimateMuted, fontSize = 10.sp, lineHeight = 14.sp)
     }
     PixelStyleStrip(draft.civilianStyle) {
         onDraft(draft.copy(civilianStyle = it))
@@ -364,7 +366,7 @@ private fun LookStep(
                 draft.copy(
                     hair = nextPixelOption(UltimateCatalog.hairs, draft.hair, 1),
                     hairColor = nextPixelOption(UltimateCatalog.hairColors, draft.hairColor, 2),
-                    facialHair = nextPixelOption(UltimateCatalog.facialHairs, draft.facialHair, 1),
+                    facialHair = "Aucune",
                     eyes = nextPixelOption(UltimateCatalog.eyes, draft.eyes, 2),
                     civilianStyle = nextPixelOption(UltimateCatalog.civilianStyles, draft.civilianStyle, 1),
                     accessory = nextPixelOption(UltimateCatalog.accessories, draft.accessory, 1),
@@ -664,7 +666,8 @@ private fun ValidationStep(draft: UltimateCreationDraft, campaign: Campaign, sta
                 }
                 PixelAvatar(
                     state,
-                    Modifier.align(Alignment.Center).width(230.dp).height(285.dp)
+                    Modifier.align(Alignment.Center).width(230.dp).height(285.dp),
+                    age = campaign.age
                 )
                 Box(
                     Modifier.align(Alignment.BottomCenter).fillMaxWidth()
