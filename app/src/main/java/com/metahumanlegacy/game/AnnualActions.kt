@@ -131,6 +131,17 @@ internal object AnnualActionStore {
     }.getOrNull()
 }
 
+internal fun ageAdjustedHealthDelta(age: Int, delta: Int): Int {
+    if (delta <= 0) return delta
+    val penalty = when {
+        age >= 65 -> 3
+        age >= 50 -> 2
+        age >= 40 -> 1
+        else -> 0
+    }
+    return (delta - penalty).coerceAtLeast(1)
+}
+
 internal object AnnualActionEngine {
     private val childhood = listOf(
         AnnualActionCard("child_family", "Passer du temps avec les proches", "Un repas, un jeu, une promenade ou juste rester ensemble sans transformer la journée en événement.", AnnualActionCategory.RELATION, "relation_family", "Liens · Présence", "Tu gardes une place réelle dans la vie des tiens.", familyBond = 4, presence = 1),
@@ -194,7 +205,7 @@ internal object AnnualActionEngine {
         if (!c.powerRevealed && c.turn >= 10) return null
 
         var riskNote = ""
-        var healthDelta = card.health
+        var healthDelta = ageAdjustedHealthDelta(c.age, card.health)
         when (card.id) {
             "meta_collapse" -> if (state.rescue < 25 || c.control < 30) {
                 healthDelta -= 3
