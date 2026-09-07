@@ -132,7 +132,7 @@ internal object NarrativeCodec {
                     costDelta = csv(c[6])
                 )
             }
-            FormativeChapter(p[0], p[1].toInt(), restore(p[2]), restore(p[3]), choices)
+            FormativeChapter(p[0], (p[1].toInt() - 10).coerceIn(8, 17), restore(p[2]), restore(p[3]), choices)
         }.toList()
 
     private fun parseAwakening(text: String): AwakeningScene {
@@ -152,7 +152,7 @@ internal object NarrativeCodec {
             )
         }
         return AwakeningScene(
-            p[0], p[1].toInt(), restore(p[2]), restore(p[3]),
+            p[0], (p[1].toInt() - 10).coerceAtLeast(18), restore(p[2]), restore(p[3]),
             csv(p[4]).toSet(), choices
         )
     }
@@ -191,7 +191,9 @@ internal object NarrativeCodec {
             }
             MajorBeat(
                 id = p[0], arc = p[1], stage = p[2].toInt(),
-                minAge = p[3].toInt(), maxAge = p[4].toInt(), minScope = scopeOf(p[5]),
+                minAge = (p[3].toInt() - 10).coerceAtLeast(18),
+                maxAge = (p[4].toInt() - 10).coerceAtLeast(18),
+                minScope = scopeOf(p[5]),
                 requiresFlags = csv(p[6]).toSet(), tags = csv(p[7]),
                 title = restore(p[8]), text = restore(p[9]), callbacks = p[10].split("||").filter { it.isNotBlank() }.map(::restore),
                 choices = choices

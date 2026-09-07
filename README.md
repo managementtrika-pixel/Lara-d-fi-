@@ -1,10 +1,10 @@
 # METAHUMAN LEGACY
 
-Simulateur Android solo de destinée de super-être, en français. Le joueur commence à 18 ans et façonne une carrière pouvant rester locale ou atteindre une portée mondiale.
+Simulateur Android solo de destinée de super-être, en français. Le joueur commence à 8 ans, traverse dix années formatives de 8 à 17 ans, puis connaît sa première manifestation potentielle à 18 ans. Sa carrière métahumaine peut ensuite rester locale ou atteindre une portée mondiale.
 
 ## Version
 
-**1.0.0** — première version complète candidate. La CI vérifie les tests unitaires, Android Lint, l'assemblage APK et un smoke test multi-seeds qui doit mener plusieurs carrières jusqu'à une fin avec titre et Legacy Score valides.
+**1.0.0** — chronologie canonique 8→18, Character Creator pixel premium, carrière complète jusqu'au Legacy, sauvegardes migrées et validation automatisée multi-seeds.
 
 ## Principes
 
@@ -14,11 +14,12 @@ Simulateur Android solo de destinée de super-être, en français. Le joueur com
 - Espace procédural de 660 événements identifiables avec quatre décisions contextuelles chacun.
 - Progression Rue → Quartier → Ville → Région → Pays → Monde.
 - Sauvegarde locale hors ligne et Hall of Legacies.
+- Character Creator en pixel-art moderne premium, généré par le renderer interne, avec Pixel DNA et identité persistante.
 - Interface Jetpack Compose sombre, contemporaine et inspirée du langage des cases de comics sans reprendre de licence existante.
 
 ## Build
 
-Stack vérifiée en août 2026 : Gradle 9.5.0, API 36, JDK 17 et Jetpack Compose.
+Stack de build : Gradle 9.5.0, Android API 36, JDK 17 et Jetpack Compose.
 
 ```bash
 gradle testDebugUnitTest

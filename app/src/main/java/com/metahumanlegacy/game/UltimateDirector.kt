@@ -668,7 +668,7 @@ internal object UltimateDirector {
 
     private fun addMilestoneSnapshot(c: Campaign, state: UltimateState): List<String> {
         val milestone = when {
-            c.age == 28 && c.powerRevealed -> "Éveil"
+            c.age == 18 && c.powerRevealed -> "Éveil"
             c.age in listOf(35, 50, 65) -> "${c.age} ans"
             c.scope == Scope.WORLD && state.snapshots.none { it.contains("Monde") } -> "Portée Monde"
             else -> null
@@ -679,6 +679,7 @@ internal object UltimateDirector {
 
     fun extraAnnualActions(c: Campaign, state: UltimateState, annual: AnnualActionState): List<AnnualActionCard> {
         if (annual.remaining <= 0 || (!c.powerRevealed && c.turn >= 10)) return emptyList()
+        if (!c.powerRevealed && c.age < 18) return emptyList()
         val all = mutableListOf<AnnualActionCard>()
         all += AnnualActionCard("ultimate_hair", "Changer vraiment de style", "Coiffeur, barbe, tenue civile : faire évoluer ton apparence sans transformer ça en événement annuel majeur.", AnnualActionCategory.CIVIL, "alt_02", "Présence · Apparence", "Ton portrait de cette période ne sera plus exactement le même.", presence = 1)
         all += AnnualActionCard("ultimate_finances", "Mettre tes affaires en ordre", "Budget, assurances, dettes et revenus : la partie de la double vie qui ne fait aucune couverture de journal.", AnnualActionCategory.CIVIL, "prestige_01", "Finances · Discipline", "Tu évites que les urgences financières deviennent une crise supplémentaire.", discipline = 1)
@@ -756,7 +757,7 @@ internal object UltimateDirector {
             if (solved > 0) append(" $solved dossier${if (solved > 1) "s" else ""} ont trouvé une conclusion grâce à des années d'enquête.")
             if (s.techniques.isNotEmpty()) append(" Tes techniques signatures — ${s.techniques.joinToString(", ")} — survivent dans les récits de ceux qui t'ont vu agir.")
             if (s.iconicItems.isNotEmpty()) append(" Des objets de différentes époques de ta carrière finissent archivés comme des morceaux d'histoire.")
-            append(" ${s.cityArchetype}, ${s.climate.lowercase()}, ne ressemble plus tout à fait à la ville de tes 18 ans.")
+            append(" ${s.cityArchetype}, ${s.climate.lowercase()}, ne ressemble plus tout à fait à la ville de ton enfance.")
         }
     }
 

@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -38,26 +39,6 @@ import androidx.compose.ui.unit.sp
  * generated layers. Each preset maps back to the stable procedural avatar/city/costume fields, so
  * incompatible eyes, hair, masks, limbs or backgrounds can never drift out of alignment.
  */
-internal data class LibraryFacePreset(
-    val name: String,
-    val atlasIndex: Int,
-    val skinTone: String,
-    val faceShape: String,
-    val hair: String,
-    val hairColor: String,
-    val facialHair: String,
-    val eyes: String,
-    val civilianStyle: String
-) {
-    // An illustrated portrait is an atomic identity. It never rewrites the free-mode sliders and
-    // no generated eyes/hair/beard are stacked on top of it.
-    fun apply(draft: UltimateCreationDraft): UltimateCreationDraft = draft.copy(
-        libraryFaceIndex = atlasIndex
-    )
-
-    fun matches(draft: UltimateCreationDraft): Boolean = draft.libraryFaceIndex == atlasIndex
-}
-
 internal data class LibraryCityPreset(
     val name: String,
     val atlasIndex: Int,
@@ -100,63 +81,10 @@ internal data class LibraryCostumePreset(
 }
 
 internal object LibraryCustomizationCatalog {
-    const val FACE_COLUMNS = 8
-    const val FACE_ROWS = 6
     const val CITY_COLUMNS = 4
     const val CITY_ROWS = 3
     const val COSTUME_COLUMNS = 4
     const val COSTUME_ROWS = 2
-
-    val facePresets = listOf(
-        LibraryFacePreset("Visage 01", 0, "Très clair", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 02", 1, "Très clair", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 03", 2, "Très clair", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 04", 3, "Très clair", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 05", 4, "Très clair", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 06", 5, "Très clair", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 07", 6, "Très clair", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 08", 7, "Très clair", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 09", 8, "Clair", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 10", 9, "Clair", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 11", 10, "Clair", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 12", 11, "Clair", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 13", 12, "Clair", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 14", 13, "Clair", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 15", 14, "Clair", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 16", 15, "Clair", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 17", 16, "Moyen", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 18", 17, "Moyen", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 19", 18, "Moyen", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 20", 19, "Moyen", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 21", 20, "Moyen", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 22", 21, "Moyen", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 23", 22, "Moyen", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 24", 23, "Moyen", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 25", 24, "Mat", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 26", 25, "Mat", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 27", 26, "Mat", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 28", 27, "Mat", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 29", 28, "Mat", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 30", 29, "Mat", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 31", 30, "Mat", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 32", 31, "Mat", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 33", 32, "Foncé", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 34", 33, "Foncé", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 35", 34, "Foncé", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 36", 35, "Foncé", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 37", 36, "Foncé", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 38", 37, "Foncé", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 39", 38, "Foncé", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 40", 39, "Foncé", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 41", 40, "Très foncé", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 42", 41, "Très foncé", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 43", 42, "Très foncé", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 44", 43, "Très foncé", "Rond", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 45", 44, "Très foncé", "Anguleux", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 46", 45, "Très foncé", "Ovale", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 47", 46, "Très foncé", "Carré", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre"),
-        LibraryFacePreset("Visage 48", 47, "Très foncé", "Fin", "Rasé", "Noir", "Aucune", "Bruns", "Street sobre")
-    )
 
     // The source atlas contains two deliberately non-city fantasy/cosmic cells. They are not
     // offered here because the user asked us to reject anything that cannot fit the city system.
@@ -205,7 +133,8 @@ private fun LibraryAtlasCell(
     }
     Column(
         Modifier
-            .width(if (tall) 82.dp else 92.dp)
+            .width(if (tall) 92.dp else 112.dp)
+            .shadow(if (selected) 12.dp else 0.dp, CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp))
             .clickable(enabled = enabled, onClick = onClick),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -213,8 +142,8 @@ private fun LibraryAtlasCell(
             Modifier
                 .fillMaxWidth()
                 .aspectRatio(if (tall) .72f else 1f)
-                .background(Color(0xFF0B1017), CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp))
-                .border(1.dp, border, CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp))
+                .background(if (selected) Color(0xFF121D28) else Color(0xFF0B1017), CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp))
+                .border(if (selected) 2.dp else 1.dp, border, CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp))
         ) {
             Canvas(Modifier.fillMaxWidth().aspectRatio(if (tall) .72f else 1f)) {
                 val sourceW = bitmap.width / columns
@@ -257,34 +186,9 @@ private fun LibraryAtlasCell(
 private fun LibraryPresetHeader(title: String, subtitle: String) {
     Spacer(Modifier.height(12.dp))
     Text("ASSETS BIBLIOTHÈQUE VALIDÉS", color = UltimateGold, fontSize = 8.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
-    Text(title.uppercase(), color = UltimateIvory, fontSize = 13.sp, fontWeight = FontWeight.Black)
-    Text(subtitle, color = UltimateMuted, fontSize = 9.sp, lineHeight = 13.sp)
+    Text(title.uppercase(), color = UltimateIvory, fontSize = 15.sp, fontWeight = FontWeight.Black, letterSpacing = .6.sp)
+    Text(subtitle, color = UltimateMuted, fontSize = 10.sp, lineHeight = 14.sp)
     Spacer(Modifier.height(6.dp))
-}
-
-@Composable
-internal fun LibraryFacePresetStrip(draft: UltimateCreationDraft, onDraft: (UltimateCreationDraft) -> Unit) {
-    LibraryPresetHeader(
-        "Portrait illustré",
-        "48 identités individuelles. Une vignette = une personne complète : aucun morceau de planche, aucun fragment incompatible superposé."
-    )
-    Row(
-        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(7.dp)
-    ) {
-        LibraryCustomizationCatalog.facePresets.forEach { preset ->
-            LibraryAtlasCell(
-                drawable = R.drawable.mhl_library_faces,
-                index = preset.atlasIndex,
-                columns = LibraryCustomizationCatalog.FACE_COLUMNS,
-                rows = LibraryCustomizationCatalog.FACE_ROWS,
-                label = preset.name,
-                selected = preset.matches(draft),
-                enabled = true,
-                onClick = { onDraft(preset.apply(draft)) }
-            )
-        }
-    }
 }
 
 @Composable

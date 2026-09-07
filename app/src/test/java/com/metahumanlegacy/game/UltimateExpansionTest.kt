@@ -22,6 +22,7 @@ class UltimateExpansionTest {
         var annual = AnnualActionState.fresh(c)
 
         repeat(10) { index ->
+            assertEquals(8 + index, c.age)
             val authored = GameEngine.event(c)
             val ultimate = UltimateGameEngine.event(c, state, annual)
             assertEquals("FORMATIVE", ultimate.kind)
@@ -35,6 +36,7 @@ class UltimateExpansionTest {
             annual = annual.synced(c)
         }
 
+        assertEquals(18, c.age)
         assertTrue(c.powerResolved)
         assertFalse(c.powerRevealed)
         assertEquals("AWAKENING", UltimateGameEngine.event(c, state, annual).kind)

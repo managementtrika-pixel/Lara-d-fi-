@@ -24,6 +24,20 @@ internal object PowerResolver {
         "COOLDOWN" to "Temps de récupération"
     )
 
+    internal fun powerCatalog(): Set<String> = buildSet {
+        affinityOptions.values.forEach { addAll(it) }
+        addAll(listOf("Lumière", "Plasma", "Chaleur contrôlée"))
+        addAll(listOf("Réflexes surhumains", "Propulsion physique", "Sauts cinétiques"))
+        addAll(listOf("Précognition limitée", "Lecture émotionnelle", "Perception extrasensorielle"))
+        addAll(listOf("Cristal", "Métal", "Transmutation limitée", "Construction de matière"))
+        addAll(listOf("Interface neuronale", "Cybernétique", "Drones liés"))
+        addAll(listOf("Magie symbolique", "Rêve", "Malédiction"))
+        addAll(listOf("Portails limités", "Rayonnement stellaire"))
+        addAll(listOf("Densité", "Résistance adaptative", "Métamorphose défensive"))
+    }
+
+    internal fun weaknessCatalog(): Set<String> = costNames.values.toSet()
+
     fun resolve(c: Campaign): Campaign {
         if (c.powerResolved) return c
         val affinity = ranked(c.affinityScores, c.seed xor 0xA11FL)

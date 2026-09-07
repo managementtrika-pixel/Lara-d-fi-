@@ -98,6 +98,26 @@ class AnnualActionsTest {
     }
 
     @Test
+    fun childhoodSideActionsStayAgeAppropriateAndCivil() {
+        var c = GameEngine.newCampaign(7010L)
+        repeat(10) { year ->
+            assertEquals(8 + year, c.age)
+            val state = AnnualActionState.fresh(c)
+            val cards = AnnualActionEngine.available(c, state)
+            assertTrue(cards.isNotEmpty())
+            assertTrue(cards.all { it.id.startsWith("child_") })
+            assertTrue(cards.none { it.requiresPower })
+            assertTrue(cards.none { it.title.contains("finances", ignoreCase = true) })
+            assertTrue(cards.none { it.title.contains("interview", ignoreCase = true) })
+
+            val event = GameEngine.event(c)
+            c = GameEngine.resolve(c, event, event.choices.first()).campaign
+        }
+        assertEquals(18, c.age)
+        assertTrue(AnnualActionEngine.available(c, AnnualActionState.fresh(c)).isEmpty())
+    }
+
+    @Test
     fun awakeningTurnBlocksSideErrands() {
         var c = GameEngine.newCampaign(7006L)
         repeat(10) {

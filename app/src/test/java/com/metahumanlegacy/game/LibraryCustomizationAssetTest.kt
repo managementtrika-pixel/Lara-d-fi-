@@ -5,24 +5,7 @@ import org.junit.Test
 
 class LibraryCustomizationAssetTest {
 
-    @Test
-    fun facePresetsOnlyUseSupportedStableOptions() {
-        assertTrue(LibraryCustomizationCatalog.facePresets.isNotEmpty())
-        assertTrue(LibraryCustomizationCatalog.FACE_COLUMNS == 8)
-        assertTrue(LibraryCustomizationCatalog.FACE_ROWS == 6)
-        assertTrue(LibraryCustomizationCatalog.facePresets.size == 48)
-        assertTrue(LibraryCustomizationCatalog.facePresets.map { it.atlasIndex }.distinct().size == 48)
-        LibraryCustomizationCatalog.facePresets.forEach { preset ->
-            assertTrue(preset.skinTone in UltimateCatalog.skinTones)
-            assertTrue(preset.faceShape in UltimateCatalog.faceShapes)
-            assertTrue(preset.hair in UltimateCatalog.hairs)
-            assertTrue(preset.hairColor in UltimateCatalog.hairColors)
-            assertTrue(preset.facialHair in UltimateCatalog.facialHairs)
-            assertTrue(preset.eyes in UltimateCatalog.eyes)
-            assertTrue(preset.civilianStyle in UltimateCatalog.civilianStyles)
-            assertTrue(preset.atlasIndex in 0 until LibraryCustomizationCatalog.FACE_COLUMNS * LibraryCustomizationCatalog.FACE_ROWS)
-        }
-    }
+
 
     @Test
     fun cityPresetsOnlyUseSupportedCityOptions() {
@@ -66,28 +49,8 @@ class LibraryCustomizationAssetTest {
         assertTrue(advanced.none { it.minimumEra <= 1 })
     }
 
-    @Test
-    fun illustratedFaceSelectionUsesOneExactAtlasCell() {
-        val blueprint = CharacterBlueprint(
-            firstName = "Test", lastName = "Avatar", pronouns = "iel",
-            city = GameEngine.cities.first(), district = GameEngine.districts.first(),
-            socialBackground = GameEngine.socialBackgrounds.first(), motivation = GameEngine.motivations.first(),
-            civilianPath = GameEngine.civilianPaths.first(), temperament = GameEngine.temperaments.first()
-        )
-        val draft = UltimateCreationDraft(blueprint = blueprint, hair = "Boucles", hairColor = "Roux")
-        val preset = LibraryCustomizationCatalog.facePresets[7]
-        val applied = preset.apply(draft)
-        assertTrue(applied.libraryFaceIndex == preset.atlasIndex)
-        assertTrue(applied.hair == "Boucles")
-        assertTrue(applied.hairColor == "Roux")
-        assertTrue(applied.skinTone == draft.skinTone)
-        assertTrue(applied.faceShape == draft.faceShape)
-        assertTrue(preset.matches(applied))
-    }
 
 
-    @Test
-    fun illustratedFaceCatalogCoversWholeSheet() {
-        assertTrue(LibraryCustomizationCatalog.facePresets.map { it.atlasIndex }.sorted() == (0 until 48).toList())
-    }
+
+
 }

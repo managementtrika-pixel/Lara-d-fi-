@@ -160,17 +160,10 @@ fun UltimateMetahumanLegacyApp(context: Context) {
                     campaign!!.finished -> UltimateFinalScreen(campaign!!, ultimate ?: UltimateStore.fallback(campaign!!)) {
                         val c = campaign!!
                         val u = ultimate ?: UltimateStore.fallback(c)
-                        val who = c.alias.ifBlank { c.name }
-                        val entry = listOf(
-                            who,
-                            GameEngine.legacyTitle(c),
-                            GameEngine.legacyScore(c),
-                            c.scope.label,
-                            c.city,
-                            u.heroPresentation,
-                            u.nemesis.ifBlank { "Aucune" }
-                        ).joinToString("|")
-                        hall = (listOf(entry) + hall).distinct().take(60)
+                        val entry = LegacyRecord.from(c, u).encode()
+                        hall = (listOf(entry) + hall)
+                            .distinctBy { LegacyRecord.decode(it).identityId.ifBlank { LegacyRecord.decode(it).name + "|" + LegacyRecord.decode(it).title } }
+                            .take(60)
                         saveHallV4(context, hall)
                         UltimateStore.clear(context, c.seed)
                         AnnualActionPersistence.clear(context, c.seed)

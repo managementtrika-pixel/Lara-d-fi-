@@ -513,7 +513,7 @@ internal fun ProductionFinalScreen(c: Campaign, onArchive: () -> Unit, onRestart
             Spacer(Modifier.height(14.dp))
             MhlComicPanel(accent = MetahumanColors.Gold, fill = Color(0xF5111720)) {
                 Text("LEGACY SCORE · ${GameEngine.legacyScore(c)}", fontWeight = FontWeight.Black, fontSize = 22.sp)
-                Text("18 → ${c.age} ans · ${c.scope.label}\nMoralité : ${c.moralLabel}\nPrestige : ${c.prestige} · Opinion : ${c.opinion} · Peur : ${c.fear}\nPuissance : ${c.power} · Arcs encore ouverts : ${c.threads.size}", color = MetahumanColors.Muted, lineHeight = 20.sp)
+                Text("8 → ${c.age} ans · ${c.scope.label}\nMoralité : ${c.moralLabel}\nPrestige : ${c.prestige} · Opinion : ${c.opinion} · Peur : ${c.fear}\nPuissance : ${c.power} · Arcs encore ouverts : ${c.threads.size}", color = MetahumanColors.Muted, lineHeight = 20.sp)
             }
             Spacer(Modifier.height(14.dp))
             MhlPrimaryButton("Archiver cette vie", onArchive, Modifier.fillMaxWidth())

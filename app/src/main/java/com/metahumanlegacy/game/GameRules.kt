@@ -101,8 +101,17 @@ internal object GameRules {
             current.category in setOf("POUVOIR", "RIVAL", "SANTÉ", "CRISE") &&
             c.weakness in setOf("Surcharge", "Fatigue extrême", "Concentration", "Instabilité émotionnelle")
         ) 5 else 0
+        val ageRisk = when {
+            c.age >= 65 -> 10
+            c.age >= 55 -> 7
+            c.age >= 45 -> 4
+            c.age >= 35 -> 2
+            else -> 0
+        }
         val injuryRoll = positiveMod(mix(c.seed, nextTurn * 131L + current.id.hashCode() + choice.label.hashCode()), 100)
-        val injury = if (choice.risk >= 4 && injuryRoll < choice.risk * 4 + weaknessRisk) max(1, choice.risk / 2) else 0
+        val injury = if (choice.risk >= 4 && injuryRoll < choice.risk * 4 + weaknessRisk + ageRisk) {
+            max(1, choice.risk / 2 + if (c.age >= 60) 1 else 0)
+        } else 0
         val flags = c.flags + choiceFlags(choice) + "seen:${current.id}" + "route:${choice.approach}:$nextTurn"
 
         val relation = scaled(choice.relationDelta) + if (choice.approach == "CARE" && c.motivation.contains("proche", true)) 1 else 0

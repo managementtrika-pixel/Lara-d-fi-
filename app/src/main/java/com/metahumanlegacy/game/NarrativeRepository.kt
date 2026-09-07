@@ -111,18 +111,151 @@ internal object NarrativeRepository {
         return continuationBoost + freshBoost + tagPenalty + ageScore + jitter
     }
 
-    private fun formativeNode(ch: FormativeChapter) = EventNode(
-        ch.id, ch.title, ch.text, ch.choices, "VIE", "ANNÉE FORMATIVE", 1,
-        "PROLOGUE_NOBODY_DECADE", ch.age - 17, "FORMATIVE"
-    )
+    private fun formativeNode(ch: FormativeChapter): EventNode {
+        val canon = childhoodCanon(ch.age)
+        val choices = ch.choices.mapIndexed { index, choice ->
+            choice.copy(label = canon.labels.getOrElse(index) { choice.label })
+        }
+        return EventNode(
+            ch.id, canon.title, canon.text, choices, "VIE", "ANNÉE FORMATIVE", 1,
+            "PROLOGUE_NOBODY_DECADE", ch.age - 7, "FORMATIVE"
+        )
+    }
 
     private fun awakeningNode(c: Campaign): EventNode {
         val resolved = if (c.powerResolved) c else PowerResolver.resolve(c)
-        val text = awakening.text.replace("{power_reveal_text}", resolved.powerRevealText)
+        val labels = mapOf(
+            "CARE" to "Protéger quelqu’un avant de chercher une explication",
+            "ORDER" to "Cacher ce qui vient d’arriver et reprendre le contrôle",
+            "TRUTH" to "Observer la manifestation et comprendre ce qui l’a déclenchée",
+            "ASCEND" to "Tester jusqu’où ce nouveau pouvoir peut aller"
+        )
+        val text = buildString {
+            append("18 ans. Quelque chose que tes dix années précédentes ont préparé sans que tu le saches franchit enfin la limite. ")
+            append(resolved.powerRevealText)
+            append("\n\nCe n’est pas un pouvoir choisi dans un menu : ta famille, tes peurs, tes habitudes, tes prises de risque et la manière dont tu as appris à agir ont pesé sur cette manifestation.")
+            append("\n\nTu sens déjà son coût : ")
+            append(resolved.powerCostText)
+            append(".")
+        }
         return EventNode(
-            awakening.id, awakening.title, text,
-            awakening.choices.map { it.copy(threadId = "AWAKENING") },
+            awakening.id, "LA PREMIÈRE MANIFESTATION", text,
+            awakening.choices.map { choice ->
+                choice.copy(
+                    label = labels[choice.approach] ?: choice.label,
+                    threadId = "AWAKENING"
+                )
+            },
             "ÉVEIL", "PREMIÈRE MANIFESTATION", 3, "AWAKENING", 1, "AWAKENING"
+        )
+    }
+
+    private data class ChildhoodCanon(
+        val title: String,
+        val text: String,
+        val labels: List<String>
+    )
+
+    private fun childhoodCanon(age: Int): ChildhoodCanon = when (age) {
+        8 -> ChildhoodCanon(
+            "LE SAC DANS LA COUR",
+            "À 8 ans, un camarade oublie son sac dans la cour. À l’intérieur, tu aperçois quelque chose que plusieurs enfants convoitent déjà. Un adulte n’est pas loin, mais personne ne t’a vu le ramasser. Ce n’est pas une question de héros ou de vilain : c’est la première fois que tu décides ce que vaut une règle quand personne ne regarde.",
+            listOf(
+                "Le rendre discrètement à son propriétaire",
+                "Le confier à un adulte sans dire qui l’a trouvé",
+                "Chercher d’abord à comprendre pourquoi tout le monde le veut",
+                "Le garder un moment pour voir ce que ça peut t’apporter"
+            )
+        )
+        9 -> ChildhoodCanon(
+            "UNE PLACE À TABLE",
+            "À 9 ans, l’ambiance à la maison est tendue. Une dispute d’adultes déborde sur le repas et quelqu’un que tu aimes s’isole. Tu ne peux pas réparer leur vie, mais tu peux choisir comment te comporter au milieu de ce malaise.",
+            listOf(
+                "Rester près de la personne qui s’est isolée",
+                "Essayer de calmer la discussion avec des règles simples",
+                "Écouter et retenir ce que chacun reproche vraiment à l’autre",
+                "Profiter du chaos pour obtenir quelque chose qu’on t’aurait refusé"
+            )
+        )
+        10 -> ChildhoodCanon(
+            "LE DÉFI DU TOIT",
+            "À 10 ans, des enfants plus âgés lancent un défi idiot : grimper sur une structure interdite derrière l’école. Refuser te fera passer pour quelqu’un de peureux ; accepter peut réellement mal finir. Le groupe attend ta réaction.",
+            listOf(
+                "Convaincre les autres de choisir un défi moins dangereux",
+                "Refuser clairement et assumer de perdre la face",
+                "Observer le trajet et chercher une manière sûre de redescendre ceux qui montent",
+                "Monter le premier pour prouver que tu n’as peur de personne"
+            )
+        )
+        11 -> ChildhoodCanon(
+            "CE QUE TU AS VU",
+            "À 11 ans, tu vois un élève apprécié accuser quelqu’un d’autre pour une bêtise qu’il a commise. La personne accusée risque une sanction. Dire la vérité peut te mettre tout le groupe à dos ; te taire évite les problèmes immédiats.",
+            listOf(
+                "Soutenir la personne accusée, même si tu deviens une cible",
+                "Demander à parler seul avec un adulte et raconter les faits",
+                "Confronter d’abord le vrai responsable pour lui laisser une chance d’avouer",
+                "Te taire et utiliser plus tard ce que tu sais comme levier"
+            )
+        )
+        12 -> ChildhoodCanon(
+            "LA PORTE FERMÉE",
+            "À 12 ans, un proche commence à cacher un problème qui l’affecte vraiment. Tu comprends qu’il ou elle ne veut pas en parler. Insister peut briser la confiance ; ignorer les signes peut laisser la situation empirer.",
+            listOf(
+                "Rester disponible sans forcer la confidence",
+                "Prévenir un adulte fiable malgré le risque de vexer ton proche",
+                "Chercher des indices pour comprendre avant d’agir",
+                "Garder le secret parce que cette confiance peut devenir importante pour toi"
+            )
+        )
+        13 -> ChildhoodCanon(
+            "LE GROUPE",
+            "À 13 ans, ton cercle d’amis change. Pour rester accepté, on te demande de participer à une humiliation publique contre quelqu’un de votre âge. Personne ne parle de violence ; justement, tout le monde prétend que ce n’est qu’une blague.",
+            listOf(
+                "Refuser et aller parler à la personne visée",
+                "Couper court au plan en imposant une limite au groupe",
+                "Comprendre qui pousse vraiment les autres et pourquoi",
+                "Participer juste assez pour conserver ta place dans le groupe"
+            )
+        )
+        14 -> ChildhoodCanon(
+            "LE MESSAGE QUI TOURNE",
+            "À 14 ans, une capture d’écran privée circule dans ton établissement. Tu peux la transférer, la supprimer, défendre la personne concernée ou essayer d’identifier l’origine de la fuite. Chaque option a un coût social.",
+            listOf(
+                "Prévenir la personne concernée et ne rien transférer",
+                "Signaler la diffusion à un adulte et demander qu’elle soit stoppée",
+                "Remonter la chaîne des partages pour trouver la source",
+                "La conserver et l’utiliser pour gagner de l’influence dans le groupe"
+            )
+        )
+        15 -> ChildhoodCanon(
+            "APRÈS LES COURS",
+            "À 15 ans, tu dois choisir entre aider régulièrement chez toi, t’investir dans une activité qui peut ouvrir des portes, ou rester disponible pour tes amis. Aucun choix n’est mauvais en soi, mais tu ne peux pas tout faire sans t’épuiser.",
+            listOf(
+                "Donner la priorité aux proches qui comptent sur toi",
+                "Construire un emploi du temps strict pour tenir plusieurs engagements",
+                "Choisir l’activité qui t’apprend le plus, même si certains te le reprochent",
+                "Prendre l’option qui te donne le plus d’indépendance et de statut"
+            )
+        )
+        16 -> ChildhoodCanon(
+            "LA NUIT DU QUARTIER",
+            "À 16 ans, une panne plonge plusieurs rues dans le noir pendant qu’un incident provoque un mouvement de panique. Tu n’as aucun pouvoir. Tu as seulement ton téléphone, tes jambes, ce que tu sais faire et les gens autour de toi.",
+            listOf(
+                "Aider les personnes les plus vulnérables à se mettre à l’abri",
+                "Organiser les présents et répartir les tâches",
+                "Chercher la cause de l’incident avant de suivre la foule",
+                "Prendre des risques pour atteindre la zone que tout le monde évite"
+            )
+        )
+        else -> ChildhoodCanon(
+            "CE QUE TU VEUX DEVENIR",
+            "À 17 ans, l’année suivante approche avec ses choix d’études, de travail, de départ ou de responsabilités. Une occasion inattendue te force à décider ce que tu privilégies vraiment : les autres, la stabilité, la compréhension ou ta propre ascension. Tu ignores encore qu’un autre changement t’attend à 18 ans.",
+            listOf(
+                "Choisir une voie qui te permet de rester utile aux personnes autour de toi",
+                "Choisir la voie la plus stable et construire des bases solides",
+                "Choisir ce qui te permettra de comprendre davantage le monde",
+                "Choisir l’option la plus ambitieuse, même si elle te sépare des autres"
+            )
         )
     }
 
@@ -192,7 +325,7 @@ internal object NarrativeRepository {
             val matched = tokens.firstOrNull { it in c.flags }
             if (matched != null) {
                 val year = matched.substring(2, 4).toIntOrNull() ?: 1
-                val age = 17 + year
+                val age = 7 + year
                 return "\n\nÀ $age ans, bien avant que ton pouvoir ne se révèle, tu avais déjà pris une décision qui revient aujourd'hui dans cette histoire."
             }
         }

@@ -17,6 +17,7 @@ class ProductionGameplayTest {
     private fun formativeLife(seed: Long, pattern: IntArray): Campaign {
         var c = GameEngine.newCampaign(seed)
         repeat(10) { turn ->
+            assertEquals(8 + turn, c.age)
             val event = GameEngine.event(c)
             assertEquals("FORMATIVE", event.kind)
             assertFalse(c.powerRevealed)
@@ -26,6 +27,7 @@ class ProductionGameplayTest {
             assertTrue(resolved.outcome.isNotBlank())
             c = resolved.campaign
         }
+        assertEquals(18, c.age)
         assertTrue(c.powerResolved)
         assertFalse(c.powerRevealed)
         assertEquals("AWAKENING", GameEngine.event(c).kind)

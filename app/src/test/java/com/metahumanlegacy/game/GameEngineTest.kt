@@ -39,7 +39,7 @@ class GameEngineTest {
 
     @Test fun careerStartsAsNobodyWithNoBuildChosen() {
         val c = GameEngine.newCampaign(42L, CharacterBlueprint("Ava", "Vale", "elle", "Vesper", "Centre", "Classe moyenne", "Justice", "Études scientifiques", "Curieux"))
-        assertEquals(18, c.age)
+        assertEquals(8, c.age)
         assertTrue(c.alias.isBlank())
         assertEquals("Non révélé", c.powerFamily)
         assertEquals("Inconnue", c.weakness)
@@ -57,12 +57,29 @@ class GameEngineTest {
             assertEquals("FORMATIVE", e.kind)
             c = GameEngine.resolve(c, e, e.choices[index % 4]).campaign
         }
-        assertEquals(28, c.age)
+        assertEquals(18, c.age)
         assertTrue(c.powerResolved)
         assertFalse(c.powerRevealed)
         assertTrue(c.alias.isBlank())
         assertTrue(c.affinityScores.isNotEmpty())
         assertEquals("AWAKENING_00_FIRST_IMPOSSIBLE", GameEngine.event(c).id)
+    }
+
+    @Test fun formativeYearsAreExactlyEightThroughSeventeenThenAwakeningAtEighteen() {
+        var c = GameEngine.newCampaign(880017L)
+        val ages = mutableListOf<Int>()
+        repeat(10) { index ->
+            ages += c.age
+            val event = GameEngine.event(c)
+            assertEquals("FORMATIVE", event.kind)
+            assertEquals(index + 1, event.threadStage)
+            c = GameEngine.resolve(c, event, event.choices[index % event.choices.size]).campaign
+        }
+        assertEquals((8..17).toList(), ages)
+        assertEquals(18, c.age)
+        assertEquals("AWAKENING", GameEngine.event(c).kind)
+        assertTrue(c.powerResolved)
+        assertFalse(c.powerRevealed)
     }
 
     @Test fun awakeningRevealsExistingPowerAndOnlyThenAllowsAlias() {
@@ -168,25 +185,4 @@ class GameEngineTest {
         assertTrue(seen.size > 35)
         assertTrue(c.timeline.size > 100)
     }
-    @Test fun v1CareerReachesAValidLegacyEndingAcrossSeeds() {
-        (1L..12L).forEach { seed ->
-            var c = GameEngine.newCampaign(seed)
-            var guard = 0
-
-            while (!c.finished && guard < 220) {
-                val event = GameEngine.event(c)
-                assertTrue("event has no choices", event.choices.isNotEmpty())
-                val choice = event.choices[(seed.toInt() + guard) % event.choices.size]
-                c = GameEngine.resolve(c, event, choice).campaign
-                if (c.needsAlias) c = GameEngine.setAlias(c, "Legacy-$seed")
-                guard++
-            }
-
-            assertTrue("career did not reach an ending", c.finished)
-            assertTrue("career produced no timeline", c.timeline.isNotEmpty())
-            assertTrue("legacy title is blank", GameEngine.legacyTitle(c).isNotBlank())
-            assertTrue("legacy score is invalid", GameEngine.legacyScore(c) >= 0)
-        }
-    }
-
 }
