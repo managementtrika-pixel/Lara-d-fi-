@@ -322,6 +322,15 @@ class ReleaseReadinessTest {
         assertEquals(4, pixelAgeTier(65))
     }
 
+    @Test
+    fun recoveryBecomesLessEfficientWithAge() {
+        assertEquals(6, ageAdjustedHealthDelta(25, 6))
+        assertEquals(5, ageAdjustedHealthDelta(45, 6))
+        assertEquals(4, ageAdjustedHealthDelta(55, 6))
+        assertEquals(3, ageAdjustedHealthDelta(65, 6))
+        assertEquals(-2, ageAdjustedHealthDelta(65, -2))
+    }
+
     private fun assertStateBounds(c: Campaign) {
         assertTrue(c.morality in -100..100)
         assertTrue(c.opinion in -100..100)
