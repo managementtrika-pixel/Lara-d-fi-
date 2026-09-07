@@ -23,13 +23,14 @@ internal data class LegacyRecord(
     val identityId: String = "",
     val strongestRelation: String = "",
     val endingSummary: String = "",
-    val endingKind: String = ""
+    val endingKind: String = "",
+    val alignment: String = ""
 ) {
     fun encode(): String = listOf(
         name, title, score.toString(), scope, city, presentation, nemesis,
         powerFamily, morality.toString(), opinion.toString(), fear.toString(), finalAge.toString(),
         bodyBuild, skinTone, hair, hairColor, faceShape, civilianStyle, accessory,
-        identityId, strongestRelation, endingSummary, endingKind
+        identityId, strongestRelation, endingSummary, endingKind, alignment
     ).joinToString("|") { clean(it) }
 
     companion object {
@@ -61,7 +62,8 @@ internal data class LegacyRecord(
                 identityId = stablePixelIdentityId(c, s),
                 strongestRelation = strongest,
                 endingSummary = UltimateDirector.legacySummary(c, s),
-                endingKind = legacyEndingKind(c)
+                endingKind = legacyEndingKind(c),
+                alignment = c.alignmentLabel
             )
         }
 
@@ -92,7 +94,8 @@ internal data class LegacyRecord(
                 identityId = s(19),
                 strongestRelation = s(20),
                 endingSummary = s(21),
-                endingKind = s(22)
+                endingKind = s(22),
+                alignment = s(23)
             )
         }
 
