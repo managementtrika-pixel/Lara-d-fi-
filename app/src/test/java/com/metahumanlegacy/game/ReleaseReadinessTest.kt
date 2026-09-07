@@ -244,6 +244,7 @@ class ReleaseReadinessTest {
         assertEquals(record.bodyBuild, decoded.bodyBuild)
         assertEquals(record.skinTone, decoded.skinTone)
         assertEquals(record.hair, decoded.hair)
+        assertEquals(record.alignment, decoded.alignment)
     }
 
     @Test
