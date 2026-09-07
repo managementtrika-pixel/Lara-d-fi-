@@ -53,6 +53,14 @@ internal fun pixelLegHeight(age: Int, stature: String): Int {
     return (base + delta).coerceIn(4, 7)
 }
 
+internal fun pixelAgeTier(age: Int): Int = when {
+    age < 18 -> 0
+    age < 35 -> 1
+    age < 50 -> 2
+    age < 65 -> 3
+    else -> 4
+}
+
 @Composable
 internal fun PixelAvatar(
     state: UltimateState,
@@ -226,6 +234,25 @@ internal fun PixelAvatar(
         }
         if (state.bodyBuild == "Massif") {
             p(headX + 2, 11, headW - 4, 1, Color.Black.copy(alpha = .10f))
+        }
+
+        // Age marks remain subtle but make decades visible in the same persistent Pixel DNA.
+        when (pixelAgeTier(age)) {
+            2 -> {
+                p(headX + 1, 8, 1, 1, outline.copy(alpha = .28f))
+                p(headX + headW - 2, 8, 1, 1, outline.copy(alpha = .28f))
+            }
+            3 -> {
+                p(headX + 1, 8, 1, 2, outline.copy(alpha = .35f))
+                p(headX + headW - 2, 8, 1, 2, outline.copy(alpha = .35f))
+                p(headX + 3, 11, headW - 6, 1, outline.copy(alpha = .20f))
+            }
+            4 -> {
+                p(headX + 1, 8, 1, 2, outline.copy(alpha = .42f))
+                p(headX + headW - 2, 8, 1, 2, outline.copy(alpha = .42f))
+                p(headX + 2, 11, headW - 4, 1, outline.copy(alpha = .28f))
+                p(headX + 1, headY, headW - 2, 1, Color(0xFFB9BDC3).copy(alpha = .55f))
+            }
         }
 
         // Hair
