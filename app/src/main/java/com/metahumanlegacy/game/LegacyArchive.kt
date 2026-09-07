@@ -22,13 +22,14 @@ internal data class LegacyRecord(
     val accessory: String = "",
     val identityId: String = "",
     val strongestRelation: String = "",
-    val endingSummary: String = ""
+    val endingSummary: String = "",
+    val endingKind: String = ""
 ) {
     fun encode(): String = listOf(
         name, title, score.toString(), scope, city, presentation, nemesis,
         powerFamily, morality.toString(), opinion.toString(), fear.toString(), finalAge.toString(),
         bodyBuild, skinTone, hair, hairColor, faceShape, civilianStyle, accessory,
-        identityId, strongestRelation, endingSummary
+        identityId, strongestRelation, endingSummary, endingKind
     ).joinToString("|") { clean(it) }
 
     companion object {
@@ -59,7 +60,8 @@ internal data class LegacyRecord(
                 accessory = s.accessory,
                 identityId = stablePixelIdentityId(c, s),
                 strongestRelation = strongest,
-                endingSummary = UltimateDirector.legacySummary(c, s)
+                endingSummary = UltimateDirector.legacySummary(c, s),
+                endingKind = legacyEndingKind(c)
             )
         }
 
@@ -89,7 +91,8 @@ internal data class LegacyRecord(
                 accessory = s(18),
                 identityId = s(19),
                 strongestRelation = s(20),
-                endingSummary = s(21)
+                endingSummary = s(21),
+                endingKind = s(22)
             )
         }
 
@@ -108,4 +111,15 @@ internal fun stablePixelIdentityId(c: Campaign, s: UltimateState): String {
     ).joinToString("|")
     val hex = source.hashCode().toUInt().toString(16).uppercase().takeLast(6).padStart(6, '0')
     return "ID-" + hex
+}
+
+
+internal fun legacyEndingKind(c: Campaign): String = when {
+    c.health <= 0 && c.lastApproach == "CARE" && c.prestige >= 35 -> "Sacrifice"
+    c.health <= 0 -> "Mort en activité"
+    c.age >= 65 && c.scope == Scope.WORLD && c.prestige >= 70 && c.morality >= 25 -> "Victoire puis retraite"
+    c.age >= 65 && c.morality <= -45 && c.fear >= 60 -> "Fin de règne"
+    c.age >= 65 && c.identityExposure <= 20 && c.mediaStanding < 0 -> "Disparition"
+    c.age >= 65 -> "Retraite"
+    else -> "Héritage interrompu"
 }
