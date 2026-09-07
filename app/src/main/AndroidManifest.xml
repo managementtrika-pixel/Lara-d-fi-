@@ -4,6 +4,8 @@
         android:name=".MetahumanApplication"
         android:allowBackup="true"
         android:label="@string/app_name"
+        android:icon="@drawable/ic_metahuman_launcher"
+        android:roundIcon="@drawable/ic_metahuman_launcher"
         android:theme="@style/Theme.MetahumanLegacy"
         android:supportsRtl="true">
         <activity
