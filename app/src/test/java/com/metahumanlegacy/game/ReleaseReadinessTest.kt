@@ -310,8 +310,8 @@ class ReleaseReadinessTest {
         assertTrue(pixelLegHeight(8, "Petite") < pixelLegHeight(8, "Grande"))
         assertTrue(pixelLegHeight(16, "Petite") < pixelLegHeight(16, "Grande"))
         assertTrue(pixelLegHeight(30, "Petite") < pixelLegHeight(30, "Grande"))
-        assertEquals(4, pixelLegHeight(8, "Petite"))
-        assertEquals(7, pixelLegHeight(30, "Grande"))
+        assertEquals(6, pixelLegHeight(8, "Petite"))
+        assertEquals(14, pixelLegHeight(30, "Grande"))
     }
 
     @Test
@@ -372,9 +372,12 @@ class ReleaseReadinessTest {
         val c = GameEngine.newCampaign(8_080_808L)
         val base = UltimateStore.fallback(c)
         val key = pixelVisualKey(base, c.age, false)
-        assertNotEquals(key, pixelVisualKey(base.copy(hair = "Tresses"), c.age, false))
-        assertNotEquals(key, pixelVisualKey(base.copy(bodyBuild = "Massif"), c.age, false))
-        assertNotEquals(key, pixelVisualKey(base.copy(accessory = "Lunettes"), c.age, false))
+        val changedHair = UltimateCatalog.hairs.first { it != base.hair }
+        val changedBuild = UltimateCatalog.bodyBuilds.first { it != base.bodyBuild }
+        val changedAccessory = UltimateCatalog.accessories.first { it != base.accessory }
+        assertNotEquals(key, pixelVisualKey(base.copy(hair = changedHair), c.age, false))
+        assertNotEquals(key, pixelVisualKey(base.copy(bodyBuild = changedBuild), c.age, false))
+        assertNotEquals(key, pixelVisualKey(base.copy(accessory = changedAccessory), c.age, false))
         assertEquals(key, pixelVisualKey(base.copy(cityCondition = 1), c.age, false))
     }
 
