@@ -331,6 +331,52 @@ class ReleaseReadinessTest {
         assertEquals(-2, ageAdjustedHealthDelta(65, -2))
     }
 
+    @Test
+    fun createdPixelIdentityIsTheSameIdentityUsedByRuntime() {
+        val seed = 9_090_909L
+        val blueprint = GameEngine.randomBlueprint(seed)
+        val draft = UltimateCatalog.randomDraft(seed, blueprint).copy(
+            bodyBuild = "Robuste",
+            stature = "Grande",
+            skinTone = "Très foncé",
+            faceShape = "Anguleux",
+            hair = "Tresses",
+            hairColor = "Roux",
+            eyes = "Verts",
+            civilianStyle = "Créatif",
+            accessory = "Lunettes"
+        )
+        val campaign = GameEngine.newCampaign(seed, blueprint)
+        val state = UltimateStore.create(campaign, draft)
+
+        assertEquals(draft.bodyBuild, state.bodyBuild)
+        assertEquals(draft.stature, state.stature)
+        assertEquals(draft.skinTone, state.skinTone)
+        assertEquals(draft.faceShape, state.faceShape)
+        assertEquals(draft.hair, state.hair)
+        assertEquals(draft.hairColor, state.hairColor)
+        assertEquals(draft.eyes, state.eyes)
+        assertEquals(draft.civilianStyle, state.civilianStyle)
+        assertEquals(draft.accessory, state.accessory)
+
+        val key = pixelVisualKey(state, campaign.age, false)
+        assertTrue(key.contains("Robuste"))
+        assertTrue(key.contains("Tresses"))
+        assertTrue(key.contains("Roux"))
+        assertTrue(key.contains("Lunettes"))
+    }
+
+    @Test
+    fun pixelVisualIdentityChangesOnlyWhenAVisibleLayerChanges() {
+        val c = GameEngine.newCampaign(8_080_808L)
+        val base = UltimateStore.fallback(c)
+        val key = pixelVisualKey(base, c.age, false)
+        assertNotEquals(key, pixelVisualKey(base.copy(hair = "Tresses"), c.age, false))
+        assertNotEquals(key, pixelVisualKey(base.copy(bodyBuild = "Massif"), c.age, false))
+        assertNotEquals(key, pixelVisualKey(base.copy(accessory = "Lunettes"), c.age, false))
+        assertEquals(key, pixelVisualKey(base.copy(cityCondition = 1), c.age, false))
+    }
+
     private fun assertStateBounds(c: Campaign) {
         assertTrue(c.morality in -100..100)
         assertTrue(c.opinion in -100..100)
