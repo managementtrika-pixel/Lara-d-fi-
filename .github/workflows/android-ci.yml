@@ -83,4 +83,12 @@ jobs:
           arch: x86_64
           profile: pixel_6
           disable-animations: true
-          script: gradle --no-daemon connectedDebugAndroidTest
+          script: |
+            gradle --no-daemon connectedDebugAndroidTest
+            adb pull /sdcard/Android/data/com.metahumanlegacy.game/files/pixel-continuity.png pixel-continuity.png || true
+      - name: Upload pixel continuity screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: pixel-continuity-screenshot
+          path: pixel-continuity.png
+          if-no-files-found: error
