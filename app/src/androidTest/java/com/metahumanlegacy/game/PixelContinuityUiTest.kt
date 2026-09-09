@@ -1,6 +1,9 @@
 package com.metahumanlegacy.game
 
 import android.content.Context
+import android.graphics.Bitmap
+import java.io.File
+import java.io.FileOutputStream
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.fetchSemanticsNode
@@ -58,6 +61,10 @@ class PixelContinuityUiTest {
                 .first { it.startsWith("Pixel avatar|") }
 
             assertEquals(creatorKey, runtimeKey)
+
+            val screenshot = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
+            val out = File(context.getExternalFilesDir(null), "pixel-continuity.png")
+            FileOutputStream(out).use { screenshot.compress(Bitmap.CompressFormat.PNG, 100, it) }
         }
     }
 }
