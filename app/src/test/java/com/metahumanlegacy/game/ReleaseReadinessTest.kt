@@ -3,6 +3,7 @@ package com.metahumanlegacy.game
 import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -309,8 +310,8 @@ class ReleaseReadinessTest {
         assertTrue(pixelLegHeight(8, "Petite") < pixelLegHeight(8, "Grande"))
         assertTrue(pixelLegHeight(16, "Petite") < pixelLegHeight(16, "Grande"))
         assertTrue(pixelLegHeight(30, "Petite") < pixelLegHeight(30, "Grande"))
-        assertEquals(4, pixelLegHeight(8, "Petite"))
-        assertEquals(7, pixelLegHeight(30, "Grande"))
+        assertEquals(6, pixelLegHeight(8, "Petite"))
+        assertEquals(14, pixelLegHeight(30, "Grande"))
     }
 
     @Test
@@ -329,6 +330,55 @@ class ReleaseReadinessTest {
         assertEquals(4, ageAdjustedHealthDelta(55, 6))
         assertEquals(3, ageAdjustedHealthDelta(65, 6))
         assertEquals(-2, ageAdjustedHealthDelta(65, -2))
+    }
+
+    @Test
+    fun createdPixelIdentityIsTheSameIdentityUsedByRuntime() {
+        val seed = 9_090_909L
+        val blueprint = GameEngine.randomBlueprint(seed)
+        val draft = UltimateCatalog.randomDraft(seed, blueprint).copy(
+            bodyBuild = "Robuste",
+            stature = "Grande",
+            skinTone = "Très foncé",
+            faceShape = "Anguleux",
+            hair = "Tresses",
+            hairColor = "Roux",
+            eyes = "Verts",
+            civilianStyle = "Créatif",
+            accessory = "Lunettes"
+        )
+        val campaign = GameEngine.newCampaign(seed, blueprint)
+        val state = UltimateStore.create(campaign, draft)
+
+        assertEquals(draft.bodyBuild, state.bodyBuild)
+        assertEquals(draft.stature, state.stature)
+        assertEquals(draft.skinTone, state.skinTone)
+        assertEquals(draft.faceShape, state.faceShape)
+        assertEquals(draft.hair, state.hair)
+        assertEquals(draft.hairColor, state.hairColor)
+        assertEquals(draft.eyes, state.eyes)
+        assertEquals(draft.civilianStyle, state.civilianStyle)
+        assertEquals(draft.accessory, state.accessory)
+
+        val key = pixelVisualKey(state, campaign.age, false)
+        assertTrue(key.contains("Robuste"))
+        assertTrue(key.contains("Tresses"))
+        assertTrue(key.contains("Roux"))
+        assertTrue(key.contains("Lunettes"))
+    }
+
+    @Test
+    fun pixelVisualIdentityChangesOnlyWhenAVisibleLayerChanges() {
+        val c = GameEngine.newCampaign(8_080_808L)
+        val base = UltimateStore.fallback(c)
+        val key = pixelVisualKey(base, c.age, false)
+        val changedHair = UltimateCatalog.hairs.first { it != base.hair }
+        val changedBuild = UltimateCatalog.bodyBuilds.first { it != base.bodyBuild }
+        val changedAccessory = UltimateCatalog.accessories.first { it != base.accessory }
+        assertNotEquals(key, pixelVisualKey(base.copy(hair = changedHair), c.age, false))
+        assertNotEquals(key, pixelVisualKey(base.copy(bodyBuild = changedBuild), c.age, false))
+        assertNotEquals(key, pixelVisualKey(base.copy(accessory = changedAccessory), c.age, false))
+        assertEquals(key, pixelVisualKey(base.copy(cityCondition = 1), c.age, false))
     }
 
     private fun assertStateBounds(c: Campaign) {

@@ -27,6 +27,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -100,47 +102,6 @@ internal fun UltimateMeter(label: String, value: Int, accent: Color, modifier: M
     }
 }
 
-private fun skinColor(name: String): Color = when (name) {
-    "Très clair" -> Color(0xFFF3D2BD)
-    "Clair" -> Color(0xFFE8BFA4)
-    "Moyen" -> Color(0xFFC88E67)
-    "Mat" -> Color(0xFFAA714F)
-    "Foncé" -> Color(0xFF794A34)
-    "Très foncé" -> Color(0xFF4C2B22)
-    else -> Color(0xFFC88E67)
-}
-
-private fun hairColor(name: String): Color = when (name) {
-    "Noir" -> Color(0xFF111318)
-    "Brun" -> Color(0xFF3B261E)
-    "Châtain" -> Color(0xFF6A4630)
-    "Blond" -> Color(0xFFD4B06A)
-    "Roux" -> Color(0xFFA9502B)
-    "Gris" -> Color(0xFF9699A0)
-    "Blanc" -> Color(0xFFE8E5DE)
-    else -> Color(0xFF3B261E)
-}
-
-private fun outfitColor(style: String): Color = when {
-    style.contains("Sport", true) -> Color(0xFF27496E)
-    style.contains("Class", true) -> Color(0xFF283038)
-    style.contains("Créat", true) -> Color(0xFF70435B)
-    style.contains("Profession", true) -> Color(0xFF38475D)
-    style.contains("Vintage", true) -> Color(0xFF745A3E)
-    else -> Color(0xFF26354A)
-}
-
-private fun paletteColors(palette: String, power: String): Pair<Color, Color> = when (palette) {
-    "Bleu / or" -> Color(0xFF226BD7) to Color(0xFFF1C75B)
-    "Noir / argent" -> Color(0xFF171B22) to Color(0xFFB7C0CA)
-    "Rouge / anthracite" -> Color(0xFFB53037) to Color(0xFF252B33)
-    "Blanc / cobalt" -> Color(0xFFE9EDF4) to Color(0xFF245ED7)
-    "Violet / noir" -> Color(0xFF673CC1) to Color(0xFF101216)
-    "Vert / cuivre" -> Color(0xFF267257) to Color(0xFFC47B45)
-    "Ivoire / or" -> Color(0xFFF0E8D8) to Color(0xFFD6A938)
-    else -> powerVisualProfile(power).accent to Color(0xFF171C25)
-}
-
 @Composable
 internal fun UltimatePortrait(
     c: Campaign,
@@ -148,160 +109,77 @@ internal fun UltimatePortrait(
     modifier: Modifier = Modifier,
     heroMode: Boolean = c.powerRevealed,
     showAura: Boolean = c.powerRevealed,
-    contentDescription: String = "Portrait évolutif du personnage"
+    contentDescription: String = "Avatar pixel évolutif du personnage"
 ) {
     val profile = powerVisualProfile(c.powerFamily)
     val motion = LocalMetahumanMotion.current.settings
-    val inf = rememberInfiniteTransition(label = "ultimate-portrait")
+    val inf = rememberInfiniteTransition(label = "pixel-portrait")
     val pulse by inf.animateFloat(
-        initialValue = .88f,
+        initialValue = .90f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
-            tween(MetahumanMotionTokens.duration(1800, motion), easing = MetahumanMotionTokens.Standard),
+            tween(MetahumanMotionTokens.duration(1600, motion), easing = MetahumanMotionTokens.Standard),
             RepeatMode.Reverse
         ),
-        label = "portrait-aura"
+        label = "pixel-portrait-aura"
     )
-    Canvas(modifier = modifier) {
-        val w = size.width
-        val h = size.height
-        drawRect(Brush.verticalGradient(listOf(Color(0xFF111C2A), Color(0xFF070A0F))))
-        drawComicRays(if (heroMode) profile.accent else UltimateBlue, .09f)
+    Box(
+        modifier
+            .background(
+                Brush.verticalGradient(
+                    listOf(Color(0xFF0D1723), Color(0xFF081019), Color(0xFF05090E))
+                )
+            )
+            .border(
+                1.dp,
+                (if (heroMode) profile.accent else UltimateBlue).copy(alpha = .72f),
+                CutCornerShape(topEnd = 16.dp, bottomStart = 16.dp)
+            )
+            .semantics { this.contentDescription = contentDescription }
+    ) {
         if (showAura) {
-            drawCircle(profile.accent.copy(alpha = if (motion.reduceMotion) .15f else .10f + .11f * pulse), radius = w * .42f, center = Offset(w * .5f, h * .42f))
-            drawCircle(profile.secondary.copy(alpha = .18f), radius = w * .32f, center = Offset(w * .5f, h * .42f), style = Stroke(w * .014f))
+            Box(
+                Modifier
+                    .align(Alignment.Center)
+                    .fillMaxWidth(.82f)
+                    .fillMaxHeight(.72f)
+                    .background(
+                        Brush.radialGradient(
+                            listOf(
+                                profile.accent.copy(alpha = if (motion.reduceMotion) .12f else .10f + .08f * pulse),
+                                Color.Transparent
+                            )
+                        )
+                    )
+            )
         }
-
-        val skin = skinColor(state.skinTone)
-        val hair = if (c.age >= 65 && state.hairColor !in listOf("Blanc", "Gris")) Color(0xFFB5B4B0) else hairColor(state.hairColor)
-        val clothes = if (heroMode) paletteColors(state.costumePalette, c.powerFamily) else outfitColor(state.civilianStyle) to Color(0xFF10151C)
-        val shoulderY = h * .70f
-        val bodyWidth = when (state.bodyBuild) { "Fin" -> .34f; "Massif" -> .52f; "Robuste" -> .48f; else -> .42f }
-        val torso = Path().apply {
-            moveTo(w * (.5f - bodyWidth / 2), h)
-            lineTo(w * (.5f - bodyWidth / 2.15f), shoulderY)
-            quadraticBezierTo(w * .5f, h * .62f, w * (.5f + bodyWidth / 2.15f), shoulderY)
-            lineTo(w * (.5f + bodyWidth / 2), h)
-            close()
-        }
-        drawPath(torso, clothes.first)
-        drawPath(torso, clothes.second.copy(alpha = .8f), style = Stroke(w * .018f))
-
-        // Neck
-        drawRoundRect(skin, topLeft = Offset(w * .43f, h * .52f), size = Size(w * .14f, h * .17f), cornerRadius = androidx.compose.ui.geometry.CornerRadius(w * .035f))
-
-        val faceW = when (state.faceShape) { "Fin" -> .27f; "Rond" -> .34f; "Carré" -> .33f; else -> .31f }
-        val faceH = when (state.faceShape) { "Rond" -> .26f; "Anguleux" -> .32f; else -> .30f }
-        drawOval(skin, topLeft = Offset(w * (.5f - faceW / 2), h * .25f), size = Size(w * faceW, h * faceH))
-        // Jaw / age lines
-        if (state.faceShape == "Carré" || state.faceShape == "Anguleux") {
-            drawLine(skin.copy(alpha = .7f), Offset(w * .37f, h * .45f), Offset(w * .42f, h * .55f), w * .028f)
-            drawLine(skin.copy(alpha = .7f), Offset(w * .63f, h * .45f), Offset(w * .58f, h * .55f), w * .028f)
-        }
-        if (c.age >= 45) {
-            drawLine(Color.Black.copy(alpha = .18f), Offset(w * .39f, h * .43f), Offset(w * .45f, h * .44f), w * .006f)
-            drawLine(Color.Black.copy(alpha = .18f), Offset(w * .55f, h * .44f), Offset(w * .61f, h * .43f), w * .006f)
-        }
-
-        // Eyes
-        val eye = if (heroMode && c.power >= 55) profile.secondary else Color(0xFFE8EDF5)
-        drawOval(eye, Offset(w * .405f, h * .395f), Size(w * .06f, h * .025f))
-        drawOval(eye, Offset(w * .535f, h * .395f), Size(w * .06f, h * .025f))
-        drawCircle(Color(0xFF1C2733), w * .012f, Offset(w * .435f, h * .407f))
-        drawCircle(Color(0xFF1C2733), w * .012f, Offset(w * .565f, h * .407f))
-
-        drawHair(state.hair, hair, w, h)
-        if (c.age >= 16 && state.facialHair != "Aucune") drawFacialHair(state.facialHair, hair, w, h)
-
-        if (heroMode) drawMask(state.maskStyle, clothes.second, w, h)
-        if (heroMode && state.emblem != "Aucun") drawEmblem(state.emblem, clothes.second, Offset(w * .5f, h * .79f), w * .10f)
-        if (state.injuries.isNotEmpty()) {
-            drawLine(UltimateRed.copy(alpha = .65f), Offset(w * .56f, h * .35f), Offset(w * .60f, h * .47f), w * .007f)
-        }
-        drawRect(UltimateGold.copy(alpha = .7f), topLeft = Offset(0f, h - w * .016f), size = Size(w, w * .016f))
-    }
-}
-
-private fun DrawScope.drawHair(style: String, color: Color, w: Float, h: Float) {
-    when (style) {
-        "Rasé" -> drawArc(color, 190f, 160f, true, Offset(w * .355f, h * .235f), Size(w * .29f, h * .18f))
-        "Long" -> {
-            drawOval(color, Offset(w * .34f, h * .21f), Size(w * .32f, h * .28f))
-            drawRect(color, Offset(w * .34f, h * .32f), Size(w * .055f, h * .28f))
-            drawRect(color, Offset(w * .605f, h * .32f), Size(w * .055f, h * .28f))
-        }
-        "Tresses" -> {
-            drawArc(color, 188f, 165f, true, Offset(w * .345f, h * .215f), Size(w * .31f, h * .20f))
-            repeat(5) { i -> drawLine(color, Offset(w * (.39f + i * .055f), h * .25f), Offset(w * (.37f + i * .065f), h * .59f), w * .018f) }
-        }
-        "Boucles" -> {
-            repeat(9) { i ->
-                val x = w * (.365f + (i % 5) * .065f)
-                val y = h * (.245f + (i / 5) * .045f)
-                drawCircle(color, w * .045f, Offset(x, y))
+        Canvas(Modifier.matchParentSize()) {
+            val step = 12.dp.toPx()
+            var x = 0f
+            while (x < size.width) {
+                drawLine(Color.White.copy(alpha = .025f), Offset(x, 0f), Offset(x, size.height), 1f)
+                x += step
+            }
+            var y = 0f
+            while (y < size.height) {
+                drawLine(Color.White.copy(alpha = .025f), Offset(0f, y), Offset(size.width, y), 1f)
+                y += step
             }
         }
-        "Undercut" -> {
-            drawArc(color, 190f, 160f, true, Offset(w * .36f, h * .22f), Size(w * .28f, h * .18f))
-            drawRect(color, Offset(w * .43f, h * .205f), Size(w * .20f, h * .055f))
-        }
-        else -> {
-            drawArc(color, 188f, 165f, true, Offset(w * .355f, h * .215f), Size(w * .29f, h * .19f))
-            if (style.contains("Dégradé")) drawRect(color.copy(alpha = .55f), Offset(w * .365f, h * .31f), Size(w * .035f, h * .08f))
-        }
-    }
-}
-
-private fun DrawScope.drawFacialHair(style: String, color: Color, w: Float, h: Float) {
-    when (style) {
-        "Moustache" -> drawLine(color, Offset(w * .44f, h * .485f), Offset(w * .56f, h * .485f), w * .018f)
-        "Bouc" -> {
-            drawLine(color, Offset(w * .45f, h * .486f), Offset(w * .55f, h * .486f), w * .012f)
-            drawOval(color, Offset(w * .465f, h * .505f), Size(w * .07f, h * .07f))
-        }
-        else -> drawArc(color.copy(alpha = .9f), 15f, 150f, false, Offset(w * .37f, h * .405f), Size(w * .26f, h * .17f), style = Stroke(w * if (style.contains("pleine")) .035f else .018f))
-    }
-}
-
-private fun DrawScope.drawMask(style: String, color: Color, w: Float, h: Float) {
-    if (style == "Aucun") return
-    when (style) {
-        "Masque intégral", "Casque" -> drawArc(color.copy(alpha = .75f), 180f, 180f, true, Offset(w * .355f, h * .25f), Size(w * .29f, h * .28f))
-        "Capuche" -> drawArc(color.copy(alpha = .62f), 190f, 160f, false, Offset(w * .32f, h * .18f), Size(w * .36f, h * .39f), style = Stroke(w * .038f))
-        "Visière" -> drawRoundRect(color.copy(alpha = .78f), Offset(w * .39f, h * .375f), Size(w * .22f, h * .06f), androidx.compose.ui.geometry.CornerRadius(w * .02f))
-        else -> {
-            val p = Path().apply {
-                moveTo(w * .38f, h * .36f); lineTo(w * .48f, h * .385f); lineTo(w * .50f, h * .44f)
-                lineTo(w * .52f, h * .385f); lineTo(w * .62f, h * .36f); lineTo(w * .60f, h * .45f)
-                lineTo(w * .5f, h * .47f); lineTo(w * .40f, h * .45f); close()
-            }
-            drawPath(p, color.copy(alpha = .82f))
-        }
-    }
-}
-
-private fun DrawScope.drawEmblem(emblem: String, color: Color, center: Offset, radius: Float) {
-    when {
-        emblem.contains("Étoile") || emblem.contains("Comète") -> {
-            val p = Path()
-            repeat(10) { i ->
-                val angle = -PI / 2 + i * PI / 5
-                val rr = if (i % 2 == 0) radius else radius * .42f
-                val pt = Offset(center.x + cos(angle).toFloat() * rr, center.y + sin(angle).toFloat() * rr)
-                if (i == 0) p.moveTo(pt.x, pt.y) else p.lineTo(pt.x, pt.y)
-            }
-            p.close(); drawPath(p, color)
-        }
-        emblem.contains("Anneau") -> drawCircle(color, radius, center, style = Stroke(radius * .22f))
-        emblem.contains("Bouclier") -> {
-            val p = Path().apply { moveTo(center.x, center.y - radius); lineTo(center.x + radius * .75f, center.y - radius * .4f); lineTo(center.x + radius * .55f, center.y + radius * .7f); lineTo(center.x, center.y + radius); lineTo(center.x - radius * .55f, center.y + radius * .7f); lineTo(center.x - radius * .75f, center.y - radius * .4f); close() }
-            drawPath(p, color)
-        }
-        else -> {
-            drawCircle(color.copy(alpha = .2f), radius, center)
-            drawLine(color, Offset(center.x - radius, center.y), Offset(center.x + radius, center.y), radius * .18f)
-            drawLine(color, Offset(center.x, center.y - radius), Offset(center.x, center.y + radius), radius * .18f)
-        }
+        PixelAvatar(
+            state = state,
+            modifier = Modifier.fillMaxSize().padding(horizontal = 6.dp, vertical = 4.dp),
+            age = c.age,
+            temperament = c.temperament,
+            heroMode = heroMode
+        )
+        Box(
+            Modifier
+                .align(Alignment.BottomStart)
+                .fillMaxWidth()
+                .height(3.dp)
+                .background(if (heroMode) profile.accent else UltimateGold)
+        )
     }
 }
 
