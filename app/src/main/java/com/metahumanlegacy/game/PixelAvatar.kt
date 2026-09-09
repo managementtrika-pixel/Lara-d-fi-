@@ -7,6 +7,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import kotlin.math.floor
 
 private data class PixelTone(val base: Color, val shade: Color, val light: Color)
@@ -102,7 +104,11 @@ internal fun PixelAvatar(
     temperament: String = "Prudent",
     heroMode: Boolean = false
 ) {
-    Canvas(modifier) {
+    Canvas(
+        modifier.semantics {
+            contentDescription = "Pixel avatar|" + pixelVisualKey(state, age, heroMode)
+        }
+    ) {
         val cols = 32
         val rows = 48
         val rawCell = minOf(size.width / cols, size.height / rows)
