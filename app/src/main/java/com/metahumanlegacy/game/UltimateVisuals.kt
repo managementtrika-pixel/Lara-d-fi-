@@ -102,47 +102,6 @@ internal fun UltimateMeter(label: String, value: Int, accent: Color, modifier: M
     }
 }
 
-private fun skinColor(name: String): Color = when (name) {
-    "Très clair" -> Color(0xFFF3D2BD)
-    "Clair" -> Color(0xFFE8BFA4)
-    "Moyen" -> Color(0xFFC88E67)
-    "Mat" -> Color(0xFFAA714F)
-    "Foncé" -> Color(0xFF794A34)
-    "Très foncé" -> Color(0xFF4C2B22)
-    else -> Color(0xFFC88E67)
-}
-
-private fun hairColor(name: String): Color = when (name) {
-    "Noir" -> Color(0xFF111318)
-    "Brun" -> Color(0xFF3B261E)
-    "Châtain" -> Color(0xFF6A4630)
-    "Blond" -> Color(0xFFD4B06A)
-    "Roux" -> Color(0xFFA9502B)
-    "Gris" -> Color(0xFF9699A0)
-    "Blanc" -> Color(0xFFE8E5DE)
-    else -> Color(0xFF3B261E)
-}
-
-private fun outfitColor(style: String): Color = when {
-    style.contains("Sport", true) -> Color(0xFF27496E)
-    style.contains("Class", true) -> Color(0xFF283038)
-    style.contains("Créat", true) -> Color(0xFF70435B)
-    style.contains("Profession", true) -> Color(0xFF38475D)
-    style.contains("Vintage", true) -> Color(0xFF745A3E)
-    else -> Color(0xFF26354A)
-}
-
-private fun paletteColors(palette: String, power: String): Pair<Color, Color> = when (palette) {
-    "Bleu / or" -> Color(0xFF226BD7) to Color(0xFFF1C75B)
-    "Noir / argent" -> Color(0xFF171B22) to Color(0xFFB7C0CA)
-    "Rouge / anthracite" -> Color(0xFFB53037) to Color(0xFF252B33)
-    "Blanc / cobalt" -> Color(0xFFE9EDF4) to Color(0xFF245ED7)
-    "Violet / noir" -> Color(0xFF673CC1) to Color(0xFF101216)
-    "Vert / cuivre" -> Color(0xFF267257) to Color(0xFFC47B45)
-    "Ivoire / or" -> Color(0xFFF0E8D8) to Color(0xFFD6A938)
-    else -> powerVisualProfile(power).accent to Color(0xFF171C25)
-}
-
 @Composable
 internal fun UltimatePortrait(
     c: Campaign,
@@ -221,89 +180,6 @@ internal fun UltimatePortrait(
                 .height(3.dp)
                 .background(if (heroMode) profile.accent else UltimateGold)
         )
-    }
-}
-
-private fun DrawScope.drawHair(style: String, color: Color, w: Float, h: Float) {
-    when (style) {
-        "Rasé" -> drawArc(color, 190f, 160f, true, Offset(w * .355f, h * .235f), Size(w * .29f, h * .18f))
-        "Long" -> {
-            drawOval(color, Offset(w * .34f, h * .21f), Size(w * .32f, h * .28f))
-            drawRect(color, Offset(w * .34f, h * .32f), Size(w * .055f, h * .28f))
-            drawRect(color, Offset(w * .605f, h * .32f), Size(w * .055f, h * .28f))
-        }
-        "Tresses" -> {
-            drawArc(color, 188f, 165f, true, Offset(w * .345f, h * .215f), Size(w * .31f, h * .20f))
-            repeat(5) { i -> drawLine(color, Offset(w * (.39f + i * .055f), h * .25f), Offset(w * (.37f + i * .065f), h * .59f), w * .018f) }
-        }
-        "Boucles" -> {
-            repeat(9) { i ->
-                val x = w * (.365f + (i % 5) * .065f)
-                val y = h * (.245f + (i / 5) * .045f)
-                drawCircle(color, w * .045f, Offset(x, y))
-            }
-        }
-        "Undercut" -> {
-            drawArc(color, 190f, 160f, true, Offset(w * .36f, h * .22f), Size(w * .28f, h * .18f))
-            drawRect(color, Offset(w * .43f, h * .205f), Size(w * .20f, h * .055f))
-        }
-        else -> {
-            drawArc(color, 188f, 165f, true, Offset(w * .355f, h * .215f), Size(w * .29f, h * .19f))
-            if (style.contains("Dégradé")) drawRect(color.copy(alpha = .55f), Offset(w * .365f, h * .31f), Size(w * .035f, h * .08f))
-        }
-    }
-}
-
-private fun DrawScope.drawFacialHair(style: String, color: Color, w: Float, h: Float) {
-    when (style) {
-        "Moustache" -> drawLine(color, Offset(w * .44f, h * .485f), Offset(w * .56f, h * .485f), w * .018f)
-        "Bouc" -> {
-            drawLine(color, Offset(w * .45f, h * .486f), Offset(w * .55f, h * .486f), w * .012f)
-            drawOval(color, Offset(w * .465f, h * .505f), Size(w * .07f, h * .07f))
-        }
-        else -> drawArc(color.copy(alpha = .9f), 15f, 150f, false, Offset(w * .37f, h * .405f), Size(w * .26f, h * .17f), style = Stroke(w * if (style.contains("pleine")) .035f else .018f))
-    }
-}
-
-private fun DrawScope.drawMask(style: String, color: Color, w: Float, h: Float) {
-    if (style == "Aucun") return
-    when (style) {
-        "Masque intégral", "Casque" -> drawArc(color.copy(alpha = .75f), 180f, 180f, true, Offset(w * .355f, h * .25f), Size(w * .29f, h * .28f))
-        "Capuche" -> drawArc(color.copy(alpha = .62f), 190f, 160f, false, Offset(w * .32f, h * .18f), Size(w * .36f, h * .39f), style = Stroke(w * .038f))
-        "Visière" -> drawRoundRect(color.copy(alpha = .78f), Offset(w * .39f, h * .375f), Size(w * .22f, h * .06f), androidx.compose.ui.geometry.CornerRadius(w * .02f))
-        else -> {
-            val p = Path().apply {
-                moveTo(w * .38f, h * .36f); lineTo(w * .48f, h * .385f); lineTo(w * .50f, h * .44f)
-                lineTo(w * .52f, h * .385f); lineTo(w * .62f, h * .36f); lineTo(w * .60f, h * .45f)
-                lineTo(w * .5f, h * .47f); lineTo(w * .40f, h * .45f); close()
-            }
-            drawPath(p, color.copy(alpha = .82f))
-        }
-    }
-}
-
-private fun DrawScope.drawEmblem(emblem: String, color: Color, center: Offset, radius: Float) {
-    when {
-        emblem.contains("Étoile") || emblem.contains("Comète") -> {
-            val p = Path()
-            repeat(10) { i ->
-                val angle = -PI / 2 + i * PI / 5
-                val rr = if (i % 2 == 0) radius else radius * .42f
-                val pt = Offset(center.x + cos(angle).toFloat() * rr, center.y + sin(angle).toFloat() * rr)
-                if (i == 0) p.moveTo(pt.x, pt.y) else p.lineTo(pt.x, pt.y)
-            }
-            p.close(); drawPath(p, color)
-        }
-        emblem.contains("Anneau") -> drawCircle(color, radius, center, style = Stroke(radius * .22f))
-        emblem.contains("Bouclier") -> {
-            val p = Path().apply { moveTo(center.x, center.y - radius); lineTo(center.x + radius * .75f, center.y - radius * .4f); lineTo(center.x + radius * .55f, center.y + radius * .7f); lineTo(center.x, center.y + radius); lineTo(center.x - radius * .55f, center.y + radius * .7f); lineTo(center.x - radius * .75f, center.y - radius * .4f); close() }
-            drawPath(p, color)
-        }
-        else -> {
-            drawCircle(color.copy(alpha = .2f), radius, center)
-            drawLine(color, Offset(center.x - radius, center.y), Offset(center.x + radius, center.y), radius * .18f)
-            drawLine(color, Offset(center.x, center.y - radius), Offset(center.x, center.y + radius), radius * .18f)
-        }
     }
 }
 
