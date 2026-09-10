@@ -17,7 +17,18 @@ class PersistenceSmokeTest {
 
         val seed = 8_181_817L
         val blueprint = GameEngine.randomBlueprint(seed)
-        val draft = UltimateCatalog.randomDraft(seed, blueprint)
+        val draft = UltimateCatalog.randomDraft(seed, blueprint).copy(
+            bodyBuild = "Robuste",
+            stature = "Grande",
+            skinTone = "Foncé",
+            faceShape = "Carré",
+            hair = "Tresses",
+            hairColor = "Noir",
+            facialHair = "Aucune",
+            eyes = "Verts",
+            civilianStyle = "Créatif",
+            accessory = "Lunettes"
+        )
         val campaign = GameEngine.newCampaign(seed, blueprint)
         val ultimate = UltimateStore.create(campaign, draft)
         val annual = AnnualActionState.fresh(campaign)
@@ -34,7 +45,15 @@ class PersistenceSmokeTest {
         val loadedUltimate = UltimateStore.load(context, loadedCampaign)
         assertEquals(seed, loadedUltimate.seed)
         assertEquals(ultimate.bodyBuild, loadedUltimate.bodyBuild)
+        assertEquals(ultimate.stature, loadedUltimate.stature)
         assertEquals(ultimate.skinTone, loadedUltimate.skinTone)
+        assertEquals(ultimate.faceShape, loadedUltimate.faceShape)
+        assertEquals(ultimate.hair, loadedUltimate.hair)
+        assertEquals(ultimate.hairColor, loadedUltimate.hairColor)
+        assertEquals(ultimate.facialHair, loadedUltimate.facialHair)
+        assertEquals(ultimate.eyes, loadedUltimate.eyes)
+        assertEquals(ultimate.civilianStyle, loadedUltimate.civilianStyle)
+        assertEquals(ultimate.accessory, loadedUltimate.accessory)
 
         val loadedAnnual = AnnualActionPersistence.load(context, loadedCampaign)
         assertEquals(annual.turn, loadedAnnual.turn)
