@@ -66,4 +66,29 @@ class AuditRegressionTest {
             }
         }
     }
+
+    @Test fun weaknesses_change_power_choices_not_just_flavour_text() {
+        val powerChoice = Choice("Utiliser le pouvoir", power = 2, risk = 3, identityDelta = 0, flag = "v2_power_test")
+        val base = Campaign(seed = 9L, name = "A", modifier = "", powerFamily = "Énergie", flags = setOf("POWER_REVEALED"))
+
+        val fatigue = PowerGameplayDirector.applyWeakness(base.copy(weakness = "Fatigue extrême"), powerChoice)
+        assertTrue(fatigue.healthDelta < powerChoice.healthDelta)
+        assertTrue(fatigue.risk > powerChoice.risk)
+
+        val visibility = PowerGameplayDirector.applyWeakness(base.copy(weakness = "Pouvoir difficile à dissimuler"), powerChoice)
+        assertTrue(visibility.identityDelta > powerChoice.identityDelta)
+
+        val cooldown = PowerGameplayDirector.applyWeakness(base.copy(weakness = "Temps de récupération"), powerChoice)
+        assertTrue(cooldown.deferredHook)
+
+        val overload = PowerGameplayDirector.applyWeakness(base.copy(weakness = "Surcharge"), powerChoice)
+        assertTrue(overload.power > powerChoice.power)
+        assertTrue(overload.risk > powerChoice.risk)
+    }
+
+    @Test fun weakness_does_not_penalise_a_non_power_choice() {
+        val quiet = Choice("Parler", power = 0, risk = 1, flag = "social")
+        val c = Campaign(seed = 10L, name = "A", modifier = "", weakness = "Surcharge", flags = setOf("POWER_REVEALED"))
+        assertEquals(quiet, PowerGameplayDirector.applyWeakness(c, quiet))
+    }
 }
