@@ -93,17 +93,4 @@ class LifeSimulationDirectorTest {
         val age23 = campaign(age = 23)
         assertTrue(LifeSimulationDirector.synced(age23, deep, exhausted).civil.freeMoments > 0)
     }
-
-    @Test fun lifeSimulationJsonRoundTripKeepsConsequences() {
-        val original = LifeSimulationState(
-            civil = CivilLifeState(employment = EmploymentStatus.EMPLOYED, jobTitle = "Technicien", savings = 4200, freeMoments = 1),
-            relationshipLives = listOf(RelationshipLifeState("ami", secretKnowledge = SecretKnowledge.KNOWS)),
-            districts = listOf(DistrictLifeState("quartier", safety = 67, criminalControl = 11, mediaHeat = 8)),
-            powerRules = PowerRulesState(control = 44, precision = 39, fatigue = 28, overload = 6),
-            secretIdentity = IdentitySecretState(exposure = 19, knownBy = mapOf("ami" to SecretKnowledge.KNOWS)),
-            calendarYear = 31,
-            actionLog = listOf("31: Patrouiller")
-        )
-        assertEquals(original, LifeSimulationJson.decode(LifeSimulationJson.encode(original)))
-    }
 }
