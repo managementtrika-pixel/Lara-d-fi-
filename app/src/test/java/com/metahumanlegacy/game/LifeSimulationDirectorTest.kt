@@ -5,7 +5,22 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class LifeSimulationDirectorTest {
-    private fun campaign(age: Int = 22, power: Boolean = true) = Campaign(seed = 42L, age = age, powerRevealed = power)
+    private fun campaign(age: Int = 22, power: Boolean = true): Campaign {
+        val turn = when {
+            age <= 17 -> (age - 8).coerceIn(0, 9)
+            age == 18 -> 10
+            age == 19 -> 12
+            age == 20 -> 14
+            else -> 16 + (age - 20) * 4
+        }
+        return Campaign(
+            seed = 42L,
+            name = "Test Vesper",
+            modifier = "STANDARD",
+            turn = turn,
+            flags = if (power) setOf("POWER_REVEALED") else emptySet()
+        )
+    }
 
     @Test fun actionsConsumeRealTime() {
         val c = campaign()
@@ -46,5 +61,12 @@ class LifeSimulationDirectorTest {
         val result = LifeSimulationDirector.perform(c, state, LifeAction(LifeActionType.WORK, label = "Travailler"))
         assertEquals(0, result.state.civil.freeMoments)
         assertEquals("Plus de temps", result.headline)
+    }
+
+    @Test fun bootstrapUsesCanonicalCampaignAge() {
+        val c = campaign(age = 37)
+        val state = LifeSimulationDirector.bootstrap(c, DeepLifeState(seed = c.seed))
+        assertEquals(37, c.age)
+        assertEquals(37, state.calendarYear)
     }
 }
