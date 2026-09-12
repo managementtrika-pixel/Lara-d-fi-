@@ -109,7 +109,8 @@ internal fun GameplayRebuildApp(context: Context) {
                 val u = UltimateStore.create(c, d)
                 val a = AnnualActionState.fresh(c)
                 val baseDeep = DeepLifeDirector.bootstrap(c, u)
-                val dl = GenerationalDirector.seedNewLife(c, baseDeep, DeepLegacyArchive.load(context))
+                val generationDeep = GenerationalDirector.seedNewLife(c, baseDeep, DeepLegacyArchive.load(context))
+                val dl = generationDeep.copy(lifeSimulation = LifeSimulationDirector.bootstrap(c, generationDeep))
                 campaign = c; ultimate = u; annual = a; deep = dl
                 saveCampaignV4(context, c)
                 UltimateStore.save(context, u)
@@ -137,7 +138,7 @@ internal fun GameplayRebuildApp(context: Context) {
 
             UltimateRootBackdrop(campaign = campaign, state = ultimate, scene = if (campaign?.finished == true) "LEGACY" else screen) {
                 val transitionDuration = MetahumanMotionTokens.duration(MetahumanMotionTokens.FAST, motion)
-                val stageKey = "${screen}|${campaign?.turn ?: -1}|${outcome?.hashCode() ?: 0}|${campaign?.needsAlias == true}"
+                val stageKey = "${screen}|${campaign?.turn ?: -1}|${outcome?.hashCode() ?: 0}|${campaign?.needsAlias == true}|$savePulse"
                 AnimatedContent(
                     targetState = stageKey,
                     transitionSpec = {
@@ -237,7 +238,15 @@ internal fun GameplayRebuildApp(context: Context) {
                             val c = campaign!!
                             val u = ultimate ?: UltimateStore.fallback(c).also { ultimate = it }
                             val a = (annual ?: AnnualActionPersistence.load(context, c)).synced(c).also { annual = it }
-                            val dl = (deep ?: DeepLifePersistence.load(context, c, u)).also { deep = it }
+                            val loadedDeep = (deep ?: DeepLifePersistence.load(context, c, u))
+                            val loadedLife = loadedDeep.lifeSimulation ?: LifeSimulationDirector.bootstrap(c, loadedDeep)
+                            val syncedLife = LifeSimulationDirector.synced(c, loadedDeep, loadedLife)
+                            val dl = if (loadedDeep.lifeSimulation != syncedLife) {
+                                loadedDeep.copy(lifeSimulation = syncedLife).also {
+                                    deep = it
+                                    DeepLifePersistence.save(context, it)
+                                }
+                            } else loadedDeep.also { deep = it }
 
                             val choiceHandler: (EventNode, Choice) -> Unit = { event, choice ->
                                 val current = campaign
@@ -250,7 +259,13 @@ internal fun GameplayRebuildApp(context: Context) {
                                     val deepUpdate = DeepLifeRuntime.afterChoice(current, result.campaign, event, choice, currentDeep)
                                     val worldUpdate = DeepWorldDirector.afterChoice(result.campaign, result.state, deepUpdate.state, event, choice)
                                     val generationUpdate = GenerationalDirector.afterChoice(worldUpdate.campaign, worldUpdate.ultimate, worldUpdate.deep, event, choice)
-                                    val nextDeep = DeepLifeDirector.revealPower(generationUpdate.campaign, generationUpdate.deep)
+                                    val revealedDeep = DeepLifeDirector.revealPower(generationUpdate.campaign, generationUpdate.deep)
+                                    val life = LifeSimulationDirector.synced(
+                                        generationUpdate.campaign,
+                                        revealedDeep,
+                                        revealedDeep.lifeSimulation ?: LifeSimulationDirector.bootstrap(generationUpdate.campaign, revealedDeep)
+                                    )
+                                    val nextDeep = LifeSimulationDirector.mergedIntoDeep(revealedDeep, life)
                                     val nextAnnual = (annual ?: AnnualActionState.fresh(generationUpdate.campaign)).synced(generationUpdate.campaign)
                                     persist(generationUpdate.campaign, generationUpdate.ultimate, nextAnnual, nextDeep)
                                     val combinedOutcome = buildString {
@@ -276,9 +291,33 @@ internal fun GameplayRebuildApp(context: Context) {
                                         val nextState = UltimateGameEngine.afterAnnualAction(action.campaign, currentState, action.state, card)
                                         val deepUpdate = DeepLifeRuntime.afterAnnualAction(action.campaign, card, currentDeep)
                                         val worldUpdate = DeepWorldDirector.afterAnnualAction(action.campaign, nextState, deepUpdate.state, card)
-                                        persist(worldUpdate.campaign, worldUpdate.ultimate, action.state, worldUpdate.deep)
+                                        val lifeBefore = worldUpdate.deep.lifeSimulation ?: LifeSimulationDirector.bootstrap(action.campaign, worldUpdate.deep)
+                                        val lifeAfter = LifeSimulationDirector.synced(action.campaign, worldUpdate.deep, lifeBefore).let { life ->
+                                            life.copy(civil = life.civil.copy(freeMoments = (life.civil.freeMoments - 1).coerceAtLeast(0)))
+                                        }
+                                        val nextDeep = LifeSimulationDirector.mergedIntoDeep(worldUpdate.deep, lifeAfter)
+                                        persist(worldUpdate.campaign, worldUpdate.ultimate, action.state, nextDeep)
                                         val extra = listOf(deepUpdate.echo, worldUpdate.echo).filter { it.isNotBlank() }.joinToString("\n\n")
                                         action.copy(campaign = worldUpdate.campaign, text = if (extra.isBlank()) action.text else action.text + "\n\n" + extra)
+                                    }
+                                }
+                            }
+
+                            val lifeActionHandler: (LifeAction) -> LifeActionResult? = { lifeAction ->
+                                val current = campaign
+                                if (current == null) null else {
+                                    haptic(MetahumanMotionLevel.MOTION_SUBTLE)
+                                    val currentState = ultimate ?: UltimateStore.load(context, current)
+                                    val currentDeep = deep ?: DeepLifePersistence.load(context, current, currentState)
+                                    val baseLife = currentDeep.lifeSimulation ?: LifeSimulationDirector.bootstrap(current, currentDeep)
+                                    val synced = LifeSimulationDirector.synced(current, currentDeep, baseLife)
+                                    val result = LifeSimulationDirector.perform(current, synced, lifeAction)
+                                    if (result.state == synced) result else {
+                                        val nextDeep = LifeSimulationDirector.mergedIntoDeep(currentDeep, result.state)
+                                        val currentAnnual = (annual ?: AnnualActionPersistence.load(context, current)).synced(current)
+                                        val nextAnnual = currentAnnual.copy(used = (currentAnnual.used + 1).coerceAtMost(ANNUAL_ACTION_LIMIT))
+                                        persist(current, currentState, nextAnnual, nextDeep)
+                                        result
                                     }
                                 }
                             }
@@ -307,7 +346,7 @@ internal fun GameplayRebuildApp(context: Context) {
 
                                 "LIENS" -> GameplayRebuildLinksScreen(c, a, dl, actionHandler) { go("DESTIN") }
 
-                                "ACTIONS" -> GameplayRebuildActionsScreen(c, u, a, dl, actionHandler) { go("DESTIN") }
+                                "ACTIONS" -> GameplayRebuildActionsHub(c, u, a, dl, actionHandler, lifeActionHandler) { go("DESTIN") }
 
                                 "PERSONNAGE" -> GameplayRebuildCharacterScreen(
                                     c = c,
