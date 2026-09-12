@@ -89,12 +89,12 @@ internal object DeepLifeDirector {
     fun architectureFor(power: String): PowerArchitecture = when {
         power.contains("Télépath", true) || power.contains("Illusion", true) || power.contains("mentale", true) -> PowerArchitecture.MENTAL
         power.contains("Vitesse", true) || power.contains("Vol", true) || power.contains("Portail", true) -> PowerArchitecture.MOBILITY
+        power.contains("Adapt", true) || power.contains("Métamorphose", true) || power.contains("Densité", true) -> PowerArchitecture.ADAPTIVE
         power.contains("Force", true) || power.contains("Résistance", true) || power.contains("Régén", true) -> PowerArchitecture.BODY
         power.contains("Techn", true) || power.contains("Armure", true) || power.contains("Drone", true) || power.contains("Interface", true) -> PowerArchitecture.TECH
         power.contains("Magie", true) || power.contains("Malédiction", true) || power.contains("astral", true) || power.contains("Rêve", true) -> PowerArchitecture.OCCULT
         power.contains("cosm", true) || power.contains("Gravité", true) || power.contains("Espace", true) -> PowerArchitecture.COSMIC
         power.contains("Matière", true) || power.contains("Cristal", true) || power.contains("Métal", true) || power.contains("Transmutation", true) -> PowerArchitecture.MATTER
-        power.contains("Adapt", true) || power.contains("Métamorphose", true) || power.contains("Densité", true) -> PowerArchitecture.ADAPTIVE
         else -> PowerArchitecture.PROJECTOR
     }
 
