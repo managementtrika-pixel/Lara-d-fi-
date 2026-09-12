@@ -13,12 +13,43 @@ internal object LifeSimulationDirector {
             civil = CivilLifeState(
                 employment = if (c.age < 18) EmploymentStatus.STUDENT else EmploymentStatus.UNEMPLOYED,
                 jobTitle = if (c.age < 18) "Élève" else "Sans emploi",
-                freeMoments = if (c.age < 18) 2 else 3
+                freeMoments = annualMoments(c.age)
             ),
             relationshipLives = relationships,
             districts = districtIds.map { DistrictLifeState(it) },
             calendarYear = c.age
         )
+    }
+
+    /** Keep one persistent simulation while refreshing only genuinely annual resources. */
+    fun synced(c: Campaign, deep: DeepLifeState, state: LifeSimulationState): LifeSimulationState {
+        val yearChanged = state.calendarYear != c.age
+        val existingById = state.relationshipLives.associateBy { it.personId }
+        val relationships = deep.relationships.filter { it.alive }.map { person ->
+            val existing = existingById[person.id] ?: RelationshipLifeState(person.id)
+            existing.copy(
+                secretKnowledge = when {
+                    person.knowsIdentity -> SecretKnowledge.KNOWS
+                    existing.secretKnowledge == SecretKnowledge.KNOWS -> SecretKnowledge.KNOWS
+                    else -> existing.secretKnowledge
+                },
+                availability = if (yearChanged) (existing.availability + 20).coerceAtMost(100) else existing.availability
+            )
+        }
+        return state.copy(
+            civil = if (yearChanged) state.civil.copy(freeMoments = annualMoments(c.age)) else state.civil,
+            relationshipLives = relationships,
+            calendarYear = c.age
+        )
+    }
+
+    fun mergedIntoDeep(deep: DeepLifeState, simulation: LifeSimulationState): DeepLifeState {
+        val knowledge = simulation.relationshipLives.associate { it.personId to it.secretKnowledge }
+        val relationships = deep.relationships.map { person ->
+            val knows = knowledge[person.id] in setOf(SecretKnowledge.KNOWS, SecretKnowledge.PROTECTS, SecretKnowledge.THREATENS)
+            if (knows && !person.knowsIdentity) person.copy(knowsIdentity = true) else person
+        }
+        return deep.copy(lifeSimulation = simulation, relationships = relationships)
     }
 
     fun availableActions(c: Campaign, state: LifeSimulationState): List<LifeAction> {
@@ -28,13 +59,17 @@ internal object LifeSimulationDirector {
         }
         if (c.age <= 30) civil += LifeAction(LifeActionType.STUDY, label = "Étudier")
         civil += LifeAction(LifeActionType.REST, label = "Récupérer")
+        if (c.age >= 18) civil += LifeAction(LifeActionType.MOVE_HOME, label = "Changer de logement")
         if (c.powerRevealed) {
             civil += LifeAction(LifeActionType.TRAIN_POWER, label = "Entraîner mon pouvoir")
             civil += LifeAction(LifeActionType.PATROL, targetId = "quartier", label = "Patrouiller")
             civil += LifeAction(LifeActionType.INVESTIGATE, targetId = "quartier", label = "Enquêter")
         }
-        state.relationshipLives.take(4).forEach { rel ->
+        state.relationshipLives.filter { it.availability > 0 }.take(4).forEach { rel ->
             civil += LifeAction(LifeActionType.VISIT_PERSON, rel.personId, "Voir ${rel.personId}")
+            if (c.powerRevealed && rel.secretKnowledge == SecretKnowledge.UNAWARE) {
+                civil += LifeAction(LifeActionType.REVEAL_IDENTITY, rel.personId, "Révéler mon identité")
+            }
         }
         return civil
     }
@@ -48,6 +83,7 @@ internal object LifeSimulationDirector {
                 val civil = spent.copy(
                     employment = EmploymentStatus.EMPLOYED,
                     jobTitle = if (spent.jobTitle in setOf("Élève", "Sans emploi")) "Employé·e" else spent.jobTitle,
+                    monthlyIncome = maxOf(spent.monthlyIncome, income),
                     savings = spent.savings + income,
                     careerProgress = (spent.careerProgress + 2).coerceAtMost(100),
                     stress = (spent.stress + 5).coerceAtMost(100)
@@ -65,6 +101,9 @@ internal object LifeSimulationDirector {
             }
             LifeActionType.TRAIN_POWER -> {
                 val p = state.powerRules
+                if (p.overload >= 90) {
+                    return LifeActionResult(state, "Corps en surcharge", "Tu dois récupérer avant de pousser ton pouvoir davantage.")
+                }
                 val next = p.copy(
                     control = (p.control + 3).coerceAtMost(100),
                     precision = (p.precision + 2).coerceAtMost(100),
@@ -83,7 +122,8 @@ internal object LifeSimulationDirector {
                         mediaHeat = (d.mediaHeat + 2).coerceAtMost(100)
                     )
                 }
-                result(state.copy(civil = spent, districts = districts), action, "Le quartier réagit", "Ta présence change progressivement la sécurité, la confiance locale et l'attention portée sur toi.")
+                val secret = state.secretIdentity.copy(exposure = (state.secretIdentity.exposure + 2).coerceAtMost(100))
+                result(state.copy(civil = spent, districts = districts, secretIdentity = secret), action, "Le quartier réagit", "Ta présence change progressivement la sécurité, la confiance locale et l'attention portée sur toi.")
             }
             LifeActionType.VISIT_PERSON, LifeActionType.APOLOGIZE, LifeActionType.ASK_HELP,
             LifeActionType.REVEAL_IDENTITY, LifeActionType.DISTANCE_PERSON -> relationshipAction(state.copy(civil = spent), action)
@@ -95,23 +135,43 @@ internal object LifeSimulationDirector {
                     HousingTier.APARTMENT -> HousingTier.HOUSE
                     HousingTier.HOUSE, HousingTier.BASE -> HousingTier.BASE
                 }
-                result(state.copy(civil = spent.copy(housing = nextHousing)), action, "Tu changes de lieu de vie", "Ton quotidien et ce que les autres peuvent découvrir sur toi changent avec ton logement.")
+                val cost = when (nextHousing) {
+                    HousingTier.FAMILY_HOME -> 0
+                    HousingTier.ROOM -> 300
+                    HousingTier.STUDIO -> 550
+                    HousingTier.APARTMENT -> 850
+                    HousingTier.HOUSE -> 1400
+                    HousingTier.BASE -> 2200
+                }
+                if (spent.savings < cost && nextHousing != HousingTier.ROOM) {
+                    return LifeActionResult(state, "Projet trop cher", "Tu n'as pas encore les économies nécessaires pour ce logement.")
+                }
+                result(
+                    state.copy(civil = spent.copy(housing = nextHousing, housingCost = cost, savings = (spent.savings - cost).coerceAtLeast(0))),
+                    action,
+                    "Tu changes de lieu de vie",
+                    "Ton quotidien et ce que les autres peuvent découvrir sur toi changent avec ton logement."
+                )
             }
         }
     }
 
     private fun relationshipAction(state: LifeSimulationState, action: LifeAction): LifeActionResult {
         val id = action.targetId ?: return LifeActionResult(state, "Personne introuvable", "Cette action demande une personne précise.")
+        val target = state.relationshipLives.firstOrNull { it.personId == id }
+            ?: return LifeActionResult(state, "Personne introuvable", "Cette personne ne fait plus partie de ta vie actuelle.")
+        if (target.availability <= 0) return LifeActionResult(state, "Indisponible", "Cette personne n'a plus de place disponible pour toi cette année.")
         val next = state.relationshipLives.map { rel ->
             if (rel.personId != id) rel else when (action.type) {
-                LifeActionType.VISIT_PERSON -> rel.copy(availability = (rel.availability - 5).coerceAtLeast(0), lastContactTurn = state.calendarYear)
-                LifeActionType.APOLOGIZE -> rel.copy(promises = (rel.promises + "Excuses reçues").takeLast(8), lastContactTurn = state.calendarYear)
-                LifeActionType.ASK_HELP -> rel.copy(promises = (rel.promises + "Aide demandée").takeLast(8), lastContactTurn = state.calendarYear)
-                LifeActionType.REVEAL_IDENTITY -> rel.copy(secretKnowledge = SecretKnowledge.KNOWS, sharedSecrets = (rel.sharedSecrets + "Identité métahumaine").distinct())
+                LifeActionType.VISIT_PERSON -> rel.copy(availability = (rel.availability - 25).coerceAtLeast(0), lastContactTurn = state.calendarYear)
+                LifeActionType.APOLOGIZE -> rel.copy(promises = (rel.promises + "Excuses reçues").takeLast(8), availability = (rel.availability - 15).coerceAtLeast(0), lastContactTurn = state.calendarYear)
+                LifeActionType.ASK_HELP -> rel.copy(promises = (rel.promises + "Aide demandée").takeLast(8), availability = (rel.availability - 30).coerceAtLeast(0), lastContactTurn = state.calendarYear)
+                LifeActionType.REVEAL_IDENTITY -> rel.copy(secretKnowledge = SecretKnowledge.KNOWS, sharedSecrets = (rel.sharedSecrets + "Identité métahumaine").distinct(), availability = (rel.availability - 20).coerceAtLeast(0))
                 LifeActionType.DISTANCE_PERSON -> rel.copy(bond = if (rel.bond == BondStatus.PARTNER) BondStatus.SEPARATED else BondStatus.NONE, availability = 100)
                 else -> rel
             }
         }
+        val knownBy = if (action.type == LifeActionType.REVEAL_IDENTITY) state.secretIdentity.knownBy + (id to SecretKnowledge.KNOWS) else state.secretIdentity.knownBy
         val text = when (action.type) {
             LifeActionType.REVEAL_IDENTITY -> "Tu confies quelque chose qui ne pourra plus être repris."
             LifeActionType.APOLOGIZE -> "Tu affrontes ce qui s'est passé au lieu de laisser le silence décider."
@@ -119,7 +179,14 @@ internal object LifeSimulationDirector {
             LifeActionType.DISTANCE_PERSON -> "Tu crées volontairement de la distance, avec les conséquences que cela implique."
             else -> "Tu consacres du temps à cette personne. La relation existe aussi entre les crises."
         }
-        return result(state.copy(relationshipLives = next), action, "Un moment personnel", text)
+        return result(state.copy(relationshipLives = next, secretIdentity = state.secretIdentity.copy(knownBy = knownBy)), action, "Un moment personnel", text)
+    }
+
+    private fun annualMoments(age: Int): Int = when {
+        age < 12 -> 2
+        age < 18 -> 3
+        age < 65 -> 4
+        else -> 3
     }
 
     private fun result(state: LifeSimulationState, action: LifeAction, headline: String, detail: String): LifeActionResult =
