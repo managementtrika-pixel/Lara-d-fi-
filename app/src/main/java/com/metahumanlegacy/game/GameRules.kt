@@ -179,33 +179,39 @@ internal object GameRules {
     }
 
     fun outcome(before: Campaign, after: Campaign, event: EventNode, choice: Choice): String = when (event.kind) {
-        "FORMATIVE" -> {
-            "Tu ne sais pas encore ce que cette décision construit. Pour l'instant, elle change surtout la personne que tu deviens — et le jeu garde le reste caché."
-        }
-        "AWAKENING" -> {
-            "Ce pouvoir n'a pas été sélectionné : il s'est révélé à partir de tes dix années précédentes. ${after.powerSignature.replaceFirstChar { it.uppercase() }}. Ta réaction, elle, t'appartient."
-        }
+        "FORMATIVE" -> "Tu ne sais pas encore ce que cette décision construit. Pour l'instant, elle change surtout la personne que tu deviens — et le jeu garde le reste caché."
+        "AWAKENING" -> "Ce pouvoir n'a pas été sélectionné : il s'est révélé à partir de tes dix années précédentes. ${after.powerSignature.replaceFirstChar { it.uppercase() }}. Ta réaction, elle, t'appartient."
         "ENDING" -> "Cette conclusion ferme l'arc, mais ses conséquences et les choix qui l'ont créée restent inscrits dans ta carrière."
-        else -> {
-            val route = when (choice.approach) {
-                "CARE" -> "Tu as privilégié les personnes avant le symbole."
-                "ORDER" -> "Tu as imposé un cadre et une responsabilité claire."
-                "TRUTH" -> "Tu as choisi de comprendre et d'exposer ce qui était caché."
-                "ASCEND" -> "Tu as transformé la situation en levier de puissance et d'influence."
-                else -> "Ta décision déplace durablement l'équilibre."
-            }
-            val deltas = mutableListOf<String>()
-            fun add(label: String, v: Int) { if (v != 0) deltas += "$label ${signed(v)}" }
-            add("moralité", after.morality - before.morality)
-            add("prestige", after.prestige - before.prestige)
-            add("opinion", after.opinion - before.opinion)
-            add("peur", after.fear - before.fear)
-            add("puissance", after.power - before.power)
-            add("influence", after.influence - before.influence)
-            add("santé", after.health - before.health)
-            add("exposition", after.identityExposure - before.identityExposure)
-            "$route ${if (deltas.isEmpty()) "L'effet principal est narratif." else deltas.joinToString(" · ") + "."}"
+        else -> diegeticOutcome(before, after, event, choice)
+    }
+
+    private fun diegeticOutcome(before: Campaign, after: Campaign, event: EventNode, choice: Choice): String {
+        val lines = mutableListOf<String>()
+        lines += when (choice.approach) {
+            "CARE" -> "Tu places les personnes avant le symbole. Sur le moment, c'est ce que les témoins retiennent le plus."
+            "ORDER" -> "Tu imposes une méthode claire. La scène devient plus lisible, mais aussi plus associée à ta manière de décider."
+            "TRUTH" -> "Tu refuses la réponse facile et cherches ce qui se cache derrière la situation."
+            "ASCEND" -> "Tu prends l'ascendant. La démonstration règle une partie du problème et change la façon dont on mesure ta puissance."
+            else -> "Ta décision déplace quelque chose qui ne reviendra pas exactement à sa place."
         }
+        if (after.health < before.health) lines += when {
+            after.health <= 20 -> "Tu repars à peine capable de tenir debout. Cette intervention pourrait marquer durablement ton corps."
+            before.health - after.health >= 8 -> "Ton corps paie nettement le prix de cette décision."
+            else -> "Tu repars avec une douleur que l'adrénaline ne masque pas complètement."
+        }
+        if (after.identityExposure > before.identityExposure) lines += when {
+            after.identityExposure >= 75 -> "Les traces s'accumulent au point où ton identité civile devient difficile à protéger."
+            after.identityExposure - before.identityExposure >= 4 -> "Caméras, témoins ou détails physiques viennent ajouter plusieurs pièces au puzzle de ton identité."
+            else -> "Tu laisses derrière toi un détail exploitable sur qui tu pourrais être."
+        } else if (after.identityExposure < before.identityExposure) {
+            lines += "Tu brouilles suffisamment les pistes pour compliquer le travail de ceux qui cherchent ton identité."
+        }
+        if (after.civilianCasualties > before.civilianCasualties) lines += "Quelqu'un qui n'avait rien demandé paie le prix de l'affrontement. Cette conséquence ne disparaîtra pas avec la fumée."
+        if (after.opinion > before.opinion && after.fear <= before.fear) lines += "Dans les heures qui suivent, les récits te décrivent davantage comme quelqu'un qui aide que comme un danger."
+        if (after.fear > before.fear + 1) lines += "Ta présence rassure certains et en inquiète d'autres : la peur commence à voyager plus vite que les faits."
+        if (after.influence > before.influence + 2 || after.scope > before.scope) lines += "Cette scène dépasse son quartier : des personnes qui ne te connaissaient pas encore commencent à parler de toi."
+        if (event.threadStage > 1) lines += "Ce n'est pas un incident isolé. Les décisions prises plus tôt dans cette histoire continuent de peser sur ce qui vient de se passer."
+        return lines.distinct().take(4).joinToString("\n\n")
     }
 
     fun legacyTitle(c: Campaign): String {
