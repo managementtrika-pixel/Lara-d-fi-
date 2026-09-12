@@ -144,13 +144,25 @@ data class Campaign(
         else -> "DESTINÉE MÉTAHUMAINE"
     }
 
+    /**
+     * Reach is not XP. Public attention, prestige, fear and institutions can enlarge a career even
+     * when raw influence is modest; inactivity or poor standing can also keep a powerful character local.
+     */
+    val activeReach: Int get() {
+        if (!powerRevealed) return 0
+        val publicSignal = maxOf(kotlin.math.abs(opinion), fear) / 2
+        val institutionalSignal = maxOf(governmentStanding, factionStanding, mediaStanding, 0) / 3
+        val notoriety = prestige / 2
+        return (influence + publicSignal + institutionalSignal + notoriety).coerceAtLeast(0)
+    }
+
     val scope: Scope get() = when {
         !powerRevealed -> Scope.STREET
-        influence >= 900 -> Scope.WORLD
-        influence >= 560 -> Scope.COUNTRY
-        influence >= 340 -> Scope.REGION
-        influence >= 180 -> Scope.CITY
-        influence >= 75 -> Scope.DISTRICT
+        activeReach >= 900 -> Scope.WORLD
+        activeReach >= 560 -> Scope.COUNTRY
+        activeReach >= 340 -> Scope.REGION
+        activeReach >= 180 -> Scope.CITY
+        activeReach >= 75 -> Scope.DISTRICT
         else -> Scope.STREET
     }
 
@@ -164,11 +176,12 @@ data class Campaign(
         else -> "Monstrueux"
     }
 
+    /** Compatibility label for older UI. V2 treats it as public shorthand, not objective truth. */
     val alignmentLabel: String get() = when {
-        morality <= -30 || civilianCasualties >= 8 || (fear >= 70 && opinion <= -25) -> "Vilain"
-        morality >= 30 && opinion >= 0 && civilianCasualties <= 2 -> "Héros"
-        morality >= 0 && (fear >= 35 || opinion < 0 || governmentStanding < -25) -> "Anti-héros"
-        else -> "Neutre"
+        morality <= -30 || civilianCasualties >= 8 || (fear >= 70 && opinion <= -25) -> "Menace publique"
+        morality >= 30 && opinion >= 0 && civilianCasualties <= 2 -> "Héros public"
+        morality >= 0 && (fear >= 35 || opinion < 0 || governmentStanding < -25) -> "Vigilante controversé"
+        else -> "Figure ambiguë"
     }
 
     val finished: Boolean get() = turn >= 196 || health <= 0
