@@ -11,6 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,20 +34,24 @@ internal fun GameplayRebuildEarlyShell(
     val accent = if (c.turn == 10) UltimateViolet else if (c.powerRevealed) powerVisualProfile(c.powerFamily).accent else UltimateBlue
     Column(Modifier.fillMaxSize()) {
         Row(
-            Modifier.fillMaxWidth().background(Color(0xF205090E)).padding(horizontal = 10.dp, vertical = 6.dp),
+            Modifier.fillMaxWidth().background(Color(0xF205090E)).padding(horizontal = 10.dp, vertical = 7.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(Modifier.size(38.dp)) {
+            Box(Modifier.size(42.dp)) {
                 UltimatePortrait(c, state, Modifier.fillMaxSize(), heroMode = c.powerRevealed)
             }
             Spacer(Modifier.size(8.dp))
             Column(Modifier.weight(1f)) {
-                Text(c.name.uppercase(), color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 12.sp)
-                Text("${c.age} ANS · ${c.phaseLabel}", color = accent, fontWeight = FontWeight.Black, fontSize = 8.sp)
+                Text(c.name.uppercase(), color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 13.sp)
+                Text("${c.age} ANS · ${c.phaseLabel}", color = accent, fontWeight = FontWeight.Black, fontSize = 10.sp)
             }
-            if (savePulse > 0) Text("SAUVÉ", color = UltimateGreen, fontWeight = FontWeight.Black, fontSize = 7.sp)
-            TextButton(onClick = onHome, contentPadding = PaddingValues(5.dp)) { Text("ACCUEIL", fontSize = 8.sp) }
-            TextButton(onClick = onSettings, contentPadding = PaddingValues(5.dp)) { Text("⚙", fontSize = 11.sp) }
+            if (savePulse > 0) Text("SAUVÉ", color = UltimateGreen, fontWeight = FontWeight.Black, fontSize = 9.sp)
+            TextButton(onClick = onHome, contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp)) { Text("ACCUEIL", fontSize = 10.sp) }
+            TextButton(
+                onClick = onSettings,
+                modifier = Modifier.semantics { contentDescription = "Réglages" },
+                contentPadding = PaddingValues(10.dp)
+            ) { Text("⚙", fontSize = 15.sp) }
         }
         Box(Modifier.weight(1f)) {
             GameplayRebuildDestinyScreen(c, state, annual, deep, outcome, onContinue, onChoice)
@@ -63,8 +69,9 @@ internal fun GameplayRebuildEarlyShell(
                 NavigationBarItem(
                     selected = id == "DESTIN",
                     onClick = { onScreen(id) },
-                    icon = { MhlProductionAsset(icon, label, size = 22.dp) },
-                    label = { Text(label, fontSize = 7.sp, maxLines = 1) },
+                    modifier = Modifier.semantics { contentDescription = label },
+                    icon = { MhlProductionAsset(icon, label, size = 24.dp) },
+                    label = { Text(label, fontSize = 9.sp, maxLines = 1) },
                     colors = NavigationBarItemDefaults.colors(
                         indicatorColor = accent.copy(alpha = .16f),
                         selectedTextColor = UltimateGold,

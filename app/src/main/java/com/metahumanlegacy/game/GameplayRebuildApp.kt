@@ -305,7 +305,7 @@ internal fun GameplayRebuildApp(context: Context) {
 
                                 "VILLE" -> GameplayRebuildCityScreen(c, u, dl) { go("DESTIN") }
 
-                                "LIENS" -> GameplayRebuildLinksScreen(c, dl) { go("DESTIN") }
+                                "LIENS" -> GameplayRebuildLinksScreen(c, a, dl, actionHandler) { go("DESTIN") }
 
                                 "ACTIONS" -> GameplayRebuildActionsScreen(c, u, a, dl, actionHandler) { go("DESTIN") }
 
@@ -323,11 +323,11 @@ internal fun GameplayRebuildApp(context: Context) {
                                     onBack = { go("DESTIN") }
                                 )
 
-                                else -> UltimateCareerShell(
+                                else -> GameplayRebuildEarlyShell(
                                     c = c,
                                     state = u,
                                     annual = a,
-                                    screen = renderedScreen,
+                                    deep = dl,
                                     outcome = outcome,
                                     savePulse = savePulse,
                                     onScreen = { go(it) },
@@ -338,17 +338,8 @@ internal fun GameplayRebuildApp(context: Context) {
                                         if (campaign?.needsAlias == true) screen = "ALIAS"
                                     },
                                     onChoice = choiceHandler,
-                                    onAction = actionHandler,
-                                    onStateChange = { next ->
-                                        ultimate = next
-                                        UltimateStore.save(context, next)
-                                        DeepLifePersistence.save(context, dl)
-                                        savePulse++
-                                        saveCampaignV4(context, c)
-                                    },
                                     onHome = { go("HOME") },
-                                    onSettings = { go("SETTINGS") },
-                                    onRestart = { abandon() }
+                                    onSettings = { go("SETTINGS") }
                                 )
                             }
                         }

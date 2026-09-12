@@ -46,7 +46,7 @@ internal fun GameplayRebuildCityScreen(c: Campaign, state: UltimateState, deep: 
             Column(Modifier.align(Alignment.BottomStart).padding(14.dp)) {
                 Text(c.city.uppercase(), color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 28.sp)
                 Text("Une ville qui continue sans toi", color = accent, fontWeight = FontWeight.Black, fontSize = 10.sp)
-                Text("État général ${state.cityCondition}% · ${state.metaLaw}", color = UltimateMuted, fontSize = 10.sp)
+                Text("${cityConditionLabel(state.cityCondition)} · ${state.metaLaw}", color = UltimateMuted, fontSize = 10.sp)
             }
         }
 
@@ -73,7 +73,7 @@ internal fun GameplayRebuildCityScreen(c: Campaign, state: UltimateState, deep: 
                 urgent.forEach { opportunity ->
                     UltimatePanel(accent = if (opportunity.urgency >= 7) UltimateRed else UltimateGold) {
                         Text(opportunity.title, color = UltimateIvory, fontWeight = FontWeight.Black)
-                        Text("${opportunity.category} · expire dans ${(opportunity.expiresTurn - c.turn).coerceAtLeast(0)} étape(s)", color = UltimateMuted, fontSize = 10.sp)
+                        Text(opportunityTimingLine(c, opportunity), color = UltimateMuted, fontSize = 10.sp)
                         if (opportunity.ignoredPayload.isNotBlank()) Text("Si tu l'ignores : ${opportunity.ignoredPayload}", color = UltimateRed, fontSize = 10.sp, lineHeight = 14.sp)
                     }
                     Spacer(Modifier.height(6.dp))
@@ -102,20 +102,47 @@ private fun DistrictLifeCard(d: UltimateDistrict) {
             Text(if (d.restricted) "FERMÉ" else when { danger >= 70 -> "CRISE"; danger >= 45 -> "TENDU"; else -> "CALME" }, color = accent, fontWeight = FontWeight.Black, fontSize = 9.sp)
         }
         Spacer(Modifier.height(5.dp))
-        Text("Crime ${d.crime} · dégâts ${d.damage} · reconstruction ${d.reconstruction}", color = UltimateMuted, fontSize = 10.sp)
+        Text(districtConditionLine(d), color = UltimateMuted, fontSize = 10.sp)
         Text("Contrôle : ${d.faction} · sentiment ${signedHuman(d.sentiment)}", color = UltimateIvory, fontSize = 10.sp)
     }
 }
 
 @Composable
-internal fun GameplayRebuildLinksScreen(c: Campaign, deep: DeepLifeState, onBack: () -> Unit) {
+internal fun GameplayRebuildLinksScreen(
+    c: Campaign,
+    annual: AnnualActionState,
+    deep: DeepLifeState,
+    onAction: (AnnualActionCard) -> AnnualActionResult?,
+    onBack: () -> Unit
+) {
+    val synced = annual.synced(c)
+    var result by remember(c.turn) { mutableStateOf<AnnualActionResult?>(null) }
     Column(Modifier.fillMaxSize().padding(14.dp).verticalScroll(rememberScrollState())) {
         Text("LES GENS DE TA VIE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 10.sp, letterSpacing = 1.3.sp)
         Text("À ${c.age} ans, personne n'est une jauge.", color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 25.sp, lineHeight = 27.sp)
-        Text("Leurs valeurs, leurs peurs et ce qu'ils se rappellent peuvent changer la suite de ton histoire.", color = UltimateMuted, fontSize = 12.sp, lineHeight = 17.sp)
+        Text(
+            if (synced.remaining > 0) "Il te reste ${synced.remaining} moment${if (synced.remaining > 1) "s" else ""} libre${if (synced.remaining > 1) "s" else ""}. Appeler, venir, s'excuser ou demander de l'aide prend du temps réel."
+            else "Tu n'as plus de temps libre cette année. Les liens restent là, mais tu ne peux pas tout réparer en une seule période.",
+            color = UltimateMuted, fontSize = 12.sp, lineHeight = 17.sp
+        )
+        result?.let {
+            Spacer(Modifier.height(8.dp))
+            UltimatePanel(accent = UltimateGreen) {
+                Text(it.title.uppercase(), color = UltimateGreen, fontWeight = FontWeight.Black, fontSize = 9.sp)
+                Text(it.text, color = UltimateIvory, fontSize = 11.sp, lineHeight = 16.sp)
+            }
+        }
         Spacer(Modifier.height(10.dp))
         deep.relationships.filter { it.alive }.forEach { person ->
-            RelationshipLifeCard(person)
+            RelationshipLifeCard(
+                person = person,
+                enabled = synced.remaining > 0,
+                usedIds = synced.usedIds,
+                onAction = { card ->
+                    val resolved = onAction(card)
+                    if (resolved != null) result = resolved
+                }
+            )
             Spacer(Modifier.height(8.dp))
         }
         MhlSecondaryButton("Retour", onBack, Modifier.fillMaxWidth())
@@ -123,7 +150,12 @@ internal fun GameplayRebuildLinksScreen(c: Campaign, deep: DeepLifeState, onBack
 }
 
 @Composable
-private fun RelationshipLifeCard(person: DeepRelationship) {
+private fun RelationshipLifeCard(
+    person: DeepRelationship,
+    enabled: Boolean,
+    usedIds: Set<String>,
+    onAction: (AnnualActionCard) -> Unit
+) {
     val accent = when (person.phase) {
         RelationshipPhase.HURT, RelationshipPhase.DISTANT, RelationshipPhase.RIVAL -> UltimateRed
         RelationshipPhase.CLOSE, RelationshipPhase.TRUSTED, RelationshipPhase.SUCCESSOR -> UltimateGold
@@ -151,6 +183,46 @@ private fun RelationshipLifeCard(person: DeepRelationship) {
             Text("SE SOUVIENT", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 8.sp)
             Text("« ${memory.summary} »", color = UltimateIvory, fontSize = 10.sp, lineHeight = 14.sp)
         }
+
+        Spacer(Modifier.height(8.dp))
+        if (enabled) {
+            val actions = directRelationshipCards(person).filterNot { it.id in usedIds }
+            actions.take(4).forEach { card ->
+                MhlSecondaryButton(card.title, { onAction(card) }, Modifier.fillMaxWidth())
+                Spacer(Modifier.height(5.dp))
+            }
+            if (actions.isEmpty()) Text("Tu as déjà agi envers cette personne cette année.", color = UltimateMuted, fontSize = 9.sp)
+        }
+    }
+}
+
+private fun directRelationshipCards(person: DeepRelationship): List<AnnualActionCard> = buildList {
+    add(AnnualActionCard(
+        id = "direct_rel_visit_${person.id}", title = "Passer du temps avec ${person.name}",
+        description = "Être présent sans attendre qu'une crise vous réunisse.", category = AnnualActionCategory.RELATION,
+        iconKey = "relation_family", focus = "Lien · présence", outcome = "Tu as choisi cette personne avant une urgence.",
+        familyBond = if (person.id == "family") 2 else 0, presence = 1
+    ))
+    if (person.phase in setOf(RelationshipPhase.HURT, RelationshipPhase.DISTANT, RelationshipPhase.RIVAL) || person.grudge >= 10) {
+        add(AnnualActionCard(
+            id = "direct_rel_apologize_${person.id}", title = "T'excuser auprès de ${person.name}",
+            description = "Reconnaître précisément ce qui a blessé le lien sans exiger un pardon immédiat.", category = AnnualActionCategory.RELATION,
+            iconKey = "relation_family", focus = "Lien · réparation", outcome = "Tu ne peux pas effacer l'histoire, mais tu cesses de faire comme si elle n'existait pas."
+        ))
+    }
+    if (person.phase !in setOf(RelationshipPhase.DISTANT, RelationshipPhase.RIVAL)) {
+        add(AnnualActionCard(
+            id = "direct_rel_help_${person.id}", title = "Demander l'aide de ${person.name}",
+            description = "Partager un problème au lieu de tout porter seul. Cela rapproche, mais crée aussi une forme de dépendance.", category = AnnualActionCategory.RELATION,
+            iconKey = "relation_family", focus = "Lien · confiance", outcome = "Tu lui fais une place concrète dans ce que tu traverses."
+        ))
+    }
+    if (person.phase !in setOf(RelationshipPhase.DISTANT, RelationshipPhase.RIVAL)) {
+        add(AnnualActionCard(
+            id = "direct_rel_distance_${person.id}", title = "Prendre tes distances avec ${person.name}",
+            description = "Décider que ce lien ne peut pas continuer comme avant. Le coût n'est pas réversible en un clic.", category = AnnualActionCategory.RELATION,
+            iconKey = "relation_family", focus = "Lien · rupture", outcome = "Tu crées volontairement une distance qui aura sa propre histoire."
+        ))
     }
 }
 
@@ -176,7 +248,7 @@ internal fun GameplayRebuildActionsScreen(
             UltimatePanel(accent = if (o.urgency >= 7) UltimateRed else UltimateGold) {
                 Text("ÇA N'ATTENDRA PAS", color = if (o.urgency >= 7) UltimateRed else UltimateGold, fontWeight = FontWeight.Black, fontSize = 8.sp)
                 Text(o.title, color = UltimateIvory, fontWeight = FontWeight.Black)
-                Text("Expire dans ${(o.expiresTurn - c.turn).coerceAtLeast(0)} étape(s)", color = UltimateMuted, fontSize = 10.sp)
+                Text(opportunityTimingLine(c, o), color = UltimateMuted, fontSize = 10.sp)
             }
             Spacer(Modifier.height(6.dp))
         }
@@ -229,6 +301,49 @@ private fun relationshipPhrase(person: DeepRelationship): String = when (person.
     RelationshipPhase.SUCCESSOR -> "pourrait continuer après toi"
     RelationshipPhase.FRIEND -> "ami"
     else -> "fait partie de ton histoire"
+}
+
+private fun cityConditionLabel(value: Int): String = when {
+    value >= 80 -> "Ville stable"
+    value >= 60 -> "Ville sous pression mais fonctionnelle"
+    value >= 40 -> "Ville fragilisée"
+    value >= 20 -> "Ville en crise"
+    else -> "Ville au bord de l'effondrement"
+}
+
+private fun districtConditionLine(d: UltimateDistrict): String {
+    val danger = (d.crime + d.damage - d.reconstruction / 2).coerceIn(0, 100)
+    val safety = when {
+        danger >= 75 -> "violence très présente"
+        danger >= 50 -> "tensions régulières"
+        danger >= 30 -> "incidents contenus"
+        else -> "rues plutôt calmes"
+    }
+    val fabric = when {
+        d.damage >= 65 -> "quartier lourdement marqué"
+        d.damage >= 35 -> "traces visibles des crises"
+        d.reconstruction >= 45 -> "reconstruction bien engagée"
+        else -> "bâti encore stable"
+    }
+    return "$safety · $fabric"
+}
+
+private fun opportunityTimingLine(c: Campaign, opportunity: Opportunity): String {
+    val remaining = (opportunity.expiresTurn - c.turn).coerceAtLeast(0)
+    val kind = when (opportunity.category) {
+        "RELATION" -> "Quelqu'un t'attend"
+        "RECOVERY" -> "Ton corps réclame du temps"
+        "INVESTIGATION" -> "Une piste reste ouverte"
+        "INTERVENTION" -> "Le quartier attend une réponse"
+        else -> "Occasion fragile"
+    }
+    val timing = when (remaining) {
+        0 -> "dernière chance"
+        1 -> "très urgent"
+        2 -> "bientôt trop tard"
+        else -> "encore un peu de temps"
+    }
+    return "$kind · $timing"
 }
 
 private fun signedHuman(value: Int): String = when {

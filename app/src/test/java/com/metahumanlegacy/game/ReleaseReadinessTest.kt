@@ -87,7 +87,7 @@ class ReleaseReadinessTest {
                 var previousTurn = -1
                 var previousAge = 7
 
-                while (!c.finished && guard < 230) {
+                while (!c.finished && guard < 300) {
                     assertTrue("turn must never go backwards", c.turn >= previousTurn)
                     assertTrue("age must never go backwards", c.age >= previousAge)
                     assertStateBounds(c)
@@ -112,7 +112,7 @@ class ReleaseReadinessTest {
                 assertTrue("simulation must terminate by the safety guard", c.finished)
                 assertStateBounds(c)
                 assertTrue(c.timeline.size <= 180)
-                if (c.health > 0) assertTrue(c.turn >= 196)
+                if (c.health > 0 && "V2_RETIRED" !in c.flags) assertTrue(c.turn >= 256)
                 if (c.powerResolved) powers += c.powerFamily
                 completedRuns++
             }
@@ -230,7 +230,7 @@ class ReleaseReadinessTest {
         assertTrue(a.startsWith("ID-"))
 
         val finished = c.copy(
-            turn = 196,
+            turn = 256,
             alias = "Vector",
             powerFamily = "Énergie",
             flags = setOf("POWER_REVEALED", "ALIAS_CHOSEN")
@@ -258,9 +258,13 @@ class ReleaseReadinessTest {
         assertEquals(50, base.copy(turn = 136).age)
         assertEquals(60, base.copy(turn = 176).age)
         assertEquals(65, base.copy(turn = 196).age)
-        assertTrue(base.copy(turn = 196).finished)
+        assertEquals(68, base.copy(turn = 208).age)
+        assertEquals(80, base.copy(turn = 256).age)
+        assertFalse(base.copy(turn = 196, health = 100).finished)
+        assertFalse(base.copy(turn = 208, health = 100).finished)
+        assertTrue(base.copy(turn = 256, health = 100).finished)
         assertTrue(base.copy(health = 0).finished)
-        assertFalse(base.copy(turn = 195, health = 1).finished)
+        assertTrue(base.copy(turn = 208, health = 100, flags = setOf("V2_RETIRED")).finished)
     }
 
     @Test
@@ -286,12 +290,13 @@ class ReleaseReadinessTest {
             flags = setOf("POWER_REVEALED", "ALIAS_CHOSEN"),
             prestige = 50
         )
-        assertEquals("Retraite", legacyEndingKind(base.copy(turn = 196, health = 100)))
+        assertEquals("Héritage interrompu", legacyEndingKind(base.copy(turn = 196, health = 100)))
+        assertEquals("Retraite", legacyEndingKind(base.copy(turn = 208, health = 100, flags = base.flags + "V2_RETIRED")))
         assertEquals("Mort en activité", legacyEndingKind(base.copy(health = 0, lastApproach = "ORDER")))
         assertEquals("Sacrifice", legacyEndingKind(base.copy(health = 0, lastApproach = "CARE", prestige = 60)))
         assertEquals(
             "Victoire puis retraite",
-            legacyEndingKind(base.copy(turn = 196, influence = 950, prestige = 80, morality = 60))
+            legacyEndingKind(base.copy(turn = 256, influence = 950, prestige = 80, morality = 60))
         )
     }
 

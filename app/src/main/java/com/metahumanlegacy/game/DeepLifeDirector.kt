@@ -12,10 +12,7 @@ internal object DeepLifeDirector {
                 else -> PersonCore(setOf("AUTONOMIE", "SOLIDARITÉ"), setOf("ISOLEMENT"), setOf("TROUVER_SA_PLACE"))
             }
             DeepRelationship(
-                id = r.id,
-                name = r.name,
-                role = r.role,
-                core = core,
+                id = r.id, name = r.name, role = r.role, core = core,
                 phase = when (r.id) {
                     "family" -> RelationshipPhase.CLOSE
                     "friend" -> RelationshipPhase.FRIEND
@@ -23,12 +20,8 @@ internal object DeepLifeDirector {
                     "rival" -> RelationshipPhase.RIVAL
                     else -> RelationshipPhase.ACQUAINTANCE
                 },
-                trust = r.trust,
-                affection = r.affection,
-                fear = r.fear,
-                admiration = r.admiration,
-                grudge = r.grudge,
-                dependence = r.dependence,
+                trust = r.trust, affection = r.affection, fear = r.fear,
+                admiration = r.admiration, grudge = r.grudge, dependence = r.dependence,
                 knowsIdentity = r.knowsIdentity,
                 memories = if (index < 2) listOf(
                     CharacterMemory(
@@ -44,17 +37,29 @@ internal object DeepLifeDirector {
 
     fun afterChoice(before: Campaign, after: Campaign, event: EventNode, choice: Choice, state: DeepLifeState): DeepLifeState {
         val memoryWeight = (event.stakes + choice.impact + choice.risk / 2).coerceIn(1, 10)
+        val participantId = SceneContextDirector.participantId(event, state)
         val memory = CharacterMemory(
             id = "${before.turn}_${event.id}_${choice.label.hashCode()}",
-            turn = before.turn,
-            age = before.age,
-            eventId = event.id,
-            summary = "${event.title} — ${choice.label}",
-            emotion = emotion(choice),
-            weight = memoryWeight,
-            tags = setOfNotNull(choice.approach.takeIf { it.isNotBlank() }, event.category.takeIf { it.isNotBlank() }, choice.flag)
+            turn = before.turn, age = before.age, personId = participantId, eventId = event.id,
+            summary = "${event.title} — ${choice.label}", emotion = emotion(choice), weight = memoryWeight,
+            tags = setOfNotNull(choice.approach.takeIf { it.isNotBlank() }, event.category.takeIf { it.isNotBlank() }, event.threadId, choice.flag)
         )
         val memories = (state.memories + memory).sortedByDescending { it.weight }.take(120)
+
+        val relationships = state.relationships.map { person ->
+            if (person.id != participantId) person else {
+                val trust = (person.trust + choice.relationDelta * 2 + choice.moral.coerceIn(-2, 2)).coerceIn(0, 100)
+                val affection = (person.affection + choice.relationDelta * 2).coerceIn(0, 100)
+                val grudge = (person.grudge + (-choice.relationDelta).coerceAtLeast(0) * 3).coerceIn(0, 100)
+                val admiration = (person.admiration + choice.prestige.coerceAtLeast(0) + choice.impact.coerceAtLeast(0) / 2).coerceIn(0, 100)
+                val phase = relationshipPhase(person, trust, affection, grudge)
+                person.copy(
+                    trust = trust, affection = affection, grudge = grudge, admiration = admiration, phase = phase,
+                    memories = (person.memories + memory).sortedByDescending { it.weight }.take(24)
+                )
+            }
+        }
+
         val perception = state.perception.copy(
             district = clamp(state.perception.district + choice.opinion),
             city = clamp(state.perception.city + choice.opinion / 2 + choice.prestige / 2),
@@ -81,47 +86,68 @@ internal object DeepLifeDirector {
             recoveryNeed = (state.drama.recoveryNeed + event.stakes * 2 + choice.risk - if (event.kind == "QUIET") 12 else 0).coerceIn(0, 100),
             personalPressure = (state.drama.personalPressure + if (choice.relationDelta < 0) 8 else 0).coerceIn(0, 100),
             worldPressure = (state.drama.worldPressure + if (event.stakes >= 4) 7 else 1).coerceIn(0, 100),
+            relationshipPressure = (state.drama.relationshipPressure + if (choice.relationDelta < 0) 6 else -1).coerceIn(0, 100),
             recentMajorEvents = (state.drama.recentMajorEvents + event.id).takeLast(8)
         )
-        return state.copy(memories = memories, perception = perception, personality = personality, drama = drama)
+        return state.copy(memories = memories, relationships = relationships, perception = perception, personality = personality, drama = drama)
     }
 
-    fun architectureFor(power: String): PowerArchitecture = when {
-        power.contains("Télépath", true) || power.contains("Illusion", true) || power.contains("mentale", true) -> PowerArchitecture.MENTAL
-        power.contains("Vitesse", true) || power.contains("Vol", true) || power.contains("Portail", true) -> PowerArchitecture.MOBILITY
-        power.contains("Adapt", true) || power.contains("Métamorphose", true) || power.contains("Densité", true) -> PowerArchitecture.ADAPTIVE
-        power.contains("Force", true) || power.contains("Résistance", true) || power.contains("Régén", true) -> PowerArchitecture.BODY
-        power.contains("Techn", true) || power.contains("Armure", true) || power.contains("Drone", true) || power.contains("Interface", true) -> PowerArchitecture.TECH
-        power.contains("Magie", true) || power.contains("Malédiction", true) || power.contains("astral", true) || power.contains("Rêve", true) -> PowerArchitecture.OCCULT
-        power.contains("cosm", true) || power.contains("Gravité", true) || power.contains("Espace", true) -> PowerArchitecture.COSMIC
-        power.contains("Matière", true) || power.contains("Cristal", true) || power.contains("Métal", true) || power.contains("Transmutation", true) -> PowerArchitecture.MATTER
+    /**
+     * Architecture is explicit for every resolver output. The old substring classifier silently
+     * turned powers such as Télékinésie, Invocation, Cybernétique or Absorption into PROJECTOR,
+     * which made mechanically different destinies play the same.
+     */
+    fun architectureFor(power: String): PowerArchitecture = when (power.trim().lowercase()) {
+        "télépathie", "illusion", "influence mentale limitée", "télékinésie",
+        "précognition limitée", "lecture émotionnelle", "perception extrasensorielle" -> PowerArchitecture.MENTAL
+
+        "vitesse", "vol", "portails", "portails limités", "propulsion physique",
+        "sauts cinétiques", "réflexes surhumains" -> PowerArchitecture.MOBILITY
+
+        "adaptation", "métamorphose", "densité", "résistance adaptative",
+        "métamorphose défensive" -> PowerArchitecture.ADAPTIVE
+
+        "force", "résistance", "régénération" -> PowerArchitecture.BODY
+
+        "technologie", "armes spécialisées", "intelligence augmentée", "armure adaptative",
+        "interface neuronale", "cybernétique", "drones liés" -> PowerArchitecture.TECH
+
+        "magie", "invocation", "projection astrale", "magie symbolique", "rêve", "malédiction" -> PowerArchitecture.OCCULT
+
+        "énergie cosmique", "gravité", "espace", "rayonnement stellaire" -> PowerArchitecture.COSMIC
+
+        "matière", "absorption", "duplication", "cristal", "métal",
+        "transmutation limitée", "construction de matière" -> PowerArchitecture.MATTER
+
         else -> PowerArchitecture.PROJECTOR
     }
 
     fun revealPower(c: Campaign, state: DeepLifeState): DeepLifeState {
         if (!c.powerResolved || state.powerEvolution != null) return state
-        return state.copy(
-            powerEvolution = PowerEvolution(
-                architecture = architectureFor(c.powerFamily), manifestation = c.powerFamily,
-                mastery = c.control, strain = 0
-            )
-        )
+        return state.copy(powerEvolution = PowerEvolution(architecture = architectureFor(c.powerFamily), manifestation = c.powerFamily, mastery = c.control, strain = 0))
     }
 
     fun awakeningMemoryLines(state: DeepLifeState, limit: Int = 4): List<String> = state.memories
-        .filter { it.age < 18 }
-        .sortedWith(compareByDescending<CharacterMemory> { it.weight }.thenBy { it.turn })
-        .take(limit)
-        .sortedBy { it.age }
-        .map { "${it.age} ans — ${it.summary.substringAfter("— ", it.summary)}" }
+        .filter { it.age < 18 }.sortedWith(compareByDescending<CharacterMemory> { it.weight }.thenBy { it.turn })
+        .take(limit).sortedBy { it.age }.map { "${it.age} ans — ${it.summary.substringAfter("— ", it.summary)}" }
+
+    private fun relationshipPhase(person: DeepRelationship, trust: Int, affection: Int, grudge: Int): RelationshipPhase = when {
+        person.phase == RelationshipPhase.RIVAL && trust < 65 -> RelationshipPhase.RIVAL
+        grudge >= 55 -> RelationshipPhase.HURT
+        trust <= 20 || affection <= 15 -> RelationshipPhase.DISTANT
+        trust >= 80 && affection >= 75 -> RelationshipPhase.TRUSTED
+        trust >= 68 && affection >= 65 -> RelationshipPhase.CLOSE
+        person.phase in setOf(RelationshipPhase.MENTOR, RelationshipPhase.PROTEGE, RelationshipPhase.SUCCESSOR) -> person.phase
+        trust >= 55 && affection >= 55 -> RelationshipPhase.FRIEND
+        else -> person.phase
+    }
 
     private fun initialPersonality(c: Campaign): Map<String, Int> = buildMap {
         put("EMPATHIQUE", if (c.temperament.contains("Empath", true)) 20 else 0)
         put("PRUDENT", if (c.temperament.contains("Prudent", true)) 20 else 0)
         put("TÉMÉRAIRE", if (c.temperament.contains("Impuls", true)) 20 else 0)
         put("CURIEUX", if (c.temperament.contains("Curieux", true)) 20 else 0)
-        put("LOYAL", 10)
-        put("PROTECTEUR", 10)
+        put("LOYAL", 10); put("PROTECTEUR", 10)
     }
 
     private fun emotion(choice: Choice): String = when {

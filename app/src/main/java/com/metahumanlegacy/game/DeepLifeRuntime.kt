@@ -16,7 +16,6 @@ internal object DeepLifeRuntime {
 
         state = expireOpportunities(after, state, echoes)
         state = resolveDeferred(after, state, echoes)
-        state = evolveRelationships(after, event, choice, state, echoes)
         state = recordIdentityEvidence(before, after, event, choice, state, echoes)
         state = recordPersistentInjury(before, after, event, state, echoes)
         state = createDeferred(after, event, choice, state)
@@ -87,6 +86,8 @@ internal object DeepLifeRuntime {
             }
         }
 
+        state = applyDirectRelationshipAction(c, card, state, echo)
+
         val matching = state.opportunities.firstOrNull { opportunityMatches(it, card) }
         if (matching != null) {
             state = state.copy(opportunities = state.opportunities.filterNot { it.id == matching.id })
@@ -108,42 +109,61 @@ internal object DeepLifeRuntime {
         return "Quartier ${label(p.district)} · Ville ${label(p.city)} · Gouvernement ${label(p.government)} · Criminels: peur ${p.criminalFear.coerceIn(0, 100)}"
     }
 
-    private fun evolveRelationships(c: Campaign, event: EventNode, choice: Choice, state: DeepLifeState, echo: MutableList<String>): DeepLifeState {
-        val candidates = linkedSetOf<String>()
-        if (event.category.contains("FAMIL", true) || event.category.contains("CIVIL", true)) candidates += "family"
-        if (event.category.contains("RELATION", true) || event.category.contains("JEUN", true)) candidates += "friend"
-        if (event.category.contains("RIVAL", true)) candidates += "rival"
-        if (event.category.contains("MEDIA", true) || event.category.contains("IDENT", true)) candidates += "journalist"
-        if (event.category.contains("MENTOR", true)) candidates += "mentor"
-        if (c.powerRevealed && candidates.isEmpty()) candidates += state.relationships.minByOrNull { it.memories.size }?.id.orEmpty()
-        if (candidates.isEmpty()) return state
-        val next = state.relationships.map { rel ->
-            if (rel.id !in candidates) rel else {
-                val delta = choice.relationDelta + when (choice.approach) { "CARE" -> 2; "TRUTH" -> 1; "ASCEND" -> -1; else -> 0 }
-                val memory = CharacterMemory(
-                    id = "rel_${c.turn}_${event.id}_${rel.id}", turn = c.turn, age = c.age, personId = rel.id,
-                    eventId = event.id, summary = choice.label, emotion = if (delta >= 0) "CONFIANCE" else "BLESSURE",
-                    weight = (event.stakes + kotlin.math.abs(delta)).coerceIn(1, 10), tags = setOf("RELATION", choice.approach)
+    private fun applyDirectRelationshipAction(c: Campaign, card: AnnualActionCard, state: DeepLifeState, echo: MutableList<String>): DeepLifeState {
+        if (!card.id.startsWith("direct_rel_")) return state
+        val payload = card.id.removePrefix("direct_rel_")
+        val action = payload.substringBefore('_')
+        val personId = payload.substringAfter('_', "")
+        if (personId.isBlank()) return state
+        val person = state.relationships.firstOrNull { it.id == personId && it.alive } ?: return state
+        val memory = CharacterMemory(
+            id = "direct_${c.turn}_${person.id}_$action", turn = c.turn, age = c.age,
+            personId = person.id, eventId = "DIRECT_RELATION", summary = card.title,
+            emotion = when (action) { "apologize" -> "VULNÉRABILITÉ"; "distance" -> "RUPTURE"; else -> "ATTACHEMENT" },
+            weight = when (action) { "apologize" -> 6; "distance" -> 7; else -> 4 },
+            tags = setOf("RELATION", "DIRECT", action.uppercase())
+        )
+        val relationships = state.relationships.map { rel ->
+            if (rel.id != person.id) rel else when (action) {
+                "visit" -> rel.copy(
+                    trust = (rel.trust + 5).coerceAtMost(100), affection = (rel.affection + 6).coerceAtMost(100),
+                    grudge = (rel.grudge - 2).coerceAtLeast(0),
+                    phase = if (rel.phase == RelationshipPhase.DISTANT && rel.trust + 5 >= 45) RelationshipPhase.FRIEND else rel.phase,
+                    memories = (rel.memories + memory).takeLast(24)
                 )
-                val trust = (rel.trust + delta).coerceIn(0, 100)
-                val grudge = (rel.grudge + if (delta < 0) -delta * 2 else -1).coerceIn(0, 100)
-                val phase = relationshipPhase(rel.phase, trust, grudge, rel.admiration)
-                if (phase != rel.phase) echo += "${rel.name} ne te voit plus exactement de la même manière : ${phaseLabel(phase)}."
-                rel.copy(trust = trust, grudge = grudge, phase = phase, memories = (rel.memories + memory).takeLast(24))
+                "apologize" -> rel.copy(
+                    trust = (rel.trust + 4).coerceAtMost(100), grudge = (rel.grudge - 10).coerceAtLeast(0),
+                    phase = if (rel.phase == RelationshipPhase.HURT && rel.grudge - 10 < 45) RelationshipPhase.FRIEND else rel.phase,
+                    memories = (rel.memories + memory).takeLast(24)
+                )
+                "help" -> rel.copy(
+                    dependence = (rel.dependence + 4).coerceAtMost(100), trust = (rel.trust + 2).coerceAtMost(100),
+                    admiration = (rel.admiration + 2).coerceAtMost(100), memories = (rel.memories + memory).takeLast(24)
+                )
+                "distance" -> rel.copy(
+                    trust = (rel.trust - 12).coerceAtLeast(0), affection = (rel.affection - 10).coerceAtLeast(0),
+                    grudge = (rel.grudge + 8).coerceAtMost(100), phase = RelationshipPhase.DISTANT,
+                    memories = (rel.memories + memory).takeLast(24)
+                )
+                else -> rel
             }
         }
-        return state.copy(relationships = next)
-    }
-
-    private fun relationshipPhase(current: RelationshipPhase, trust: Int, grudge: Int, admiration: Int): RelationshipPhase = when {
-        grudge >= 70 -> RelationshipPhase.RIVAL
-        trust <= 20 -> RelationshipPhase.DISTANT
-        current == RelationshipPhase.PROTEGE && trust >= 82 && admiration >= 60 -> RelationshipPhase.SUCCESSOR
-        current == RelationshipPhase.MENTOR && trust >= 72 -> RelationshipPhase.EQUAL
-        trust >= 88 -> RelationshipPhase.TRUSTED
-        trust >= 72 -> RelationshipPhase.CLOSE
-        trust >= 55 -> RelationshipPhase.FRIEND
-        else -> current
+        echo += when (action) {
+            "visit" -> "Tu choisis ${person.name} avant une urgence. Cette présence devient un vrai souvenir partagé."
+            "apologize" -> "Tu présentes de vraies excuses à ${person.name}. La blessure ne disparaît pas, mais elle cesse d'être ignorée."
+            "help" -> "Tu demandes l'aide de ${person.name}. Faire entrer quelqu'un dans le problème renforce le lien autant que sa dépendance."
+            "distance" -> "Tu mets volontairement de la distance avec ${person.name}. Cette relation ne reste pas inchangée hors champ."
+            else -> ""
+        }
+        return state.copy(
+            relationships = relationships,
+            memories = (state.memories + memory).sortedByDescending { it.weight }.take(120),
+            drama = state.drama.copy(relationshipPressure = when (action) {
+                "visit", "apologize" -> (state.drama.relationshipPressure - 6).coerceAtLeast(0)
+                "distance" -> (state.drama.relationshipPressure + 8).coerceAtMost(100)
+                else -> state.drama.relationshipPressure
+            })
+        )
     }
 
     private fun recordIdentityEvidence(before: Campaign, after: Campaign, event: EventNode, choice: Choice, state: DeepLifeState, echo: MutableList<String>): DeepLifeState {
@@ -218,8 +238,49 @@ internal object DeepLifeRuntime {
 
     private fun expireOpportunities(c: Campaign, state: DeepLifeState, echo: MutableList<String>): DeepLifeState {
         val expired = state.opportunities.filter { c.turn > it.expiresTurn }
-        expired.filter { it.ignoredPayload.isNotBlank() }.forEach { echo += it.ignoredPayload }
-        return if (expired.isEmpty()) state else state.copy(opportunities = state.opportunities - expired.toSet())
+        if (expired.isEmpty()) return state
+        var next = state.copy(opportunities = state.opportunities - expired.toSet())
+        expired.forEach { opportunity ->
+            if (opportunity.ignoredPayload.isNotBlank()) echo += opportunity.ignoredPayload
+            when (opportunity.category) {
+                "RELATION" -> {
+                    val target = opportunity.personId
+                    next = next.copy(
+                        relationships = next.relationships.map { person ->
+                            if (target != null && person.id == target) person.copy(
+                                trust = (person.trust - 5).coerceAtLeast(0),
+                                affection = (person.affection - 3).coerceAtLeast(0),
+                                grudge = (person.grudge + 4).coerceAtMost(100),
+                                phase = if (person.trust - 5 <= 20) RelationshipPhase.DISTANT else person.phase
+                            ) else person
+                        },
+                        drama = next.drama.copy(
+                            relationshipPressure = (next.drama.relationshipPressure + 6).coerceAtMost(100),
+                            personalPressure = (next.drama.personalPressure + 4).coerceAtMost(100)
+                        )
+                    )
+                }
+                "RECOVERY" -> next = next.copy(
+                    powerEvolution = next.powerEvolution?.let { it.copy(strain = (it.strain + 10).coerceAtMost(100)) },
+                    drama = next.drama.copy(recoveryNeed = (next.drama.recoveryNeed + 12).coerceAtMost(100))
+                )
+                "INVESTIGATION" -> next = next.copy(
+                    identityEvidence = next.identityEvidence.map { evidence ->
+                        if (evidence.holderId == opportunity.personId || opportunity.personId == null)
+                            evidence.copy(strength = (evidence.strength + 8).coerceAtMost(100))
+                        else evidence
+                    }
+                )
+                "INTERVENTION" -> next = next.copy(
+                    perception = next.perception.copy(
+                        district = (next.perception.district - 4).coerceIn(-100, 100),
+                        city = (next.perception.city - 2).coerceIn(-100, 100)
+                    ),
+                    drama = next.drama.copy(worldPressure = (next.drama.worldPressure + 5).coerceAtMost(100))
+                )
+            }
+        }
+        return next
     }
 
     private fun generateOpportunities(c: Campaign, state: DeepLifeState): DeepLifeState {
@@ -247,7 +308,7 @@ internal object DeepLifeRuntime {
     private fun evolvePower(c: Campaign, event: EventNode, choice: Choice, state: DeepLifeState, echo: MutableList<String>): DeepLifeState {
         val p = state.powerEvolution ?: return state
         if (!c.powerRevealed) return state
-        val use = (choice.power + if (choice.approach == "ASCEND") 2 else 0 + if (event.category.contains("POUVOIR", true)) 2 else 0).coerceAtLeast(0)
+        val use = (choice.power + (if (choice.approach == "ASCEND") 2 else 0) + (if (event.category.contains("POUVOIR", true)) 2 else 0)).coerceAtLeast(0)
         if (use == 0) return state
         val weaknessExtra = when (c.weakness) {
             "Fatigue extrême", "Surcharge" -> 4
@@ -313,16 +374,5 @@ internal object DeepLifeRuntime {
         "TRUTH" -> "Un détail découvert lors de « ${event.title} » refait surface. L'information que tu avais refusé d'ignorer n'avait pas encore livré toute sa portée."
         "ASCEND" -> "La démonstration de puissance de « ${event.title} » a créé un imitateur — ou un adversaire — qui a eu le temps d'apprendre de toi."
         else -> "Une conséquence ancienne de « ${event.title} » revient au moment où tu pensais cette histoire terminée."
-    }
-
-    private fun phaseLabel(p: RelationshipPhase) = when (p) {
-        RelationshipPhase.TRUSTED -> "confiance absolue"
-        RelationshipPhase.CLOSE -> "proche"
-        RelationshipPhase.FRIEND -> "amitié"
-        RelationshipPhase.DISTANT -> "distance"
-        RelationshipPhase.RIVAL -> "rivalité"
-        RelationshipPhase.SUCCESSOR -> "succession"
-        RelationshipPhase.EQUAL -> "égalité"
-        else -> p.name.lowercase()
     }
 }
