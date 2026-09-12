@@ -47,7 +47,7 @@ jobs:
         val stakes = if (c.age >= 60) 2 else 1
         val choices = listOf(
             Choice("Donner ce temps à quelqu'un qui compte", moral = 1, relationDelta = 2, approach = "CARE", stakes = stakes, sourceCategory = category, deferredHook = true),
-            Choice("Mettre de l'ordre dans ce qui dépend encore de toi", control = 0, prestige = 1, approach = "ORDER", stakes = stakes, sourceCategory = category),
+            Choice("Mettre de l'ordre dans ce qui dépend encore de toi", prestige = 1, approach = "ORDER", stakes = stakes, sourceCategory = category),
             Choice("Regarder ce qui a réellement changé et pourquoi", opinion = 1, approach = "TRUTH", stakes = stakes, sourceCategory = category, deferredHook = true),
             Choice("Préparer la prochaine étape de ton propre héritage", prestige = 1, impact = 1, risk = if (c.age >= 65) 2 else 1, approach = "ASCEND", stakes = stakes, sourceCategory = category)
         )
@@ -69,7 +69,6 @@ jobs:
 '''
           assert old in s, 'fallback block not found'
           s = s.replace(old, new, 1)
-          # Delete obsolete helper that intentionally ignored max age/completion.
           old_helper = '''    private fun canStartIgnoringCompletion(c: Campaign, b: MajorBeat): Boolean =
         c.powerRevealed && c.age >= b.minAge && b.requiresFlags.all { it in c.flags }
 
