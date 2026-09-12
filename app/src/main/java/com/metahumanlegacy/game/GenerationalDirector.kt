@@ -19,10 +19,15 @@ internal object GenerationalDirector {
     }
 
     fun afterChoice(c: Campaign, u: UltimateState, d: DeepLifeState, event: EventNode, choice: Choice): GenerationalUpdate {
-        var campaign = c
-        var ultimate = u
-        var deep = d
+        val costume = CostumeGameplayDirector.afterChoice(c, u, d, event, choice)
+        var campaign = costume.campaign
+        var ultimate = costume.ultimate
+        var deep = costume.deep
         val echo = mutableListOf<String>()
+        if (costume.echo.isNotBlank()) echo += costume.echo
+
+        val media = MediaNarrativeDirector.headlines(campaign, ultimate, deep, event, choice)
+        if (media.isNotBlank()) echo += media
 
         // Once per life, a lethal failure before old age can become a severe continuation instead of a hard stop.
         if (campaign.health <= 0 && campaign.age < 65 && "V2_CRITICAL_SURVIVAL" !in campaign.flags && event.kind != "ENDING") {
@@ -81,6 +86,6 @@ internal object GenerationalDirector {
             }
         }
 
-        return GenerationalUpdate(campaign, ultimate, deep, echo.joinToString("\n"))
+        return GenerationalUpdate(campaign, ultimate, deep, echo.filter { it.isNotBlank() }.joinToString("\n\n"))
     }
 }
