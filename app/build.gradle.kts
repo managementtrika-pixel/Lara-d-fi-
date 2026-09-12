@@ -11,8 +11,8 @@ android {
         applicationId = "com.metahumanlegacy.game"
         minSdk = 23
         targetSdk = 36
-        versionCode = 3
-        versionName = "1.0.0"
+        versionCode = 4
+        versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -39,6 +39,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview:1.11.4")
     implementation("androidx.compose.foundation:foundation:1.11.4")
     implementation("androidx.compose.material3:material3:1.4.0")
+    implementation("androidx.profileinstaller:profileinstaller:1.4.1")
 
     debugImplementation("androidx.compose.ui:ui-tooling:1.11.4")
     testImplementation("junit:junit:4.13.2")
