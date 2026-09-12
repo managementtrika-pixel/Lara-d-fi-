@@ -77,10 +77,10 @@ internal object DeepWorldDirector {
         echo += nemesis.second
 
         val aging = updateAging(c, u, d)
-        c = aging.first
-        u = aging.second
-        d = aging.third
-        echo += aging.fourth
+        c = aging.campaign
+        u = aging.ultimate
+        d = aging.deep
+        echo += aging.echo
 
         val retirement = updateRetirement(c, u, d)
         u = retirement.first
@@ -95,7 +95,7 @@ internal object DeepWorldDirector {
         deep: DeepLifeState,
         card: AnnualActionCard
     ): DeepWorldUpdate {
-        var c = campaign
+        val c = campaign
         var u = ultimate
         var d = deep
         val echo = mutableListOf<String>()
@@ -205,8 +205,8 @@ internal object DeepWorldDirector {
             standing <= -55 -> "Bloc anti-vigilantes"
             else -> u.districts.firstOrNull()?.faction ?: "Aucune"
         }
-        val districts = if (factionName == "Aucune" || u.districts.isEmpty()) u.districts else u.districts.mapIndexed { i, d ->
-            if (i == positiveMod(mix(c.seed, c.turn * 41L), u.districts.size)) d.copy(faction = factionName) else d
+        val districts = if (factionName == "Aucune" || u.districts.isEmpty()) u.districts else u.districts.mapIndexed { i, district ->
+            if (i == positiveMod(mix(c.seed, c.turn * 41L), u.districts.size)) district.copy(faction = factionName) else district
         }
         return u.copy(metaLaw = law, districts = districts) to c.copy(factionStanding = standing.coerceIn(-100, 100))
     }
@@ -228,7 +228,12 @@ internal object DeepWorldDirector {
         return u.copy(nemesis = name, nemesisAdaptation = adaptation) to echo
     }
 
-    private data class AgingResult(val campaign: Campaign, val ultimate: UltimateState, val deep: DeepLifeState, val fourth: String)
+    private data class AgingResult(
+        val campaign: Campaign,
+        val ultimate: UltimateState,
+        val deep: DeepLifeState,
+        val echo: String
+    )
 
     private fun updateAging(c: Campaign, u: UltimateState, d: DeepLifeState): AgingResult {
         if (c.age < 40 || c.turn % 8 != 0) return AgingResult(c, u, d, "")
