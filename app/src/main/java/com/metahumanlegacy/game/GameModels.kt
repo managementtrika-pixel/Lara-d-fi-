@@ -176,12 +176,12 @@ data class Campaign(
         else -> "Monstrueux"
     }
 
-    /** Compatibility label for older UI. V2 treats it as public shorthand, not objective truth. */
+    /** Compatibility label only: V2 UI treats this as public shorthand, never objective morality. */
     val alignmentLabel: String get() = when {
-        morality <= -30 || civilianCasualties >= 8 || (fear >= 70 && opinion <= -25) -> "Menace publique"
-        morality >= 30 && opinion >= 0 && civilianCasualties <= 2 -> "Héros public"
-        morality >= 0 && (fear >= 35 || opinion < 0 || governmentStanding < -25) -> "Vigilante controversé"
-        else -> "Figure ambiguë"
+        morality <= -30 || civilianCasualties >= 8 || (fear >= 70 && opinion <= -25) -> "Vilain"
+        morality >= 30 && opinion >= 0 && civilianCasualties <= 2 -> "Héros"
+        morality >= 0 && (fear >= 35 || opinion < 0 || governmentStanding < -25) -> "Anti-héros"
+        else -> "Neutre"
     }
 
     val finished: Boolean get() = turn >= 196 || health <= 0
