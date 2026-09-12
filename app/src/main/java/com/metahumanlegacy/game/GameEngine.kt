@@ -86,20 +86,17 @@ object GameEngine {
                 "background:${blueprint.socialBackground}",
                 "civilian_path:${blueprint.civilianPath}",
                 "temperament:${blueprint.temperament}",
-                "deep:v1"
+                "deep:v2"
             )
         )
     }
 
-    /**
-     * The authored repository still chooses the canonical story beat. Two deterministic depth
-     * passes then make accumulated life experience relevant without replacing the authored arc.
-     * Formative/awakening beats are deliberately left structurally untouched.
-     */
     fun event(c: Campaign): EventNode {
         val authored = NarrativeRepository.event(c)
         val deep = DepthDirector.enrichEvent(c, authored)
-        return CareerVariationDirector.enrich(c, deep)
+        val varied = CareerVariationDirector.enrich(c, deep)
+        val powered = PowerGameplayDirector.enrich(c, varied)
+        return LifeStageDirector.enrich(c, powered)
     }
 
     fun resolve(c: Campaign, event: EventNode, choice: Choice): Resolution {
