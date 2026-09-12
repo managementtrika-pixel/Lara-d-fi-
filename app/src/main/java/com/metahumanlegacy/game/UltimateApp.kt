@@ -65,6 +65,9 @@ fun UltimateMetahumanLegacyApp(context: Context) {
             var campaign by remember { mutableStateOf(loadCampaignV4(context)) }
             var ultimate by remember { mutableStateOf(campaign?.let { UltimateStore.load(context, it) }) }
             var annual by remember { mutableStateOf(campaign?.let { AnnualActionPersistence.load(context, it) }) }
+            var deep by remember {
+                mutableStateOf(campaign?.let { c -> ultimate?.let { u -> DeepLifePersistence.load(context, c, u) } })
+            }
             var screen by remember { mutableStateOf("HOME") }
             var hall by remember { mutableStateOf(loadHallV4(context)) }
             var outcome by remember { mutableStateOf(loadUltimateOutcome(context, campaign?.seed)) }
@@ -73,7 +76,12 @@ fun UltimateMetahumanLegacyApp(context: Context) {
             var draft by remember { mutableStateOf(UltimateCatalog.randomDraft(draftSeed, blueprint)) }
             var savePulse by remember { mutableIntStateOf(0) }
 
-            fun persist(c: Campaign, u: UltimateState, a: AnnualActionState? = annual) {
+            fun persist(
+                c: Campaign,
+                u: UltimateState,
+                a: AnnualActionState? = annual,
+                d: DeepLifeState? = deep
+            ) {
                 campaign = c
                 ultimate = u
                 saveCampaignV4(context, c)
@@ -81,6 +89,10 @@ fun UltimateMetahumanLegacyApp(context: Context) {
                 if (a != null) {
                     annual = a
                     AnnualActionPersistence.save(context, a)
+                }
+                if (d != null) {
+                    deep = d
+                    DeepLifePersistence.save(context, d)
                 }
                 savePulse++
             }
@@ -101,10 +113,13 @@ fun UltimateMetahumanLegacyApp(context: Context) {
                 val c = GameEngine.newCampaign(seed, d.blueprint)
                 val u = UltimateStore.create(c, d)
                 val a = AnnualActionState.fresh(c)
-                campaign = c; ultimate = u; annual = a
+                val baseDeep = DeepLifeDirector.bootstrap(c, u)
+                val dl = GenerationalDirector.seedNewLife(c, baseDeep, DeepLegacyArchive.load(context))
+                campaign = c; ultimate = u; annual = a; deep = dl
                 saveCampaignV4(context, c)
                 UltimateStore.save(context, u)
                 AnnualActionPersistence.save(context, a)
+                DeepLifePersistence.save(context, dl)
                 outcome = null
                 saveUltimateOutcome(context, seed, null)
                 savePulse++
@@ -116,10 +131,11 @@ fun UltimateMetahumanLegacyApp(context: Context) {
                 campaign?.let {
                     UltimateStore.clear(context, it.seed)
                     AnnualActionPersistence.clear(context, it.seed)
+                    DeepLifePersistence.clear(context, it.seed)
                     saveUltimateOutcome(context, it.seed, null)
                 }
                 clearCampaignV4(context)
-                campaign = null; ultimate = null; annual = null; outcome = null
+                campaign = null; ultimate = null; annual = null; deep = null; outcome = null
                 newDraft()
                 screen = "CREATE"
             }
@@ -151,12 +167,16 @@ fun UltimateMetahumanLegacyApp(context: Context) {
                             onBack = { go(if (campaign == null) "HOME" else "DESTIN") }
                         )
 
-                        renderedScreen == "HALL" -> UltimateHallScreen(hall) { go("HOME") }
+                        renderedScreen == "HALL" -> DeepLegacyHallScreen(
+                            oldHallCount = hall.size,
+                            records = DeepLegacyArchive.load(context),
+                            onBack = { go("HOME") }
+                        )
 
                         renderedScreen == "HOME" -> UltimateHomeScreen(
                             campaign = campaign,
                             state = ultimate,
-                            hallCount = hall.size,
+                            hallCount = maxOf(hall.size, DeepLegacyArchive.load(context).size),
                             onContinue = { go(if (campaign?.needsAlias == true) "ALIAS" else "DESTIN", MetahumanMotionLevel.MOTION_STANDARD) },
                             onNew = { abandon() },
                             onHall = { go("HALL") },
@@ -180,7 +200,7 @@ fun UltimateMetahumanLegacyApp(context: Context) {
                         campaign == null -> UltimateHomeScreen(
                             campaign = null,
                             state = null,
-                            hallCount = hall.size,
+                            hallCount = maxOf(hall.size, DeepLegacyArchive.load(context).size),
                             onContinue = { },
                             onNew = { go("CREATE", MetahumanMotionLevel.MOTION_STANDARD) },
                             onHall = { go("HALL") },
@@ -190,6 +210,8 @@ fun UltimateMetahumanLegacyApp(context: Context) {
                         campaign!!.finished -> UltimateFinalScreen(campaign!!, ultimate ?: UltimateStore.fallback(campaign!!)) {
                             val c = campaign!!
                             val u = ultimate ?: UltimateStore.fallback(c)
+                            val dl = deep ?: DeepLifePersistence.load(context, c, u)
+                            DeepLegacyArchive.archive(context, c, u, dl)
                             val entry = LegacyRecord.from(c, u).encode()
                             hall = (listOf(entry) + hall)
                                 .distinctBy { LegacyRecord.decode(it).identityId.ifBlank { LegacyRecord.decode(it).name + "|" + LegacyRecord.decode(it).title } }
@@ -197,9 +219,10 @@ fun UltimateMetahumanLegacyApp(context: Context) {
                             saveHallV4(context, hall)
                             UltimateStore.clear(context, c.seed)
                             AnnualActionPersistence.clear(context, c.seed)
+                            DeepLifePersistence.clear(context, c.seed)
                             saveUltimateOutcome(context, c.seed, null)
                             clearCampaignV4(context)
-                            campaign = null; ultimate = null; annual = null; outcome = null
+                            campaign = null; ultimate = null; annual = null; deep = null; outcome = null
                             newDraft()
                             haptic(MetahumanMotionLevel.MOTION_LEGENDARY)
                             screen = "HOME"
@@ -218,10 +241,18 @@ fun UltimateMetahumanLegacyApp(context: Context) {
                             screen = "DESTIN"
                         }
 
+                        renderedScreen == "CHRONIQUE" -> {
+                            val c = campaign!!
+                            val u = ultimate ?: UltimateStore.fallback(c).also { ultimate = it }
+                            val dl = (deep ?: DeepLifePersistence.load(context, c, u)).also { deep = it }
+                            DeepLifeChronicleScreen(c, u, dl, onBack = { go("DESTIN") })
+                        }
+
                         else -> {
                             val c = campaign!!
                             val u = ultimate ?: UltimateStore.fallback(c).also { ultimate = it }
                             val a = (annual ?: AnnualActionPersistence.load(context, c)).synced(c).also { annual = it }
+                            (deep ?: DeepLifePersistence.load(context, c, u)).also { deep = it }
                             UltimateCareerShell(
                                 c = c,
                                 state = u,
@@ -241,26 +272,58 @@ fun UltimateMetahumanLegacyApp(context: Context) {
                                     haptic(if (event.stakes >= 4) MetahumanMotionLevel.MOTION_MAJOR else MetahumanMotionLevel.MOTION_STANDARD)
                                     MetahumanAudioHooks.onChoice()
                                     val currentState = ultimate ?: UltimateStore.load(context, current)
+                                    val currentDeep = deep ?: DeepLifePersistence.load(context, current, currentState)
                                     val result = UltimateGameEngine.resolve(current, currentState, event, choice)
-                                    val nextAnnual = (annual ?: AnnualActionState.fresh(result.campaign)).synced(result.campaign)
-                                    persist(result.campaign, result.state, nextAnnual)
-                                    outcome = result.outcome
-                                    saveUltimateOutcome(context, result.campaign.seed, result.outcome)
+                                    val deepUpdate = DeepLifeRuntime.afterChoice(current, result.campaign, event, choice, currentDeep)
+                                    val worldUpdate = DeepWorldDirector.afterChoice(result.campaign, result.state, deepUpdate.state, event, choice)
+                                    val generationUpdate = GenerationalDirector.afterChoice(worldUpdate.campaign, worldUpdate.ultimate, worldUpdate.deep, event, choice)
+                                    val nextDeep = DeepLifeDirector.revealPower(generationUpdate.campaign, generationUpdate.deep)
+                                    val nextAnnual = (annual ?: AnnualActionState.fresh(generationUpdate.campaign)).synced(generationUpdate.campaign)
+                                    persist(generationUpdate.campaign, generationUpdate.ultimate, nextAnnual, nextDeep)
+                                    val combinedOutcome = buildString {
+                                        append(result.outcome)
+                                        if (deepUpdate.echo.isNotBlank()) {
+                                            append("\n\nTRACE DE VIE\n")
+                                            append(deepUpdate.echo)
+                                        }
+                                        if (worldUpdate.echo.isNotBlank()) {
+                                            append("\n\nMONDE QUI RÉAGIT\n")
+                                            append(worldUpdate.echo)
+                                        }
+                                        if (generationUpdate.echo.isNotBlank()) {
+                                            append("\n\nPASSAGE DE RELAIS\n")
+                                            append(generationUpdate.echo)
+                                        }
+                                        if (generationUpdate.campaign.powerRevealed && event.kind != "FORMATIVE") {
+                                            append("\n\nPERCEPTIONS\n")
+                                            append(DeepLifeRuntime.perceptionSummary(nextDeep))
+                                        }
+                                    }
+                                    outcome = combinedOutcome
+                                    saveUltimateOutcome(context, generationUpdate.campaign.seed, combinedOutcome)
                                 },
                                 onAction = { card ->
                                     val current = campaign ?: return@UltimateCareerShell null
                                     haptic(MetahumanMotionLevel.MOTION_SUBTLE)
                                     val currentState = ultimate ?: UltimateStore.load(context, current)
+                                    val currentDeep = deep ?: DeepLifePersistence.load(context, current, currentState)
                                     val currentAnnual = (annual ?: AnnualActionPersistence.load(context, current)).synced(current)
                                     val action = AnnualActionEngine.perform(current, currentAnnual, card) ?: return@UltimateCareerShell null
                                     val nextState = UltimateGameEngine.afterAnnualAction(action.campaign, currentState, action.state, card)
-                                    persist(action.campaign, nextState, action.state)
-                                    action.copy(campaign = action.campaign)
+                                    val deepUpdate = DeepLifeRuntime.afterAnnualAction(action.campaign, card, currentDeep)
+                                    val worldUpdate = DeepWorldDirector.afterAnnualAction(action.campaign, nextState, deepUpdate.state, card)
+                                    persist(worldUpdate.campaign, worldUpdate.ultimate, action.state, worldUpdate.deep)
+                                    val extra = listOf(deepUpdate.echo, worldUpdate.echo).filter { it.isNotBlank() }.joinToString("\n\n")
+                                    action.copy(
+                                        campaign = worldUpdate.campaign,
+                                        text = if (extra.isBlank()) action.text else action.text + "\n\n" + extra
+                                    )
                                 },
                                 onStateChange = { next ->
                                     val current = campaign ?: return@UltimateCareerShell
                                     ultimate = next
                                     UltimateStore.save(context, next)
+                                    deep?.let { DeepLifePersistence.save(context, it) }
                                     savePulse++
                                     saveCampaignV4(context, current)
                                 },
