@@ -8,10 +8,8 @@ import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -52,7 +50,7 @@ internal fun GameplayRebuildCharacterScreen(
         Spacer(Modifier.height(8.dp))
         UltimatePanel(accent = if (deep.injuries.isNotEmpty() || state.injuries.isNotEmpty()) UltimateRed else UltimateGreen) {
             Text("TON CORPS", color = if (deep.injuries.isNotEmpty() || state.injuries.isNotEmpty()) UltimateRed else UltimateGreen, fontWeight = FontWeight.Black, fontSize = 9.sp)
-            Text(state.ageAppearance(c), color = UltimateIvory, fontWeight = FontWeight.Black)
+            Text(humanAgeAppearance(c, state), color = UltimateIvory, fontWeight = FontWeight.Black)
             Text("${state.bodyBuild} · ${state.stature} · ${state.hair} · yeux ${state.eyes.lowercase()}", color = UltimateMuted, fontSize = 11.sp)
             val injuries = deep.injuries.map { "${it.bodyPart} (${it.originAge} ans)" } + state.injuries
             if (injuries.isNotEmpty()) Text("Traces : ${injuries.distinct().take(4).joinToString(" · ")}", color = UltimateRed, fontSize = 10.sp, lineHeight = 15.sp)
@@ -102,6 +100,16 @@ internal fun GameplayRebuildCharacterScreen(
         Spacer(Modifier.height(10.dp))
         MhlSecondaryButton("Retour à ta vie", onBack, Modifier.fillMaxWidth())
     }
+}
+
+private fun humanAgeAppearance(c: Campaign, state: UltimateState): String = when {
+    c.age < 13 -> "Un visage d'enfant, encore loin de ce que le monde retiendra."
+    c.age < 18 -> "Les traits changent vite ; ton identité commence à prendre forme."
+    c.age < 30 -> "Jeune adulte · ${if (state.injuries.isEmpty()) "le corps récupère encore vite" else "les premières traces restent déjà"}."
+    c.age < 45 -> "Pleine maturité · les années d'action commencent à se lire sur toi."
+    c.age < 60 -> "Le temps se voit davantage, mais l'expérience aussi."
+    c.age < 75 -> "Les gestes coûtent plus cher ; la présence, elle, pèse davantage."
+    else -> "Une longue vie est inscrite dans le corps, le visage et les cicatrices."
 }
 
 private fun humanIdentityLine(c: Campaign, deep: DeepLifeState): String {
