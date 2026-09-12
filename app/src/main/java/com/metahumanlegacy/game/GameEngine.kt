@@ -92,7 +92,7 @@ object GameEngine {
     }
 
     fun event(c: Campaign): EventNode {
-        val authored = NarrativeRepository.event(c)
+        val authored = NarrativeRepairDirector.repair(c, NarrativeRepository.event(c))
         val deep = DepthDirector.enrichEvent(c, authored)
         val varied = CareerVariationDirector.enrich(c, deep)
         val powered = PowerGameplayDirector.enrich(c, varied)
