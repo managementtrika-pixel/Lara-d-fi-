@@ -308,7 +308,7 @@ internal object DeepLifeRuntime {
     private fun evolvePower(c: Campaign, event: EventNode, choice: Choice, state: DeepLifeState, echo: MutableList<String>): DeepLifeState {
         val p = state.powerEvolution ?: return state
         if (!c.powerRevealed) return state
-        val use = (choice.power + if (choice.approach == "ASCEND") 2 else 0 + if (event.category.contains("POUVOIR", true)) 2 else 0).coerceAtLeast(0)
+        val use = (choice.power + (if (choice.approach == "ASCEND") 2 else 0) + (if (event.category.contains("POUVOIR", true)) 2 else 0)).coerceAtLeast(0)
         if (use == 0) return state
         val weaknessExtra = when (c.weakness) {
             "Fatigue extrême", "Surcharge" -> 4
