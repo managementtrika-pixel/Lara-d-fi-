@@ -115,7 +115,7 @@ private fun LifeSceneBackdrop(c: Campaign, state: UltimateState, accent: Color) 
 
 @Composable
 private fun HumanLifeScene(c: Campaign, state: UltimateState, deep: DeepLifeState, event: EventNode, onChoice: (EventNode, Choice) -> Unit) {
-    val person = scenePerson(c, deep)
+    val person = SceneContextDirector.participant(event, deep)
     Text(if (c.turn < 10) "UN MOMENT QUI TE FAÇONNE" else "LE MONDE ATTEND TA RÉPONSE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 9.sp, letterSpacing = 1.2.sp)
     Spacer(Modifier.height(5.dp))
     Text(event.title, color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 27.sp, lineHeight = 29.sp)
@@ -287,11 +287,6 @@ private fun sceneAtmosphere(c: Campaign, state: UltimateState): String = when {
     else -> "${state.cityArchetype} · ${state.cityMood.lowercase()}"
 }
 
-private fun scenePerson(c: Campaign, deep: DeepLifeState): DeepRelationship? {
-    val alive = deep.relationships.filter { it.alive }
-    if (alive.isEmpty()) return null
-    return alive[(c.turn.absoluteValue + (c.seed % 17).toInt().absoluteValue) % alive.size]
-}
 
 private fun knowledgeLine(c: Campaign, state: UltimateState, event: EventNode): String = when {
     c.turn < 10 -> "Tu connais seulement ce que tu as vu et ce que les adultes veulent bien te dire."

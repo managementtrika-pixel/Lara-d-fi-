@@ -16,7 +16,6 @@ internal object DeepLifeRuntime {
 
         state = expireOpportunities(after, state, echoes)
         state = resolveDeferred(after, state, echoes)
-        state = evolveRelationships(after, event, choice, state, echoes)
         state = recordIdentityEvidence(before, after, event, choice, state, echoes)
         state = recordPersistentInjury(before, after, event, state, echoes)
         state = createDeferred(after, event, choice, state)
