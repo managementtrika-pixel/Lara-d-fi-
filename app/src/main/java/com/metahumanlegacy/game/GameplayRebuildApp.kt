@@ -264,8 +264,27 @@ internal fun GameplayRebuildApp(context: Context) {
                                 }
                             }
 
-                            if (renderedScreen == "DESTIN" && c.age <= 20) {
-                                GameplayRebuildEarlyShell(
+                            val actionHandler: (AnnualActionCard) -> AnnualActionResult? = { card ->
+                                val current = campaign
+                                if (current == null) null else {
+                                    haptic(MetahumanMotionLevel.MOTION_SUBTLE)
+                                    val currentState = ultimate ?: UltimateStore.load(context, current)
+                                    val currentDeep = deep ?: DeepLifePersistence.load(context, current, currentState)
+                                    val currentAnnual = (annual ?: AnnualActionPersistence.load(context, current)).synced(current)
+                                    val action = AnnualActionEngine.perform(current, currentAnnual, card)
+                                    if (action == null) null else {
+                                        val nextState = UltimateGameEngine.afterAnnualAction(action.campaign, currentState, action.state, card)
+                                        val deepUpdate = DeepLifeRuntime.afterAnnualAction(action.campaign, card, currentDeep)
+                                        val worldUpdate = DeepWorldDirector.afterAnnualAction(action.campaign, nextState, deepUpdate.state, card)
+                                        persist(worldUpdate.campaign, worldUpdate.ultimate, action.state, worldUpdate.deep)
+                                        val extra = listOf(deepUpdate.echo, worldUpdate.echo).filter { it.isNotBlank() }.joinToString("\n\n")
+                                        action.copy(campaign = worldUpdate.campaign, text = if (extra.isBlank()) action.text else action.text + "\n\n" + extra)
+                                    }
+                                }
+                            }
+
+                            when {
+                                renderedScreen == "DESTIN" && c.age <= 20 -> GameplayRebuildEarlyShell(
                                     c = c,
                                     state = u,
                                     annual = a,
@@ -283,8 +302,14 @@ internal fun GameplayRebuildApp(context: Context) {
                                     onHome = { go("HOME") },
                                     onSettings = { go("SETTINGS") }
                                 )
-                            } else {
-                                UltimateCareerShell(
+
+                                renderedScreen == "VILLE" && c.age <= 20 -> GameplayRebuildCityScreen(c, u, dl) { go("DESTIN") }
+
+                                renderedScreen == "LIENS" && c.age <= 20 -> GameplayRebuildLinksScreen(c, dl) { go("DESTIN") }
+
+                                renderedScreen == "ACTIONS" && c.age <= 20 -> GameplayRebuildActionsScreen(c, u, a, dl, actionHandler) { go("DESTIN") }
+
+                                else -> UltimateCareerShell(
                                     c = c,
                                     state = u,
                                     annual = a,
@@ -299,24 +324,7 @@ internal fun GameplayRebuildApp(context: Context) {
                                         if (campaign?.needsAlias == true) screen = "ALIAS"
                                     },
                                     onChoice = choiceHandler,
-                                    onAction = { card ->
-                                        val current = campaign
-                                        if (current == null) null else {
-                                            haptic(MetahumanMotionLevel.MOTION_SUBTLE)
-                                            val currentState = ultimate ?: UltimateStore.load(context, current)
-                                            val currentDeep = deep ?: DeepLifePersistence.load(context, current, currentState)
-                                            val currentAnnual = (annual ?: AnnualActionPersistence.load(context, current)).synced(current)
-                                            val action = AnnualActionEngine.perform(current, currentAnnual, card)
-                                            if (action == null) null else {
-                                                val nextState = UltimateGameEngine.afterAnnualAction(action.campaign, currentState, action.state, card)
-                                                val deepUpdate = DeepLifeRuntime.afterAnnualAction(action.campaign, card, currentDeep)
-                                                val worldUpdate = DeepWorldDirector.afterAnnualAction(action.campaign, nextState, deepUpdate.state, card)
-                                                persist(worldUpdate.campaign, worldUpdate.ultimate, action.state, worldUpdate.deep)
-                                                val extra = listOf(deepUpdate.echo, worldUpdate.echo).filter { it.isNotBlank() }.joinToString("\n\n")
-                                                action.copy(campaign = worldUpdate.campaign, text = if (extra.isBlank()) action.text else action.text + "\n\n" + extra)
-                                            }
-                                        }
-                                    },
+                                    onAction = actionHandler,
                                     onStateChange = { next ->
                                         val current = campaign
                                         if (current != null) {
