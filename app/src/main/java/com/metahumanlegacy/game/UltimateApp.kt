@@ -142,17 +142,18 @@ fun UltimateMetahumanLegacyApp(context: Context) {
                         }
                     },
                     label = "ultimate-stage-transition"
-                ) {
+                ) { targetStage ->
+                    val renderedScreen = targetStage.substringBefore('|')
                     when {
-                        screen == "SETTINGS" -> UltimateSettingsScreen(
+                        renderedScreen == "SETTINGS" -> UltimateSettingsScreen(
                             settings = motion,
                             onChange = controller.update,
                             onBack = { go(if (campaign == null) "HOME" else "DESTIN") }
                         )
 
-                        screen == "HALL" -> UltimateHallScreen(hall) { go("HOME") }
+                        renderedScreen == "HALL" -> UltimateHallScreen(hall) { go("HOME") }
 
-                        screen == "HOME" -> UltimateHomeScreen(
+                        renderedScreen == "HOME" -> UltimateHomeScreen(
                             campaign = campaign,
                             state = ultimate,
                             hallCount = hall.size,
@@ -162,7 +163,7 @@ fun UltimateMetahumanLegacyApp(context: Context) {
                             onSettings = { go("SETTINGS") }
                         )
 
-                        campaign == null && screen == "CREATE" -> UltimateCreateScreen(
+                        campaign == null && renderedScreen == "CREATE" -> UltimateCreateScreen(
                             draft = draft,
                             onDraft = {
                                 draft = it
@@ -204,7 +205,7 @@ fun UltimateMetahumanLegacyApp(context: Context) {
                             screen = "HOME"
                         }
 
-                        screen == "ALIAS" -> UltimateAliasScreen(campaign!!, ultimate ?: UltimateStore.fallback(campaign!!)) { alias, presentation, palette, mask ->
+                        renderedScreen == "ALIAS" -> UltimateAliasScreen(campaign!!, ultimate ?: UltimateStore.fallback(campaign!!)) { alias, presentation, palette, mask ->
                             val c = GameEngine.setAlias(campaign!!, alias)
                             val u = (ultimate ?: UltimateStore.fallback(c)).copy(
                                 heroPresentation = presentation,
@@ -225,7 +226,7 @@ fun UltimateMetahumanLegacyApp(context: Context) {
                                 c = c,
                                 state = u,
                                 annual = a,
-                                screen = screen,
+                                screen = renderedScreen,
                                 outcome = outcome,
                                 savePulse = savePulse,
                                 onScreen = { go(it) },
