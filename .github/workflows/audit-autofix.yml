@@ -1,0 +1,51 @@
+name: Audit structural autofix
+
+on:
+  push:
+    branches: [ "audit/game-defects-2-6" ]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, '[audit-autofix]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit/game-defects-2-6
+      - name: Apply deterministic audit fixes
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          screens = Path('app/src/main/java/com/metahumanlegacy/game/GameplayRebuildScreens.kt')
+          text = screens.read_text()
+          old = '    val person = scenePerson(c, deep)'
+          new = '    val person = SceneContextDirector.participant(event, deep)'
+          assert old in text, 'scene person call pattern missing'
+          text = text.replace(old, new, 1)
+          start = text.find('\nprivate fun scenePerson(c: Campaign, deep: DeepLifeState): DeepRelationship? {')
+          assert start >= 0, 'obsolete scenePerson helper missing'
+          end_marker = '\n}\n\nprivate fun knowledgeLine'
+          end = text.find(end_marker, start)
+          assert end >= 0, 'obsolete scenePerson helper end missing'
+          text = text[:start] + '\n\nprivate fun knowledgeLine' + text[end + len(end_marker):]
+          screens.write_text(text)
+
+          runtime = Path('app/src/main/java/com/metahumanlegacy/game/DeepLifeRuntime.kt')
+          text = runtime.read_text()
+          old = '        state = evolveRelationships(after, event, choice, state, echoes)\n'
+          assert old in text, 'duplicate relationship mutation call missing'
+          text = text.replace(old, '', 1)
+          runtime.write_text(text)
+          PY
+      - name: Commit fixes
+        run: |
+          git config user.name "metahuman-audit-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add app/src/main/java/com/metahumanlegacy/game/GameplayRebuildScreens.kt app/src/main/java/com/metahumanlegacy/game/DeepLifeRuntime.kt
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "fix(audit): unify visible and persisted scene causality [audit-autofix]"
+          git push origin HEAD:audit/game-defects-2-6
