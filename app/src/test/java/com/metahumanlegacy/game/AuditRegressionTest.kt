@@ -30,6 +30,50 @@ class AuditRegressionTest {
         assertTrue(after.memories.any { it.personId == "family" })
     }
 
+    @Test fun runtime_does_not_mutate_the_same_relationship_twice() {
+        val deep = DeepLifeState(seed = 1L, relationships = listOf(relationship("family", "Maya", "Sœur")))
+        val before = Campaign(seed = 1L, name = "A", modifier = "")
+        val event = EventNode("family_call", "Maya appelle", "Maya te demande de rentrer.", emptyList(), "RELATION", "", 2)
+        val update = DeepLifeRuntime.afterChoice(before, before.copy(turn = 1), event, Choice("Rentrer", relationDelta = 3, approach = "CARE"), deep)
+        assertEquals(56, update.state.relationships.single().trust)
+    }
+
+    @Test fun ignored_relationship_opportunity_has_a_real_cost() {
+        val family = relationship("family", "Maya", "Sœur")
+        val deep = DeepLifeState(
+            seed = 11L,
+            relationships = listOf(family),
+            opportunities = listOf(Opportunity("missed", "Voir Maya", "RELATION", expiresTurn = 0, urgency = 3, personId = "family", ignoredPayload = "Maya n'attend plus."))
+        )
+        val before = Campaign(seed = 11L, name = "A", modifier = "", turn = 0)
+        val after = before.copy(turn = 1)
+        val event = EventNode("weather", "Une journée ordinaire", "Rien ne concerne Maya.", emptyList(), "QUIET", "", 1)
+        val update = DeepLifeRuntime.afterChoice(before, after, event, Choice("Continuer"), deep)
+        val next = update.state.relationships.single()
+        assertEquals(45, next.trust)
+        assertEquals(47, next.affection)
+        assertTrue(next.grudge >= 4)
+        assertTrue(update.echo.contains("Maya n'attend plus"))
+    }
+
+    @Test fun direct_relationship_action_consumes_time_and_changes_the_person() {
+        val c = Campaign(seed = 12L, name = "A", modifier = "", turn = 20)
+        val annual = AnnualActionState.fresh(c)
+        val deep = DeepLifeState(seed = 12L, relationships = listOf(relationship("friend", "Noa", "Ami")))
+        val card = AnnualActionCard(
+            id = "direct_rel_visit_friend", title = "Passer du temps avec Noa", description = "", category = AnnualActionCategory.RELATION,
+            iconKey = "relation_family", focus = "Lien", outcome = "Présence"
+        )
+        val action = AnnualActionEngine.perform(c, annual, card)
+        assertNotNull(action)
+        assertEquals(1, action!!.state.used)
+        val update = DeepLifeRuntime.afterAnnualAction(c, card, deep)
+        val noa = update.state.relationships.single()
+        assertEquals(55, noa.trust)
+        assertEquals(56, noa.affection)
+        assertTrue(noa.memories.any { it.eventId == "DIRECT_RELATION" })
+    }
+
     @Test fun retirement_path_is_reachable_before_natural_end() {
         val c68 = Campaign(seed = 2L, name = "A", modifier = "", turn = 208, flags = setOf("POWER_REVEALED", "V2_RETIREMENT_PATH"))
         assertEquals(68, c68.age)
