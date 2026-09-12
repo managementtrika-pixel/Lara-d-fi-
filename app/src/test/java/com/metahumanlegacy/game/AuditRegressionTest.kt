@@ -45,4 +45,25 @@ class AuditRegressionTest {
         assertEquals(80, c.age)
         assertTrue(c.finished)
     }
+
+    @Test fun tricky_power_names_do_not_fall_back_to_projector() {
+        assertEquals(PowerArchitecture.MENTAL, DeepLifeDirector.architectureFor("Télékinésie"))
+        assertEquals(PowerArchitecture.MENTAL, DeepLifeDirector.architectureFor("Précognition limitée"))
+        assertEquals(PowerArchitecture.TECH, DeepLifeDirector.architectureFor("Cybernétique"))
+        assertEquals(PowerArchitecture.OCCULT, DeepLifeDirector.architectureFor("Invocation"))
+        assertEquals(PowerArchitecture.MATTER, DeepLifeDirector.architectureFor("Absorption"))
+        assertEquals(PowerArchitecture.MATTER, DeepLifeDirector.architectureFor("Duplication"))
+        assertEquals(PowerArchitecture.MOBILITY, DeepLifeDirector.architectureFor("Portails limités"))
+        assertEquals(PowerArchitecture.ADAPTIVE, DeepLifeDirector.architectureFor("Métamorphose défensive"))
+    }
+
+    @Test fun every_catalog_power_has_an_intentional_architecture() {
+        val allowedProjectors = setOf("Électricité", "Feu", "Glace", "Énergie", "Lumière", "Plasma", "Chaleur contrôlée")
+        PowerResolver.powerCatalog().forEach { power ->
+            val architecture = DeepLifeDirector.architectureFor(power)
+            if (architecture == PowerArchitecture.PROJECTOR) {
+                assertTrue("Unexpected PROJECTOR fallback for $power", power in allowedProjectors)
+            }
+        }
+    }
 }
