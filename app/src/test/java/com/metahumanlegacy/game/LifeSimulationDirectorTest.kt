@@ -37,6 +37,17 @@ class LifeSimulationDirectorTest {
         assertTrue(result.state.powerRules.fatigue > state.powerRules.fatigue)
     }
 
+    @Test fun overloadBlocksTrainingWithoutSpendingTime() {
+        val c = campaign()
+        val state = LifeSimulationDirector.bootstrap(c, DeepLifeState(seed = c.seed)).copy(
+            powerRules = PowerRulesState(overload = 95),
+            civil = CivilLifeState(freeMoments = 2)
+        )
+        val result = LifeSimulationDirector.perform(c, state, LifeAction(LifeActionType.TRAIN_POWER, label = "Entraîner"))
+        assertEquals("Corps en surcharge", result.headline)
+        assertEquals(2, result.state.civil.freeMoments)
+    }
+
     @Test fun patrolChangesTheTargetDistrict() {
         val c = campaign()
         val state = LifeSimulationDirector.bootstrap(c, DeepLifeState(seed = c.seed))
@@ -45,6 +56,7 @@ class LifeSimulationDirectorTest {
         val after = result.state.districts.first { it.id == "quartier" }
         assertTrue(after.safety > before.safety)
         assertTrue(after.criminalControl < before.criminalControl)
+        assertTrue(result.state.secretIdentity.exposure > state.secretIdentity.exposure)
     }
 
     @Test fun revealingIdentityPersistsForThatPerson() {
@@ -53,6 +65,7 @@ class LifeSimulationDirectorTest {
         val state = LifeSimulationDirector.bootstrap(c, deep)
         val result = LifeSimulationDirector.perform(c, state, LifeAction(LifeActionType.REVEAL_IDENTITY, "ami", "Révéler"))
         assertEquals(SecretKnowledge.KNOWS, result.state.relationshipLives.first().secretKnowledge)
+        assertTrue(LifeSimulationDirector.mergedIntoDeep(deep, result.state).relationships.first().knowsIdentity)
     }
 
     @Test fun noFreeActionsAfterCalendarIsFull() {
@@ -68,5 +81,29 @@ class LifeSimulationDirectorTest {
         val state = LifeSimulationDirector.bootstrap(c, DeepLifeState(seed = c.seed))
         assertEquals(37, c.age)
         assertEquals(37, state.calendarYear)
+    }
+
+    @Test fun yearlyMomentsResetOnlyWhenAgeChanges() {
+        val age22 = campaign(age = 22)
+        val deep = DeepLifeState(seed = age22.seed)
+        val exhausted = LifeSimulationDirector.bootstrap(age22, deep).copy(civil = CivilLifeState(freeMoments = 0))
+        val sameYearLaterTurn = age22.copy(turn = age22.turn + 1)
+        assertEquals(22, sameYearLaterTurn.age)
+        assertEquals(0, LifeSimulationDirector.synced(sameYearLaterTurn, deep, exhausted).civil.freeMoments)
+        val age23 = campaign(age = 23)
+        assertTrue(LifeSimulationDirector.synced(age23, deep, exhausted).civil.freeMoments > 0)
+    }
+
+    @Test fun lifeSimulationJsonRoundTripKeepsConsequences() {
+        val original = LifeSimulationState(
+            civil = CivilLifeState(employment = EmploymentStatus.EMPLOYED, jobTitle = "Technicien", savings = 4200, freeMoments = 1),
+            relationshipLives = listOf(RelationshipLifeState("ami", secretKnowledge = SecretKnowledge.KNOWS)),
+            districts = listOf(DistrictLifeState("quartier", safety = 67, criminalControl = 11, mediaHeat = 8)),
+            powerRules = PowerRulesState(control = 44, precision = 39, fatigue = 28, overload = 6),
+            secretIdentity = IdentitySecretState(exposure = 19, knownBy = mapOf("ami" to SecretKnowledge.KNOWS)),
+            calendarYear = 31,
+            actionLog = listOf("31: Patrouiller")
+        )
+        assertEquals(original, LifeSimulationJson.decode(LifeSimulationJson.encode(original)))
     }
 }
