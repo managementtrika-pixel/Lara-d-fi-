@@ -1,6 +1,13 @@
 package com.metahumanlegacy.game
 
 import android.content.Context
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.core.tween
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
@@ -37,6 +44,7 @@ fun UltimateMetahumanLegacyApp(context: Context) {
             MetahumanMotionPreferences.save(context, clean)
         }
     }
+    val haptic = rememberMetahumanHaptic()
     val baseDensity = LocalDensity.current
     val scaledDensity = remember(baseDensity.density, baseDensity.fontScale, motion.textScalePercent) {
         Density(baseDensity.density, baseDensity.fontScale * motion.textScalePercent / 100f)
@@ -83,6 +91,11 @@ fun UltimateMetahumanLegacyApp(context: Context) {
                 draft = UltimateCatalog.randomDraft(draftSeed, blueprint)
             }
 
+            fun go(next: String, feedback: MetahumanMotionLevel = MetahumanMotionLevel.MOTION_SUBTLE) {
+                if (screen != next) haptic(feedback)
+                screen = next
+            }
+
             fun startLife(d: UltimateCreationDraft) {
                 val seed = System.currentTimeMillis()
                 val c = GameEngine.newCampaign(seed, d.blueprint)
@@ -95,6 +108,7 @@ fun UltimateMetahumanLegacyApp(context: Context) {
                 outcome = null
                 saveUltimateOutcome(context, seed, null)
                 savePulse++
+                haptic(MetahumanMotionLevel.MOTION_STANDARD)
                 screen = "DESTIN"
             }
 
@@ -115,123 +129,145 @@ fun UltimateMetahumanLegacyApp(context: Context) {
                 state = ultimate,
                 scene = if (campaign?.finished == true) "LEGACY" else screen
             ) {
-                when {
-                    screen == "SETTINGS" -> UltimateSettingsScreen(
-                        settings = motion,
-                        onChange = controller.update,
-                        onBack = { screen = if (campaign == null) "HOME" else "DESTIN" }
-                    )
+                val transitionDuration = MetahumanMotionTokens.duration(MetahumanMotionTokens.FAST, motion)
+                val stageKey = "${screen}|${campaign?.turn ?: -1}|${outcome?.hashCode() ?: 0}|${campaign?.needsAlias == true}"
+                AnimatedContent(
+                    targetState = stageKey,
+                    transitionSpec = {
+                        if (motion.reduceMotion) {
+                            fadeIn(tween(transitionDuration)) togetherWith fadeOut(tween(transitionDuration))
+                        } else {
+                            (fadeIn(tween(transitionDuration)) + slideInHorizontally(tween(transitionDuration)) { it / 12 }) togetherWith
+                                (fadeOut(tween(transitionDuration)) + slideOutHorizontally(tween(transitionDuration)) { -it / 14 })
+                        }
+                    },
+                    label = "ultimate-stage-transition"
+                ) {
+                    when {
+                        screen == "SETTINGS" -> UltimateSettingsScreen(
+                            settings = motion,
+                            onChange = controller.update,
+                            onBack = { go(if (campaign == null) "HOME" else "DESTIN") }
+                        )
 
-                    screen == "HALL" -> UltimateHallScreen(hall) { screen = "HOME" }
+                        screen == "HALL" -> UltimateHallScreen(hall) { go("HOME") }
 
-                    screen == "HOME" -> UltimateHomeScreen(
-                        campaign = campaign,
-                        state = ultimate,
-                        hallCount = hall.size,
-                        onContinue = { screen = if (campaign?.needsAlias == true) "ALIAS" else "DESTIN" },
-                        onNew = { abandon() },
-                        onHall = { screen = "HALL" },
-                        onSettings = { screen = "SETTINGS" }
-                    )
+                        screen == "HOME" -> UltimateHomeScreen(
+                            campaign = campaign,
+                            state = ultimate,
+                            hallCount = hall.size,
+                            onContinue = { go(if (campaign?.needsAlias == true) "ALIAS" else "DESTIN", MetahumanMotionLevel.MOTION_STANDARD) },
+                            onNew = { abandon() },
+                            onHall = { go("HALL") },
+                            onSettings = { go("SETTINGS") }
+                        )
 
-                    campaign == null && screen == "CREATE" -> UltimateCreateScreen(
-                        draft = draft,
-                        onDraft = {
-                            draft = it
-                            blueprint = it.blueprint
-                        },
-                        onRandomize = {
+                        campaign == null && screen == "CREATE" -> UltimateCreateScreen(
+                            draft = draft,
+                            onDraft = {
+                                draft = it
+                                blueprint = it.blueprint
+                            },
+                            onRandomize = {
+                                haptic(MetahumanMotionLevel.MOTION_SUBTLE)
+                                newDraft()
+                            },
+                            onBack = { go("HOME") },
+                            onStart = { startLife(it) }
+                        )
+
+                        campaign == null -> UltimateHomeScreen(
+                            campaign = null,
+                            state = null,
+                            hallCount = hall.size,
+                            onContinue = { },
+                            onNew = { go("CREATE", MetahumanMotionLevel.MOTION_STANDARD) },
+                            onHall = { go("HALL") },
+                            onSettings = { go("SETTINGS") }
+                        )
+
+                        campaign!!.finished -> UltimateFinalScreen(campaign!!, ultimate ?: UltimateStore.fallback(campaign!!)) {
+                            val c = campaign!!
+                            val u = ultimate ?: UltimateStore.fallback(c)
+                            val entry = LegacyRecord.from(c, u).encode()
+                            hall = (listOf(entry) + hall)
+                                .distinctBy { LegacyRecord.decode(it).identityId.ifBlank { LegacyRecord.decode(it).name + "|" + LegacyRecord.decode(it).title } }
+                                .take(60)
+                            saveHallV4(context, hall)
+                            UltimateStore.clear(context, c.seed)
+                            AnnualActionPersistence.clear(context, c.seed)
+                            saveUltimateOutcome(context, c.seed, null)
+                            clearCampaignV4(context)
+                            campaign = null; ultimate = null; annual = null; outcome = null
                             newDraft()
-                        },
-                        onBack = { screen = "HOME" },
-                        onStart = { startLife(it) }
-                    )
+                            haptic(MetahumanMotionLevel.MOTION_LEGENDARY)
+                            screen = "HOME"
+                        }
 
-                    campaign == null -> UltimateHomeScreen(
-                        campaign = null,
-                        state = null,
-                        hallCount = hall.size,
-                        onContinue = { },
-                        onNew = { screen = "CREATE" },
-                        onHall = { screen = "HALL" },
-                        onSettings = { screen = "SETTINGS" }
-                    )
+                        screen == "ALIAS" -> UltimateAliasScreen(campaign!!, ultimate ?: UltimateStore.fallback(campaign!!)) { alias, presentation, palette, mask ->
+                            val c = GameEngine.setAlias(campaign!!, alias)
+                            val u = (ultimate ?: UltimateStore.fallback(c)).copy(
+                                heroPresentation = presentation,
+                                costumePalette = palette,
+                                maskStyle = mask,
+                                costumeEra = maxOf(1, (ultimate ?: UltimateStore.fallback(c)).costumeEra)
+                            )
+                            persist(c, u)
+                            haptic(MetahumanMotionLevel.MOTION_MAJOR)
+                            screen = "DESTIN"
+                        }
 
-                    campaign!!.finished -> UltimateFinalScreen(campaign!!, ultimate ?: UltimateStore.fallback(campaign!!)) {
-                        val c = campaign!!
-                        val u = ultimate ?: UltimateStore.fallback(c)
-                        val entry = LegacyRecord.from(c, u).encode()
-                        hall = (listOf(entry) + hall)
-                            .distinctBy { LegacyRecord.decode(it).identityId.ifBlank { LegacyRecord.decode(it).name + "|" + LegacyRecord.decode(it).title } }
-                            .take(60)
-                        saveHallV4(context, hall)
-                        UltimateStore.clear(context, c.seed)
-                        AnnualActionPersistence.clear(context, c.seed)
-                        saveUltimateOutcome(context, c.seed, null)
-                        clearCampaignV4(context)
-                        campaign = null; ultimate = null; annual = null; outcome = null
-                        newDraft()
-                        screen = "HOME"
-                    }
-
-                    screen == "ALIAS" -> UltimateAliasScreen(campaign!!, ultimate ?: UltimateStore.fallback(campaign!!)) { alias, presentation, palette, mask ->
-                        val c = GameEngine.setAlias(campaign!!, alias)
-                        val u = (ultimate ?: UltimateStore.fallback(c)).copy(
-                            heroPresentation = presentation,
-                            costumePalette = palette,
-                            maskStyle = mask,
-                            costumeEra = maxOf(1, (ultimate ?: UltimateStore.fallback(c)).costumeEra)
-                        )
-                        persist(c, u)
-                        screen = "DESTIN"
-                    }
-
-                    else -> {
-                        val c = campaign!!
-                        val u = ultimate ?: UltimateStore.fallback(c).also { ultimate = it }
-                        val a = (annual ?: AnnualActionPersistence.load(context, c)).synced(c).also { annual = it }
-                        UltimateCareerShell(
-                            c = c,
-                            state = u,
-                            annual = a,
-                            screen = screen,
-                            outcome = outcome,
-                            savePulse = savePulse,
-                            onScreen = { screen = it },
-                            onContinue = {
-                                outcome = null
-                                saveUltimateOutcome(context, c.seed, null)
-                                if (campaign?.needsAlias == true) screen = "ALIAS"
-                            },
-                            onChoice = { event, choice ->
-                                val current = campaign ?: return@UltimateCareerShell
-                                val currentState = ultimate ?: UltimateStore.load(context, current)
-                                val result = UltimateGameEngine.resolve(current, currentState, event, choice)
-                                val nextAnnual = (annual ?: AnnualActionState.fresh(result.campaign)).synced(result.campaign)
-                                persist(result.campaign, result.state, nextAnnual)
-                                outcome = result.outcome
-                                saveUltimateOutcome(context, result.campaign.seed, result.outcome)
-                            },
-                            onAction = { card ->
-                                val current = campaign ?: return@UltimateCareerShell null
-                                val currentState = ultimate ?: UltimateStore.load(context, current)
-                                val currentAnnual = (annual ?: AnnualActionPersistence.load(context, current)).synced(current)
-                                val action = AnnualActionEngine.perform(current, currentAnnual, card) ?: return@UltimateCareerShell null
-                                val nextState = UltimateGameEngine.afterAnnualAction(action.campaign, currentState, action.state, card)
-                                persist(action.campaign, nextState, action.state)
-                                action.copy(campaign = action.campaign)
-                            },
-                            onStateChange = { next ->
-                                val current = campaign ?: return@UltimateCareerShell
-                                ultimate = next
-                                UltimateStore.save(context, next)
-                                savePulse++
-                                saveCampaignV4(context, current)
-                            },
-                            onHome = { screen = "HOME" },
-                            onSettings = { screen = "SETTINGS" },
-                            onRestart = { abandon() }
-                        )
+                        else -> {
+                            val c = campaign!!
+                            val u = ultimate ?: UltimateStore.fallback(c).also { ultimate = it }
+                            val a = (annual ?: AnnualActionPersistence.load(context, c)).synced(c).also { annual = it }
+                            UltimateCareerShell(
+                                c = c,
+                                state = u,
+                                annual = a,
+                                screen = screen,
+                                outcome = outcome,
+                                savePulse = savePulse,
+                                onScreen = { go(it) },
+                                onContinue = {
+                                    haptic(MetahumanMotionLevel.MOTION_SUBTLE)
+                                    outcome = null
+                                    saveUltimateOutcome(context, c.seed, null)
+                                    if (campaign?.needsAlias == true) screen = "ALIAS"
+                                },
+                                onChoice = { event, choice ->
+                                    val current = campaign ?: return@UltimateCareerShell
+                                    haptic(if (event.stakes >= 4) MetahumanMotionLevel.MOTION_MAJOR else MetahumanMotionLevel.MOTION_STANDARD)
+                                    MetahumanAudioHooks.onChoice()
+                                    val currentState = ultimate ?: UltimateStore.load(context, current)
+                                    val result = UltimateGameEngine.resolve(current, currentState, event, choice)
+                                    val nextAnnual = (annual ?: AnnualActionState.fresh(result.campaign)).synced(result.campaign)
+                                    persist(result.campaign, result.state, nextAnnual)
+                                    outcome = result.outcome
+                                    saveUltimateOutcome(context, result.campaign.seed, result.outcome)
+                                },
+                                onAction = { card ->
+                                    val current = campaign ?: return@UltimateCareerShell null
+                                    haptic(MetahumanMotionLevel.MOTION_SUBTLE)
+                                    val currentState = ultimate ?: UltimateStore.load(context, current)
+                                    val currentAnnual = (annual ?: AnnualActionPersistence.load(context, current)).synced(current)
+                                    val action = AnnualActionEngine.perform(current, currentAnnual, card) ?: return@UltimateCareerShell null
+                                    val nextState = UltimateGameEngine.afterAnnualAction(action.campaign, currentState, action.state, card)
+                                    persist(action.campaign, nextState, action.state)
+                                    action.copy(campaign = action.campaign)
+                                },
+                                onStateChange = { next ->
+                                    val current = campaign ?: return@UltimateCareerShell
+                                    ultimate = next
+                                    UltimateStore.save(context, next)
+                                    savePulse++
+                                    saveCampaignV4(context, current)
+                                },
+                                onHome = { go("HOME") },
+                                onSettings = { go("SETTINGS") },
+                                onRestart = { abandon() }
+                            )
+                        }
                     }
                 }
             }
