@@ -7,6 +7,6 @@ import androidx.activity.compose.setContent
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { UltimateMetahumanLegacyApp(applicationContext) }
+        setContent { GameplayRebuildApp(applicationContext) }
     }
 }
