@@ -124,7 +124,7 @@ internal data class PowerEvolution(
 )
 
 internal data class DeepLifeState(
-    val schemaVersion: Int = 1,
+    val schemaVersion: Int = 2,
     val seed: Long,
     val memories: List<CharacterMemory> = emptyList(),
     val relationships: List<DeepRelationship> = emptyList(),
@@ -135,5 +135,7 @@ internal data class DeepLifeState(
     val opportunities: List<Opportunity> = emptyList(),
     val drama: DramaState = DramaState(),
     val powerEvolution: PowerEvolution? = null,
-    val personality: Map<String, Int> = emptyMap()
+    val personality: Map<String, Int> = emptyMap(),
+    /** 3.0: one persisted source of truth for civil life, calendar, districts and power rules. */
+    val lifeSimulation: LifeSimulationState? = null
 )
