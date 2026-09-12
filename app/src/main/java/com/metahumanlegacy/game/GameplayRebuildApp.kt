@@ -283,8 +283,8 @@ internal fun GameplayRebuildApp(context: Context) {
                                 }
                             }
 
-                            when {
-                                renderedScreen == "DESTIN" && c.age <= 20 -> GameplayRebuildEarlyShell(
+                            when (renderedScreen) {
+                                "DESTIN" -> GameplayRebuildEarlyShell(
                                     c = c,
                                     state = u,
                                     annual = a,
@@ -303,11 +303,25 @@ internal fun GameplayRebuildApp(context: Context) {
                                     onSettings = { go("SETTINGS") }
                                 )
 
-                                renderedScreen == "VILLE" && c.age <= 20 -> GameplayRebuildCityScreen(c, u, dl) { go("DESTIN") }
+                                "VILLE" -> GameplayRebuildCityScreen(c, u, dl) { go("DESTIN") }
 
-                                renderedScreen == "LIENS" && c.age <= 20 -> GameplayRebuildLinksScreen(c, dl) { go("DESTIN") }
+                                "LIENS" -> GameplayRebuildLinksScreen(c, dl) { go("DESTIN") }
 
-                                renderedScreen == "ACTIONS" && c.age <= 20 -> GameplayRebuildActionsScreen(c, u, a, dl, actionHandler) { go("DESTIN") }
+                                "ACTIONS" -> GameplayRebuildActionsScreen(c, u, a, dl, actionHandler) { go("DESTIN") }
+
+                                "PERSONNAGE" -> GameplayRebuildCharacterScreen(
+                                    c = c,
+                                    state = u,
+                                    deep = dl,
+                                    onStateChange = { next ->
+                                        ultimate = next
+                                        UltimateStore.save(context, next)
+                                        DeepLifePersistence.save(context, dl)
+                                        savePulse++
+                                        saveCampaignV4(context, c)
+                                    },
+                                    onBack = { go("DESTIN") }
+                                )
 
                                 else -> UltimateCareerShell(
                                     c = c,
@@ -326,14 +340,11 @@ internal fun GameplayRebuildApp(context: Context) {
                                     onChoice = choiceHandler,
                                     onAction = actionHandler,
                                     onStateChange = { next ->
-                                        val current = campaign
-                                        if (current != null) {
-                                            ultimate = next
-                                            UltimateStore.save(context, next)
-                                            deep?.let { DeepLifePersistence.save(context, it) }
-                                            savePulse++
-                                            saveCampaignV4(context, current)
-                                        }
+                                        ultimate = next
+                                        UltimateStore.save(context, next)
+                                        DeepLifePersistence.save(context, dl)
+                                        savePulse++
+                                        saveCampaignV4(context, c)
                                     },
                                     onHome = { go("HOME") },
                                     onSettings = { go("SETTINGS") },
