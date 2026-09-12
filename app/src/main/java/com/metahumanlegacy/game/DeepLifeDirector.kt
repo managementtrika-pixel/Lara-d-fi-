@@ -92,15 +92,33 @@ internal object DeepLifeDirector {
         return state.copy(memories = memories, relationships = relationships, perception = perception, personality = personality, drama = drama)
     }
 
-    fun architectureFor(power: String): PowerArchitecture = when {
-        power.contains("Télépath", true) || power.contains("Illusion", true) || power.contains("mentale", true) -> PowerArchitecture.MENTAL
-        power.contains("Vitesse", true) || power.contains("Vol", true) || power.contains("Portail", true) -> PowerArchitecture.MOBILITY
-        power.contains("Adapt", true) || power.contains("Métamorphose", true) || power.contains("Densité", true) -> PowerArchitecture.ADAPTIVE
-        power.contains("Force", true) || power.contains("Résistance", true) || power.contains("Régén", true) -> PowerArchitecture.BODY
-        power.contains("Techn", true) || power.contains("Armure", true) || power.contains("Drone", true) || power.contains("Interface", true) -> PowerArchitecture.TECH
-        power.contains("Magie", true) || power.contains("Malédiction", true) || power.contains("astral", true) || power.contains("Rêve", true) -> PowerArchitecture.OCCULT
-        power.contains("cosm", true) || power.contains("Gravité", true) || power.contains("Espace", true) -> PowerArchitecture.COSMIC
-        power.contains("Matière", true) || power.contains("Cristal", true) || power.contains("Métal", true) || power.contains("Transmutation", true) -> PowerArchitecture.MATTER
+    /**
+     * Architecture is explicit for every resolver output. The old substring classifier silently
+     * turned powers such as Télékinésie, Invocation, Cybernétique or Absorption into PROJECTOR,
+     * which made mechanically different destinies play the same.
+     */
+    fun architectureFor(power: String): PowerArchitecture = when (power.trim().lowercase()) {
+        "télépathie", "illusion", "influence mentale limitée", "télékinésie",
+        "précognition limitée", "lecture émotionnelle", "perception extrasensorielle" -> PowerArchitecture.MENTAL
+
+        "vitesse", "vol", "portails", "portails limités", "propulsion physique",
+        "sauts cinétiques", "réflexes surhumains" -> PowerArchitecture.MOBILITY
+
+        "adaptation", "métamorphose", "densité", "résistance adaptative",
+        "métamorphose défensive" -> PowerArchitecture.ADAPTIVE
+
+        "force", "résistance", "régénération" -> PowerArchitecture.BODY
+
+        "technologie", "armes spécialisées", "intelligence augmentée", "armure adaptative",
+        "interface neuronale", "cybernétique", "drones liés" -> PowerArchitecture.TECH
+
+        "magie", "invocation", "projection astrale", "magie symbolique", "rêve", "malédiction" -> PowerArchitecture.OCCULT
+
+        "énergie cosmique", "gravité", "espace", "rayonnement stellaire" -> PowerArchitecture.COSMIC
+
+        "matière", "absorption", "duplication", "cristal", "métal",
+        "transmutation limitée", "construction de matière" -> PowerArchitecture.MATTER
+
         else -> PowerArchitecture.PROJECTOR
     }
 
