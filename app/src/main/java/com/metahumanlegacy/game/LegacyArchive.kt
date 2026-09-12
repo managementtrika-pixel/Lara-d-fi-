@@ -116,13 +116,15 @@ internal fun stablePixelIdentityId(c: Campaign, s: UltimateState): String {
     return "ID-" + hex
 }
 
-
-internal fun legacyEndingKind(c: Campaign): String = when {
-    c.health <= 0 && c.lastApproach == "CARE" && c.prestige >= 35 -> "Sacrifice"
-    c.health <= 0 -> "Mort en activité"
-    c.age >= 65 && c.scope == Scope.WORLD && c.prestige >= 70 && c.morality >= 25 -> "Victoire puis retraite"
-    c.age >= 65 && c.morality <= -45 && c.fear >= 60 -> "Fin de règne"
-    c.age >= 65 && c.identityExposure <= 20 && c.mediaStanding < 0 -> "Disparition"
-    c.age >= 65 -> "Retraite"
-    else -> "Héritage interrompu"
+internal fun legacyEndingKind(c: Campaign): String {
+    val retired = "V2_RETIRED" in c.flags || c.age >= 80
+    return when {
+        c.health <= 0 && c.lastApproach == "CARE" && c.prestige >= 35 -> "Sacrifice"
+        c.health <= 0 -> "Mort en activité"
+        retired && c.scope == Scope.WORLD && c.prestige >= 70 && c.morality >= 25 -> "Victoire puis retraite"
+        retired && c.morality <= -45 && c.fear >= 60 -> "Fin de règne"
+        retired && c.identityExposure <= 20 && c.mediaStanding < 0 -> "Disparition"
+        retired -> "Retraite"
+        else -> "Héritage interrompu"
+    }
 }
