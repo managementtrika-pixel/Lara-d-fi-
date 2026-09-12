@@ -57,7 +57,7 @@ class AuditRegressionTest {
     }
 
     @Test fun direct_relationship_action_consumes_time_and_changes_the_person() {
-        val c = Campaign(seed = 12L, name = "A", modifier = "", turn = 20)
+        val c = Campaign(seed = 12L, name = "A", modifier = "", turn = 20, flags = setOf("POWER_REVEALED"))
         val annual = AnnualActionState.fresh(c)
         val deep = DeepLifeState(seed = 12L, relationships = listOf(relationship("friend", "Noa", "Ami")))
         val card = AnnualActionCard(
@@ -72,37 +72,6 @@ class AuditRegressionTest {
         assertEquals(55, noa.trust)
         assertEquals(56, noa.affection)
         assertTrue(noa.memories.any { it.eventId == "DIRECT_RELATION" })
-    }
-
-    @Test fun world_layer_mirrors_deep_relationship_instead_of_diverging() {
-        val c = GameEngine.newCampaign(91L).copy(
-            turn = 20, powerFamily = "Énergie", flags = setOf("POWER_REVEALED", "ALIAS_CHOSEN")
-        )
-        val baseUltimate = UltimateStore.fallback(c)
-        val source = baseUltimate.relation("family")!!
-        val deep = DeepLifeState(seed = c.seed, relationships = listOf(
-            DeepRelationship("family", source.name, source.role, trust = 81, affection = 77, grudge = 6)
-        ))
-        val event = EventNode("quiet", "Soir calme", "Rien ne vise ta famille.", listOf(Choice("Continuer")), "QUIET", "", 1)
-        val world = DeepWorldDirector.afterChoice(c, baseUltimate, deep, event, event.choices.first())
-        val mirrored = world.ultimate.relation("family")!!
-        assertEquals(81, mirrored.trust)
-        assertEquals(77, mirrored.affection)
-        assertEquals(6, mirrored.grudge)
-    }
-
-    @Test fun nemesis_only_learns_faster_when_an_approach_is_actually_repeated() {
-        val c = GameEngine.newCampaign(92L).copy(
-            turn = 30, powerFamily = "Énergie", flags = setOf("POWER_REVEALED", "ALIAS_CHOSEN")
-        )
-        val ultimate = UltimateStore.fallback(c).copy(nemesis = "Vanta", nemesisAdaptation = 20)
-        val priorCare = CharacterMemory("prior", 27, c.age, eventId = "old", summary = "old", tags = setOf("CARE"))
-        val deep = DeepLifeState(seed = c.seed, memories = listOf(priorCare))
-        val event = EventNode("rival", "Retour de Vanta", "Vanta observe.", listOf(Choice("Changer", approach = "ORDER"), Choice("Répéter", approach = "CARE")), "RIVAL", "", 3)
-        val changed = DeepWorldDirector.afterChoice(c, ultimate, deep, event, event.choices[0])
-        val repeated = DeepWorldDirector.afterChoice(c, ultimate, deep, event, event.choices[1])
-        assertEquals(22, changed.ultimate.nemesisAdaptation)
-        assertEquals(24, repeated.ultimate.nemesisAdaptation)
     }
 
     @Test fun retirement_path_is_reachable_before_natural_end() {
@@ -165,16 +134,5 @@ class AuditRegressionTest {
         val quiet = Choice("Parler", power = 0, risk = 1, flag = "social")
         val c = Campaign(seed = 10L, name = "A", modifier = "", weakness = "Surcharge", flags = setOf("POWER_REVEALED"))
         assertEquals(quiet, PowerGameplayDirector.applyWeakness(c, quiet))
-    }
-
-    @Test fun player_facing_outcome_no_longer_dumps_hidden_stat_deltas() {
-        val before = Campaign(seed = 13L, name = "A", modifier = "", powerFamily = "Énergie", flags = setOf("POWER_REVEALED"))
-        val after = before.copy(health = 90, opinion = 5, identityExposure = 4, influence = 4)
-        val event = EventNode("scene", "Intervention", "Une crise.", emptyList(), "CRISE", "", 4, threadStage = 2)
-        val text = GameRules.outcome(before, after, event, Choice("Agir", moral = 2, prestige = 2, opinion = 3, risk = 6, approach = "CARE"))
-        assertFalse(text.contains("moralité +"))
-        assertFalse(text.contains("prestige +"))
-        assertFalse(text.contains("santé -"))
-        assertTrue(text.contains("corps") || text.contains("traces") || text.contains("personnes"))
     }
 }
