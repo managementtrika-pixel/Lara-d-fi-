@@ -91,16 +91,12 @@ object GameEngine {
         )
     }
 
-    /**
-     * The authored repository still chooses the canonical story beat. Depth and career passes make
-     * accumulated life experience relevant; V2 finally makes the actual power architecture alter
-     * the decision grammar rather than only changing labels and stat deltas.
-     */
     fun event(c: Campaign): EventNode {
         val authored = NarrativeRepository.event(c)
         val deep = DepthDirector.enrichEvent(c, authored)
         val varied = CareerVariationDirector.enrich(c, deep)
-        return PowerGameplayDirector.enrich(c, varied)
+        val powered = PowerGameplayDirector.enrich(c, varied)
+        return LifeStageDirector.enrich(c, powered)
     }
 
     fun resolve(c: Campaign, event: EventNode, choice: Choice): Resolution {
