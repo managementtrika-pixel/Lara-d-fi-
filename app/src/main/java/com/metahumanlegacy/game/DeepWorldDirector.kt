@@ -17,8 +17,8 @@ internal object DeepWorldDirector {
         choice: Choice
     ): DeepWorldUpdate {
         var c = campaign
-        var u = ultimate
         var d = deep
+        var u = syncRelations(ultimate, d)
         val echo = mutableListOf<String>()
 
         val districtIndex = u.districts.indexOfFirst { it.name == c.district }.let { if (it >= 0) it else 0 }
@@ -72,7 +72,7 @@ internal object DeepWorldDirector {
         u = faction.first
         c = faction.second
 
-        val nemesis = updateNemesis(c, u, event, choice)
+        val nemesis = updateNemesis(c, u, d, event, choice)
         u = nemesis.first
         echo += nemesis.second
 
@@ -96,29 +96,21 @@ internal object DeepWorldDirector {
         card: AnnualActionCard
     ): DeepWorldUpdate {
         val c = campaign
-        var u = ultimate
         var d = deep
+        var u = syncRelations(ultimate, d)
         val echo = mutableListOf<String>()
 
         when (card.category) {
             AnnualActionCategory.CIVIL -> {
                 val pay = 90 + u.incomeTier * 60
                 u = u.copy(credits = u.credits + pay)
-                echo += "Ta vie civile rapporte $pay crédits. Être métahumain n'efface ni le travail ni les factures."
+                echo += "Ta vie civile te redonne un peu de marge financière. Être métahumain n'efface ni le travail ni les factures."
             }
-            AnnualActionCategory.RELATION -> {
-                val target = d.opportunities.firstOrNull { it.category == "RELATION" }?.personId
-                    ?: d.relationships.filter { it.alive }.maxByOrNull { 100 - it.trust }?.id
-                if (target != null) {
-                    d = d.copy(relationships = d.relationships.map {
-                        if (it.id == target) it.copy(trust = (it.trust + 4).coerceAtMost(100), affection = (it.affection + 3).coerceAtMost(100)) else it
-                    })
-                }
-            }
+            AnnualActionCategory.RELATION -> Unit // DeepLifeRuntime owns relationship consequences; syncRelations mirrors them here.
             AnnualActionCategory.RECOVERY -> {
                 val cost = if (c.age >= 50) 75 else 45
                 u = u.copy(credits = (u.credits - cost).coerceAtLeast(0))
-                echo += "La récupération a un coût concret ($cost crédits), mais elle protège les années qui viennent."
+                echo += "La récupération coûte du temps et de l'argent, mais elle protège les années qui viennent."
             }
             AnnualActionCategory.PUBLIC -> {
                 u = u.copy(mediaFrame = if (d.perception.civilians >= 20) "Figure accessible" else "Figure sous observation")
@@ -140,7 +132,33 @@ internal object DeepWorldDirector {
         }
 
         if (u.credits == 0 && u.debt > 0) echo += "Tes ressources deviennent une contrainte. Le costume, les soins et le QG ne se financent pas avec la réputation."
-        return DeepWorldUpdate(c, u, d, echo.distinct().joinToString("\n"))
+        return DeepWorldUpdate(c, syncRelations(u, d), d, echo.distinct().joinToString("\n"))
+    }
+
+    private fun syncRelations(u: UltimateState, d: DeepLifeState): UltimateState {
+        if (u.relations.isEmpty() || d.relationships.isEmpty()) return u
+        val deepById = d.relationships.associateBy { it.id }
+        val synced = u.relations.map { relation ->
+            val source = deepById[relation.id] ?: return@map relation
+            relation.copy(
+                trust = source.trust,
+                affection = source.affection,
+                fear = source.fear,
+                admiration = source.admiration,
+                grudge = source.grudge,
+                dependence = source.dependence,
+                knowsIdentity = source.knowsIdentity,
+                status = when (source.phase) {
+                    RelationshipPhase.DISTANT -> "Éloigné"
+                    RelationshipPhase.RIVAL -> "Rival"
+                    RelationshipPhase.MENTOR -> "Mentor"
+                    RelationshipPhase.PROTEGE -> "Protégé·e"
+                    RelationshipPhase.SUCCESSOR -> "Successeur"
+                    else -> if (source.alive) "Présent" else "Disparu"
+                }
+            ).clamped()
+        }
+        return u.copy(relations = synced)
     }
 
     private fun mediaFrame(c: Campaign, d: DeepLifeState): String {
@@ -184,9 +202,13 @@ internal object DeepWorldDirector {
         val balance = income - upkeep - collateral
         val credits = u.credits + balance
         return if (credits >= 0) {
-            u.copy(credits = credits) to if (kotlin.math.abs(balance) >= 100) "Ta double vie pèse sur les finances : ${if (balance >= 0) "+" else ""}$balance crédits sur cette période." else ""
+            u.copy(credits = credits) to when {
+                balance >= 100 -> "Cette période laisse un peu de marge dans ta vie civile malgré le coût de la carrière."
+                balance <= -100 -> "Cette période coûte nettement plus qu'elle ne rapporte. La double vie commence à serrer le budget."
+                else -> ""
+            }
         } else {
-            u.copy(credits = 0, debt = u.debt + -credits) to "Les coûts dépassent ce que ta vie civile peut absorber. Ta dette atteint ${u.debt + -credits} crédits."
+            u.copy(credits = 0, debt = u.debt + -credits) to "Les coûts dépassent ce que ta vie civile peut absorber. La dette devient une contrainte de carrière."
         }
     }
 
@@ -211,19 +233,29 @@ internal object DeepWorldDirector {
         return u.copy(metaLaw = law, districts = districts) to c.copy(factionStanding = standing.coerceIn(-100, 100))
     }
 
-    private fun updateNemesis(c: Campaign, u: UltimateState, event: EventNode, choice: Choice): Pair<UltimateState, String> {
+    private fun updateNemesis(c: Campaign, u: UltimateState, d: DeepLifeState, event: EventNode, choice: Choice): Pair<UltimateState, String> {
         if (!c.powerRevealed) return u to ""
         var name = u.nemesis
         var adaptation = u.nemesisAdaptation
         var echo = ""
+        val rival = d.relationships.firstOrNull { it.id == "rival" && it.alive }
         if (name.isBlank() && (event.category.contains("RIVAL", true) || choice.risk >= 7) && c.age >= 22) {
-            val candidates = listOf("Vanta", "Morrow", "Iris Null", "Kestrel", "Le Témoin", "Helix", "Mantis", "Cendre")
-            name = candidates[positiveMod(mix(c.seed, c.turn * 313L + event.id.hashCode()), candidates.size)]
+            val generated = listOf("Vanta", "Morrow", "Iris Null", "Kestrel", "Le Témoin", "Helix", "Mantis", "Cendre")
+            name = rival?.name?.takeIf { event.category.contains("RIVAL", true) || rival.grudge >= 40 }
+                ?: generated[positiveMod(mix(c.seed, c.turn * 313L + event.id.hashCode()), generated.size)]
             adaptation = 8
             echo = "$name cesse d'être un simple adversaire de circonstance. Quelque chose de personnel vient de commencer."
         } else if (name.isNotBlank()) {
-            adaptation = (adaptation + if (choice.approach == c.lastApproach && choice.approach.isNotBlank()) 4 else 2).coerceIn(0, 100)
-            if (adaptation in 50..53) echo = "$name a désormais observé assez de tes habitudes pour construire ses plans autour de tes réflexes les plus prévisibles."
+            val previousApproach = d.memories
+                .filter { it.turn < c.turn - 1 }
+                .maxByOrNull { it.turn }
+                ?.tags
+                ?.firstOrNull { it in setOf("CARE", "ORDER", "TRUTH", "ASCEND") }
+            val repeated = previousApproach != null && previousApproach == choice.approach
+            adaptation = (adaptation + if (repeated) 4 else 2).coerceIn(0, 100)
+            if (repeated && adaptation in 50..55) {
+                echo = "$name a désormais observé assez de répétitions pour construire ses plans autour de cette habitude. Changer de méthode redevient une nécessité."
+            }
         }
         return u.copy(nemesis = name, nemesisAdaptation = adaptation) to echo
     }
