@@ -1,15 +1,22 @@
 package com.metahumanlegacy.game
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -18,6 +25,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -70,13 +78,19 @@ internal fun UltimatePill(text: String, accent: Color = UltimateBlue, modifier: 
 @Composable
 internal fun UltimateMeter(label: String, value: Int, accent: Color, modifier: Modifier = Modifier, rangeMin: Int = 0, rangeMax: Int = 100) {
     val safe = ((value - rangeMin).toFloat() / (rangeMax - rangeMin).coerceAtLeast(1)).coerceIn(0f, 1f)
+    val settings = LocalMetahumanMotion.current.settings
+    val animated by animateFloatAsState(
+        targetValue = safe,
+        animationSpec = tween(MetahumanMotionTokens.duration(MetahumanMotionTokens.NORMAL, settings), easing = MetahumanMotionTokens.Standard),
+        label = "meter-$label"
+    )
     Column(modifier) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(label.uppercase(), color = UltimateMuted, fontSize = 8.sp, fontWeight = FontWeight.Black)
             Text(value.toString(), color = UltimateIvory, fontSize = 9.sp, fontWeight = FontWeight.Black)
         }
         Spacer(Modifier.height(3.dp))
-        LinearProgressIndicator(progress = { safe }, modifier = Modifier.fillMaxWidth().height(4.dp), color = accent, trackColor = Color(0xFF26303C))
+        LinearProgressIndicator(progress = { animated }, modifier = Modifier.fillMaxWidth().height(4.dp), color = accent, trackColor = Color(0xFF26303C))
     }
 }
 
@@ -226,11 +240,35 @@ internal fun UltimateHeroBanner(c: Campaign, state: UltimateState, modifier: Mod
 
 @Composable
 internal fun UltimateActionTile(title: String, subtitle: String, accent: Color = UltimateBlue, enabled: Boolean = true, onClick: () -> Unit) {
+    val settings = LocalMetahumanMotion.current.settings
+    val haptic = rememberMetahumanHaptic()
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (pressed && enabled && !settings.reduceMotion) .985f else 1f,
+        animationSpec = tween(MetahumanMotionTokens.duration(MetahumanMotionTokens.MICRO, settings), easing = MetahumanMotionTokens.Impact),
+        label = "action-tile-scale"
+    )
+    val surface by animateColorAsState(
+        targetValue = when {
+            !enabled -> Color(0x9910161E)
+            pressed -> accent.copy(alpha = .18f)
+            else -> Color(0xE8141D29)
+        },
+        animationSpec = tween(MetahumanMotionTokens.duration(MetahumanMotionTokens.MICRO, settings)),
+        label = "action-tile-surface"
+    )
     Column(
-        Modifier.fillMaxWidth().clip(CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp))
-            .background(if (enabled) Color(0xE8141D29) else Color(0x9910161E))
-            .border(1.dp, if (enabled) accent.copy(alpha = .6f) else Color(0xFF343B45), CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp))
-            .clickable(enabled = enabled, onClick = onClick).padding(11.dp)
+        Modifier.fillMaxWidth().heightIn(min = 56.dp)
+            .graphicsLayer { scaleX = scale; scaleY = scale }
+            .clip(CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp))
+            .background(surface)
+            .border(1.dp, if (enabled) accent.copy(alpha = if (pressed) .92f else .6f) else Color(0xFF343B45), CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp))
+            .clickable(enabled = enabled, interactionSource = interaction, indication = null) {
+                haptic(MetahumanMotionLevel.MOTION_SUBTLE)
+                onClick()
+            }
+            .padding(11.dp)
     ) {
         Text(title, color = if (enabled) UltimateIvory else UltimateMuted, fontWeight = FontWeight.Black, fontSize = 14.sp)
         Text(subtitle, color = UltimateMuted, fontSize = 11.sp, lineHeight = 15.sp)
