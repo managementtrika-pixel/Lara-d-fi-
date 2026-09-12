@@ -240,7 +240,7 @@ fun UltimateMetahumanLegacyApp(context: Context) {
                             val c = campaign!!
                             val u = ultimate ?: UltimateStore.fallback(c).also { ultimate = it }
                             val a = (annual ?: AnnualActionPersistence.load(context, c)).synced(c).also { annual = it }
-                            val dl = (deep ?: DeepLifePersistence.load(context, c, u)).also { deep = it }
+                            (deep ?: DeepLifePersistence.load(context, c, u)).also { deep = it }
                             UltimateCareerShell(
                                 c = c,
                                 state = u,
@@ -263,22 +263,27 @@ fun UltimateMetahumanLegacyApp(context: Context) {
                                     val currentDeep = deep ?: DeepLifePersistence.load(context, current, currentState)
                                     val result = UltimateGameEngine.resolve(current, currentState, event, choice)
                                     val deepUpdate = DeepLifeRuntime.afterChoice(current, result.campaign, event, choice, currentDeep)
-                                    val nextDeep = DeepLifeDirector.revealPower(result.campaign, deepUpdate.state)
-                                    val nextAnnual = (annual ?: AnnualActionState.fresh(result.campaign)).synced(result.campaign)
-                                    persist(result.campaign, result.state, nextAnnual, nextDeep)
+                                    val worldUpdate = DeepWorldDirector.afterChoice(result.campaign, result.state, deepUpdate.state, event, choice)
+                                    val nextDeep = DeepLifeDirector.revealPower(worldUpdate.campaign, worldUpdate.deep)
+                                    val nextAnnual = (annual ?: AnnualActionState.fresh(worldUpdate.campaign)).synced(worldUpdate.campaign)
+                                    persist(worldUpdate.campaign, worldUpdate.ultimate, nextAnnual, nextDeep)
                                     val combinedOutcome = buildString {
                                         append(result.outcome)
                                         if (deepUpdate.echo.isNotBlank()) {
                                             append("\n\nTRACE DE VIE\n")
                                             append(deepUpdate.echo)
                                         }
-                                        if (result.campaign.powerRevealed && event.kind != "FORMATIVE") {
+                                        if (worldUpdate.echo.isNotBlank()) {
+                                            append("\n\nMONDE QUI RÉAGIT\n")
+                                            append(worldUpdate.echo)
+                                        }
+                                        if (worldUpdate.campaign.powerRevealed && event.kind != "FORMATIVE") {
                                             append("\n\nPERCEPTIONS\n")
                                             append(DeepLifeRuntime.perceptionSummary(nextDeep))
                                         }
                                     }
                                     outcome = combinedOutcome
-                                    saveUltimateOutcome(context, result.campaign.seed, combinedOutcome)
+                                    saveUltimateOutcome(context, worldUpdate.campaign.seed, combinedOutcome)
                                 },
                                 onAction = { card ->
                                     val current = campaign ?: return@UltimateCareerShell null
@@ -289,10 +294,12 @@ fun UltimateMetahumanLegacyApp(context: Context) {
                                     val action = AnnualActionEngine.perform(current, currentAnnual, card) ?: return@UltimateCareerShell null
                                     val nextState = UltimateGameEngine.afterAnnualAction(action.campaign, currentState, action.state, card)
                                     val deepUpdate = DeepLifeRuntime.afterAnnualAction(action.campaign, card, currentDeep)
-                                    persist(action.campaign, nextState, action.state, deepUpdate.state)
+                                    val worldUpdate = DeepWorldDirector.afterAnnualAction(action.campaign, nextState, deepUpdate.state, card)
+                                    persist(worldUpdate.campaign, worldUpdate.ultimate, action.state, worldUpdate.deep)
+                                    val extra = listOf(deepUpdate.echo, worldUpdate.echo).filter { it.isNotBlank() }.joinToString("\n\n")
                                     action.copy(
-                                        campaign = action.campaign,
-                                        text = if (deepUpdate.echo.isBlank()) action.text else action.text + "\n\n" + deepUpdate.echo
+                                        campaign = worldUpdate.campaign,
+                                        text = if (extra.isBlank()) action.text else action.text + "\n\n" + extra
                                     )
                                 },
                                 onStateChange = { next ->
