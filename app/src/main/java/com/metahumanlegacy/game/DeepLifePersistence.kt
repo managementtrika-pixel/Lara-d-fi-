@@ -4,16 +4,19 @@ import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
 
-/** Structured, versioned persistence for the V2 simulation layer. */
+/** Structured, versioned persistence for the deep simulation layer. */
 internal object DeepLifePersistence {
     private const val PREFS = "mhl_deep_life_v2"
-    private const val CURRENT_SCHEMA = 1
+    private const val CURRENT_SCHEMA = 2
 
     fun load(context: Context, campaign: Campaign, ultimate: UltimateState): DeepLifeState {
         val raw = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
             .getString(campaign.seed.toString(), null)
         val decoded = raw?.let(::decode)?.takeIf { it.seed == campaign.seed }
-        return migrate(decoded ?: DeepLifeDirector.bootstrap(campaign, ultimate))
+        val migrated = migrate(decoded ?: DeepLifeDirector.bootstrap(campaign, ultimate))
+        return if (migrated.lifeSimulation == null) {
+            migrated.copy(lifeSimulation = LifeSimulationDirector.bootstrap(campaign, migrated))
+        } else migrated
     }
 
     fun save(context: Context, state: DeepLifeState) {
@@ -44,6 +47,7 @@ internal object DeepLifePersistence {
         root.put("drama", dramaJson(state.drama))
         state.powerEvolution?.let { root.put("powerEvolution", powerJson(it)) }
         root.put("personality", JSONObject().apply { state.personality.forEach { (k, v) -> put(k, v) } })
+        state.lifeSimulation?.let { root.put("lifeSimulation", LifeSimulationJson.encode(it)) }
         return root.toString()
     }
 
@@ -69,7 +73,8 @@ internal object DeepLifePersistence {
             opportunities = root.optJSONArray("opportunities").objects(::opportunityFromJson),
             drama = root.optJSONObject("drama")?.let(::dramaFromJson) ?: DramaState(),
             powerEvolution = root.optJSONObject("powerEvolution")?.let(::powerFromJson),
-            personality = personality
+            personality = personality,
+            lifeSimulation = root.optJSONObject("lifeSimulation")?.let(LifeSimulationJson::decode)
         )
     }.getOrNull()
 
