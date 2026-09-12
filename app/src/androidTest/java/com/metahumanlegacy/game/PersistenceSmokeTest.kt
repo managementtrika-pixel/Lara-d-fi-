@@ -34,13 +34,36 @@ class PersistenceSmokeTest {
         val ultimate = UltimateStore.create(campaign, draft)
         val annual = AnnualActionState.fresh(campaign)
         val baseDeep = DeepLifeDirector.bootstrap(campaign, ultimate)
+        val lifeSimulation = LifeSimulationState(
+            civil = CivilLifeState(
+                employment = EmploymentStatus.EMPLOYED,
+                jobTitle = "Technicien",
+                monthlyIncome = 2100,
+                savings = 4200,
+                housing = HousingTier.STUDIO,
+                housingCost = 650,
+                stress = 37,
+                freeMoments = 1,
+                education = 32,
+                careerProgress = 28
+            ),
+            relationshipLives = listOf(
+                RelationshipLifeState("friend", secretKnowledge = SecretKnowledge.KNOWS, sharedSecrets = listOf("Identité métahumaine"))
+            ),
+            districts = listOf(DistrictLifeState("quartier", safety = 67, criminalControl = 11, mediaHeat = 8)),
+            powerRules = PowerRulesState(control = 44, precision = 39, fatigue = 28, overload = 6),
+            secretIdentity = IdentitySecretState(exposure = 19, knownBy = mapOf("friend" to SecretKnowledge.KNOWS)),
+            calendarYear = 31,
+            actionLog = listOf("31: Patrouiller")
+        )
         val deep = baseDeep.copy(
             memories = baseDeep.memories + CharacterMemory("m1", 0, 8, "friend", "ORIGIN", "Une promesse d'enfance", "ATTACHEMENT", 8, setOf("SECRET")),
             perception = baseDeep.perception.copy(district = 22, criminalFear = 41),
             injuries = listOf(PersistentInjury("i1", "épaule", 6, "Le viaduc", 31, true, 45)),
             identityEvidence = listOf(IdentityEvidence("e1", "VIDÉO", 35, "journalist", 20, "Une silhouette concorde.")),
             opportunities = listOf(Opportunity("o1", "Voir un proche", "RELATION", 3, 4, "friend")),
-            personality = baseDeep.personality + ("LOYAL" to 37)
+            personality = baseDeep.personality + ("LOYAL" to 37),
+            lifeSimulation = lifeSimulation
         )
 
         saveCampaignV4(context, campaign)
@@ -72,7 +95,7 @@ class PersistenceSmokeTest {
 
         val loadedDeep = DeepLifePersistence.load(context, loadedCampaign, loadedUltimate)
         assertEquals(seed, loadedDeep.seed)
-        assertEquals(1, loadedDeep.schemaVersion)
+        assertEquals(2, loadedDeep.schemaVersion)
         assertTrue(loadedDeep.memories.any { it.id == "m1" && it.weight == 8 })
         assertEquals(22, loadedDeep.perception.district)
         assertEquals(41, loadedDeep.perception.criminalFear)
@@ -82,6 +105,19 @@ class PersistenceSmokeTest {
         assertEquals("Voir un proche", loadedDeep.opportunities.single().title)
         assertEquals(37, loadedDeep.personality["LOYAL"])
         assertTrue(loadedDeep.relationships.isNotEmpty())
+
+        val loadedLife = loadedDeep.lifeSimulation
+        assertNotNull(loadedLife)
+        assertEquals("Technicien", loadedLife!!.civil.jobTitle)
+        assertEquals(4200, loadedLife.civil.savings)
+        assertEquals(HousingTier.STUDIO, loadedLife.civil.housing)
+        assertEquals(1, loadedLife.civil.freeMoments)
+        assertEquals(67, loadedLife.districts.single().safety)
+        assertEquals(11, loadedLife.districts.single().criminalControl)
+        assertEquals(44, loadedLife.powerRules.control)
+        assertEquals(19, loadedLife.secretIdentity.exposure)
+        assertEquals(SecretKnowledge.KNOWS, loadedLife.secretIdentity.knownBy["friend"])
+        assertEquals(listOf("31: Patrouiller"), loadedLife.actionLog)
 
         UltimateStore.clear(context, seed)
         AnnualActionPersistence.clear(context, seed)
