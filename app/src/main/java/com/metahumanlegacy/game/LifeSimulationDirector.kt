@@ -25,10 +25,12 @@ internal object LifeSimulationDirector {
     /** Keep one persistent simulation while refreshing only genuinely annual resources. */
     fun synced(c: Campaign, deep: DeepLifeState, state: LifeSimulationState): LifeSimulationState {
         val yearChanged = state.calendarYear != c.age
+        val migratingLegacyRelationships = state.schemaVersion < 2
         val existingById = state.relationshipLives.associateBy { it.personId }
         val relationships = deep.relationships.filter { it.alive }.map { person ->
             val existing = existingById[person.id] ?: RelationshipLifeState(person.id, closeness = initialCloseness(person))
             existing.copy(
+                closeness = if (migratingLegacyRelationships) maxOf(existing.closeness, initialCloseness(person)) else existing.closeness,
                 secretKnowledge = when {
                     person.knowsIdentity -> SecretKnowledge.KNOWS
                     existing.secretKnowledge == SecretKnowledge.KNOWS -> SecretKnowledge.KNOWS
@@ -38,6 +40,7 @@ internal object LifeSimulationDirector {
             )
         }
         return state.copy(
+            schemaVersion = 2,
             civil = if (yearChanged) state.civil.copy(freeMoments = annualMoments(c.age)) else state.civil,
             relationshipLives = relationships,
             calendarYear = c.age
