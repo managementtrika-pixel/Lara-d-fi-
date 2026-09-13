@@ -1,11 +1,6 @@
 package com.metahumanlegacy.game
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.util.Base64
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,16 +9,14 @@ import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -43,52 +36,97 @@ internal object MetahumanDimensions { val Screen = 16.dp; val Panel = 14.dp; val
 internal val MetahumanPanelShape = CutCornerShape(topStart = 12.dp, topEnd = 2.dp, bottomEnd = 12.dp, bottomStart = 2.dp)
 internal val MetahumanButtonShape = CutCornerShape(topStart = 8.dp, topEnd = 2.dp, bottomEnd = 8.dp, bottomStart = 2.dp)
 
-private object MhlVisualStore {
-    private const val CELL = 72
-    private const val COLUMNS = 5
-    private var atlas: Bitmap? = null
-    private val crops = mutableMapOf<String, ImageBitmap>()
-    private val indices = mapOf(
-        "brand_hero" to 0, "brand_villain" to 1, "route_care" to 2, "route_order" to 3, "route_truth" to 4, "route_ascend" to 5,
-        "morality_hero" to 6, "morality_neutral" to 7, "morality_villain" to 8, "rank_bronze" to 9, "rank_gold" to 10, "rank_legend" to 11,
-        "scope_street" to 12, "scope_district" to 13, "scope_city" to 14, "scope_region" to 15, "scope_country" to 16, "scope_world" to 17,
-        "danger_low" to 18, "danger_high" to 19, "danger_extreme" to 20, "power_strength" to 21, "power_speed" to 22, "power_senses" to 23,
-        "power_fire" to 24, "power_ice" to 25, "power_water" to 26, "power_wind" to 27, "power_energy" to 28, "power_cosmic" to 29,
-        "power_forcefield" to 30, "power_time" to 31, "origin_psychic" to 32, "origin_mystic" to 33, "origin_unknown" to 34,
-        "relation_family" to 35, "relation_rival" to 36, "relation_media" to 37, "public_fear" to 38, "prestige_hero" to 39,
-        "alt_01" to 40, "alt_02" to 41, "alt_03" to 42, "alt_04" to 43, "alt_05" to 44, "alt_06" to 45, "alt_07" to 46,
-        "alt_08" to 47, "alt_09" to 48, "alt_10" to 49
-    )
+private fun mhlIconAccent(key: String): Color = when {
+    key.contains("danger_extreme") || key.contains("villain") -> MetahumanColors.Red
+    key.contains("danger_high") || key.contains("fire") -> Color(0xFFFF8A4A)
+    key.contains("care") || key.contains("family") || key.contains("green") -> MetahumanColors.Green
+    key.contains("truth") || key.contains("psychic") || key.contains("mystic") || key.contains("cosmic") -> MetahumanColors.Violet
+    key.contains("gold") || key.contains("legend") || key.contains("prestige") -> MetahumanColors.Gold
+    key.contains("ice") || key.contains("water") || key.contains("wind") -> Color(0xFF74D4FF)
+    else -> MetahumanColors.ElectricBlue
+}
 
-    fun image(context: Context, key: String): ImageBitmap? = synchronized(this) {
-        crops[key]?.let { return@synchronized it }
-        val index = indices[key] ?: return@synchronized null
-        val source = atlas ?: runCatching {
-            val encoded = buildString(194_000) {
-                for (i in 1..10) {
-                    val path = "metahuman/comic_atlas_${i.toString().padStart(2, '0')}.b64"
-                    append(context.assets.open(path).bufferedReader().use { it.readText() }.trim())
+private fun DrawScope.drawMhlPixelIcon(key: String) {
+    val accent = mhlIconAccent(key)
+    val dark = MetahumanColors.Ink
+    val panel = MetahumanColors.PanelRaised
+    val unit = (minOf(size.width, size.height) / 12f).coerceAtLeast(1f)
+    val ox = (size.width - unit * 12f) / 2f
+    val oy = (size.height - unit * 12f) / 2f
+    fun p(x: Int, y: Int, w: Int = 1, h: Int = 1, c: Color = accent) {
+        drawRect(c, Offset(ox + x * unit, oy + y * unit), Size(w * unit, h * unit))
+    }
+
+    drawRect(panel)
+    drawRect(dark, Offset(ox + unit, oy + unit), Size(unit * 10f, unit * 10f), style = Stroke(width = unit * .55f))
+    p(1, 1, 2, 1, accent.copy(alpha = .45f)); p(9, 10, 2, 1, accent.copy(alpha = .45f))
+
+    when {
+        key.startsWith("scope_") -> {
+            val level = when {
+                key.endsWith("street") -> 1; key.endsWith("district") -> 2; key.endsWith("city") -> 3
+                key.endsWith("region") -> 4; key.endsWith("country") -> 5; else -> 6
+            }
+            repeat(4) { i ->
+                val h = (2 + ((i + level) % 5)).coerceAtMost(7)
+                p(2 + i * 2, 9 - h, 1, h, if (i < level.coerceAtMost(4)) accent else accent.copy(alpha = .45f))
+            }
+            p(1, 9, 10, 1, MetahumanColors.Muted.copy(alpha = .65f))
+        }
+        key.startsWith("danger_") -> {
+            p(5, 2, 2, 1); p(4, 3, 4, 2); p(3, 5, 6, 2); p(2, 7, 8, 2)
+            p(5, 4, 2, 3, dark); p(5, 8, 2, 1, dark)
+        }
+        key.startsWith("relation_") || key == "public_fear" -> {
+            p(2, 3, 3, 3); p(7, 3, 3, 3)
+            p(3, 7, 6, 1, accent.copy(alpha = .75f))
+            p(4, 8, 4, 1, accent.copy(alpha = .55f))
+            if (key.contains("rival") || key.contains("fear")) { p(5, 6, 2, 3, MetahumanColors.Red) }
+        }
+        key.startsWith("route_") -> {
+            p(5, 2, 2, 2); p(4, 4, 4, 2); p(3, 6, 6, 2); p(5, 8, 2, 2)
+            when {
+                key.endsWith("care") -> { p(5, 4, 2, 1, MetahumanColors.Ivory); p(5, 6, 2, 1, MetahumanColors.Ivory) }
+                key.endsWith("order") -> { p(3, 5, 6, 1, dark); p(3, 7, 6, 1, dark) }
+                key.endsWith("truth") -> { p(4, 5, 4, 2, dark); p(5, 5, 2, 2, MetahumanColors.Ivory) }
+                else -> p(5, 3, 2, 6, MetahumanColors.Ivory.copy(alpha = .8f))
+            }
+        }
+        key.startsWith("rank_") || key.startsWith("prestige_") -> {
+            p(5, 2, 2, 2); p(3, 4, 6, 1); p(4, 5, 4, 4); p(3, 9, 6, 1)
+            p(5, 6, 2, 2, MetahumanColors.Ivory.copy(alpha = .8f))
+        }
+        key.startsWith("morality_") || key.startsWith("brand_") -> {
+            p(3, 2, 6, 2); p(2, 4, 8, 5); p(4, 9, 4, 1)
+            p(4, 5, 1, 1, dark); p(7, 5, 1, 1, dark)
+            if (key.contains("villain")) p(4, 8, 4, 1, dark) else p(4, 7, 4, 1, MetahumanColors.Ivory.copy(alpha = .75f))
+        }
+        key.startsWith("power_") || key.startsWith("origin_") -> {
+            val variant = (key.hashCode().toUInt().toLong() % 5L).toInt()
+            when (variant) {
+                0 -> { p(6, 2, 2, 3); p(4, 5, 3, 2); p(5, 7, 2, 3); p(7, 5, 2, 2) }
+                1 -> { p(5, 2, 2, 2); p(3, 4, 6, 2); p(2, 6, 8, 2); p(4, 8, 4, 2) }
+                2 -> { p(2, 5, 8, 2); p(5, 2, 2, 8); p(3, 3, 1, 1); p(8, 8, 1, 1) }
+                3 -> { p(3, 3, 6, 6); p(4, 4, 4, 4, panel); p(5, 5, 2, 2) }
+                else -> { p(5, 2, 2, 2); p(3, 4, 6, 1); p(2, 5, 8, 2); p(3, 7, 6, 1); p(5, 8, 2, 2) }
+            }
+        }
+        else -> {
+            val bits = key.hashCode().toUInt().toLong()
+            repeat(5) { row ->
+                repeat(5) { col ->
+                    val on = ((bits ushr (row * 5 + col)) and 1L) == 1L
+                    if (on) p(3 + col, 3 + row, 1, 1)
                 }
             }
-            val bytes = Base64.decode(encoded, Base64.DEFAULT)
-            BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-        }.getOrNull()?.also { atlas = it } ?: return@synchronized null
-        val x = (index % COLUMNS) * CELL; val y = (index / COLUMNS) * CELL
-        if (x + CELL > source.width || y + CELL > source.height) return@synchronized null
-        Bitmap.createBitmap(source, x, y, CELL, CELL).asImageBitmap().also { crops[key] = it }
+            p(5, 5, 2, 2, MetahumanColors.Ivory.copy(alpha = .45f))
+        }
     }
 }
 
 @Composable internal fun MhlAsset(key: String, contentDescription: String, modifier: Modifier = Modifier, size: Dp = 68.dp) {
-    val context = LocalContext.current
-    val image = remember(key) { MhlVisualStore.image(context, key) }
     val m = modifier.size(size).semantics { this.contentDescription = contentDescription }
-    if (image != null) Image(image, contentDescription, m, contentScale = ContentScale.Fit)
-    else Canvas(m) {
-        drawCircle(MetahumanColors.PanelRaised); drawCircle(MetahumanColors.Gold, style = Stroke(width = 3f))
-        drawLine(MetahumanColors.Gold, center.copy(x = center.x * .55f), center.copy(x = center.x * 1.45f), 3f)
-        drawLine(MetahumanColors.Gold, center.copy(y = center.y * .55f), center.copy(y = center.y * 1.45f), 3f)
-    }
+    Canvas(m) { drawMhlPixelIcon(key) }
 }
 
 @Composable internal fun MhlScreen(modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
@@ -100,10 +138,10 @@ private object MhlVisualStore {
         val gap = 22.dp.toPx(); val radius = 1.15.dp.toPx(); var y = gap / 2f; var row = 0
         while (y < size.height) {
             var x = if (row % 2 == 0) gap / 2f else gap
-            while (x < size.width) { drawCircle(Color(0x152E83FF), radius, androidx.compose.ui.geometry.Offset(x, y)); x += gap }
+            while (x < size.width) { drawCircle(Color(0x152E83FF), radius, Offset(x, y)); x += gap }
             y += gap; row++
         }
-        drawRect(Color(0x161855B6), topLeft = androidx.compose.ui.geometry.Offset(0f, size.height * .78f), size = androidx.compose.ui.geometry.Size(size.width, size.height * .22f))
+        drawRect(Color(0x161855B6), topLeft = Offset(0f, size.height * .78f), size = Size(size.width, size.height * .22f))
     }
 }
 
