@@ -92,11 +92,12 @@ object GameEngine {
     }
 
     fun event(c: Campaign): EventNode {
-        val authoredBase = NarrativeRepository.event(c)
+        val authoredBase = NarrativeScopeGuard.enforce(c, NarrativeRepository.event(c))
         val replayable = FormativeVariationDirector.enrich(c, authoredBase)
         val authored = NarrativeRepairDirector.repair(c, replayable)
         val deep = DepthDirector.enrichEvent(c, authored)
-        val varied = CareerVariationDirector.enrich(c, deep)
+        val scaled = ScopeEscalationDirector.enrich(c, deep)
+        val varied = CareerVariationDirector.enrich(c, scaled)
         val powered = PowerGameplayDirector.enrich(c, varied)
         return LifeStageDirector.enrich(c, powered)
     }
