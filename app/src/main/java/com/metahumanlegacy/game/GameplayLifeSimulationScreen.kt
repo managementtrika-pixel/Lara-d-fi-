@@ -62,9 +62,6 @@ private fun GameplayLifeSimulationScreen(
 ) {
     val raw = deep.lifeSimulation ?: LifeSimulationDirector.bootstrap(c, deep)
     val simulation = LifeSimulationDirector.synced(c, deep, raw)
-    // Keep the result visible while the simulation persists the action. Using actionLog.size as a
-    // remember key recreated this state on every successful action and could erase the feedback
-    // before the player had a chance to read it. A new narrative turn still clears old feedback.
     var feedback by remember(c.seed, c.turn) { mutableStateOf<LifeActionResult?>(null) }
     val peopleById = deep.relationships.associateBy { it.id }
     val actions = LifeSimulationDirector.availableActions(c, simulation)
@@ -80,6 +77,29 @@ private fun GameplayLifeSimulationScreen(
             Text(simulation.civil.jobTitle, color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 17.sp)
             Text("Économies ${simulation.civil.savings} · logement ${housingLabel(simulation.civil.housing)}", color = UltimateMuted, fontSize = 11.sp)
             Text("Stress ${lifeBand(simulation.civil.stress)} · progression ${lifeBand(simulation.civil.careerProgress)}", color = UltimateMuted, fontSize = 11.sp)
+        }
+
+        val closePeople = simulation.relationshipLives.sortedByDescending { it.closeness }.take(4)
+        if (closePeople.isNotEmpty()) {
+            Spacer(Modifier.height(7.dp))
+            UltimatePanel(accent = UltimateGold) {
+                Text("TES LIENS", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 9.sp)
+                closePeople.forEach { rel ->
+                    val person = peopleById[rel.personId]
+                    val secret = when (rel.secretKnowledge) {
+                        SecretKnowledge.KNOWS, SecretKnowledge.PROTECTS -> " · connaît ton identité"
+                        SecretKnowledge.SUSPECTS -> " · soupçonne quelque chose"
+                        SecretKnowledge.THREATENS -> " · identité sous tension"
+                        else -> ""
+                    }
+                    Text(
+                        "${person?.name ?: rel.personId} · ${relationshipBand(rel.closeness)}$secret",
+                        color = UltimateIvory,
+                        fontSize = 11.sp
+                    )
+                }
+                Text("Consacrer du temps à quelqu'un renforce réellement le lien et ouvre de nouvelles actions.", color = UltimateMuted, fontSize = 10.sp)
+            }
         }
 
         if (c.powerRevealed) {
@@ -113,9 +133,13 @@ private fun GameplayLifeSimulationScreen(
         Text("QUE FAIS-TU DE TON TEMPS ?", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 9.sp)
         Spacer(Modifier.height(6.dp))
         actions.forEach { action ->
+            val name = peopleById[action.targetId]?.name ?: "un proche"
+            val closeness = simulation.relationshipLives.firstOrNull { it.personId == action.targetId }?.closeness
             val label = when (action.type) {
-                LifeActionType.VISIT_PERSON -> "Voir ${peopleById[action.targetId]?.name ?: "un proche"}"
-                LifeActionType.REVEAL_IDENTITY -> "Révéler ton identité à ${peopleById[action.targetId]?.name ?: "un proche"}"
+                LifeActionType.VISIT_PERSON -> "Voir $name${closeness?.let { " · ${relationshipBand(it)}" } ?: ""}"
+                LifeActionType.ASK_HELP -> "Demander de l'aide à $name"
+                LifeActionType.REVEAL_IDENTITY -> "Révéler ton identité à $name"
+                LifeActionType.DISTANCE_PERSON -> "Prendre de la distance avec $name"
                 else -> action.label
             }
             MhlSecondaryButton(
@@ -145,6 +169,15 @@ private fun housingLabel(value: HousingTier): String = when (value) {
     HousingTier.APARTMENT -> "appartement"
     HousingTier.HOUSE -> "maison"
     HousingTier.BASE -> "base"
+}
+
+private fun relationshipBand(value: Int): String = when {
+    value >= 75 -> "confiance profonde"
+    value >= 50 -> "très proche"
+    value >= 35 -> "proche"
+    value >= 20 -> "lien réel"
+    value < 0 -> "distant"
+    else -> "connaissance"
 }
 
 private fun lifeBand(value: Int): String = when {

@@ -5,6 +5,7 @@ internal object LifeSimulationDirector {
         val relationships = deep.relationships.map {
             RelationshipLifeState(
                 personId = it.id,
+                closeness = initialCloseness(it),
                 secretKnowledge = if (it.knowsIdentity) SecretKnowledge.KNOWS else SecretKnowledge.UNAWARE
             )
         }
@@ -24,10 +25,12 @@ internal object LifeSimulationDirector {
     /** Keep one persistent simulation while refreshing only genuinely annual resources. */
     fun synced(c: Campaign, deep: DeepLifeState, state: LifeSimulationState): LifeSimulationState {
         val yearChanged = state.calendarYear != c.age
+        val migratingLegacyRelationships = state.schemaVersion < 2
         val existingById = state.relationshipLives.associateBy { it.personId }
         val relationships = deep.relationships.filter { it.alive }.map { person ->
-            val existing = existingById[person.id] ?: RelationshipLifeState(person.id)
+            val existing = existingById[person.id] ?: RelationshipLifeState(person.id, closeness = initialCloseness(person))
             existing.copy(
+                closeness = if (migratingLegacyRelationships) maxOf(existing.closeness, initialCloseness(person)) else existing.closeness,
                 secretKnowledge = when {
                     person.knowsIdentity -> SecretKnowledge.KNOWS
                     existing.secretKnowledge == SecretKnowledge.KNOWS -> SecretKnowledge.KNOWS
@@ -37,6 +40,7 @@ internal object LifeSimulationDirector {
             )
         }
         return state.copy(
+            schemaVersion = 2,
             civil = if (yearChanged) state.civil.copy(freeMoments = annualMoments(c.age)) else state.civil,
             relationshipLives = relationships,
             calendarYear = c.age
@@ -44,10 +48,37 @@ internal object LifeSimulationDirector {
     }
 
     fun mergedIntoDeep(deep: DeepLifeState, simulation: LifeSimulationState): DeepLifeState {
-        val knowledge = simulation.relationshipLives.associate { it.personId to it.secretKnowledge }
+        val lifeById = simulation.relationshipLives.associateBy { it.personId }
         val relationships = deep.relationships.map { person ->
-            val knows = knowledge[person.id] in setOf(SecretKnowledge.KNOWS, SecretKnowledge.PROTECTS, SecretKnowledge.THREATENS)
-            if (knows && !person.knowsIdentity) person.copy(knowsIdentity = true) else person
+            val life = lifeById[person.id] ?: return@map person
+            val knows = life.secretKnowledge in setOf(SecretKnowledge.KNOWS, SecretKnowledge.PROTECTS, SecretKnowledge.THREATENS)
+            val phase = when {
+                life.closeness >= 75 -> RelationshipPhase.TRUSTED
+                life.closeness >= 50 -> RelationshipPhase.CLOSE
+                life.closeness >= 25 && person.phase in setOf(RelationshipPhase.STRANGER, RelationshipPhase.ACQUAINTANCE, RelationshipPhase.FRIEND) -> RelationshipPhase.FRIEND
+                life.closeness <= -20 -> RelationshipPhase.DISTANT
+                else -> person.phase
+            }
+            val trust = when {
+                life.closeness >= 75 -> maxOf(person.trust, 82)
+                life.closeness >= 50 -> maxOf(person.trust, 72)
+                life.closeness >= 25 -> maxOf(person.trust, 60)
+                life.closeness <= -20 -> minOf(person.trust, 35)
+                else -> person.trust
+            }
+            val affection = when {
+                life.closeness >= 75 -> maxOf(person.affection, 78)
+                life.closeness >= 50 -> maxOf(person.affection, 68)
+                life.closeness >= 25 -> maxOf(person.affection, 58)
+                life.closeness <= -20 -> minOf(person.affection, 35)
+                else -> person.affection
+            }
+            person.copy(
+                phase = phase,
+                trust = trust,
+                affection = affection,
+                knowsIdentity = person.knowsIdentity || knows
+            )
         }
         return deep.copy(lifeSimulation = simulation, relationships = relationships)
     }
@@ -67,8 +98,14 @@ internal object LifeSimulationDirector {
         }
         state.relationshipLives.filter { it.availability > 0 }.take(4).forEach { rel ->
             civil += LifeAction(LifeActionType.VISIT_PERSON, rel.personId, "Voir ${rel.personId}")
-            if (c.powerRevealed && rel.secretKnowledge == SecretKnowledge.UNAWARE) {
+            if (rel.closeness >= 35) {
+                civil += LifeAction(LifeActionType.ASK_HELP, rel.personId, "Demander de l'aide")
+            }
+            if (c.powerRevealed && rel.secretKnowledge == SecretKnowledge.UNAWARE && rel.closeness >= 30) {
                 civil += LifeAction(LifeActionType.REVEAL_IDENTITY, rel.personId, "Révéler mon identité")
+            }
+            if (rel.closeness >= 20) {
+                civil += LifeAction(LifeActionType.DISTANCE_PERSON, rel.personId, "Prendre de la distance")
             }
         }
         return civil
@@ -161,26 +198,60 @@ internal object LifeSimulationDirector {
         val target = state.relationshipLives.firstOrNull { it.personId == id }
             ?: return LifeActionResult(state, "Personne introuvable", "Cette personne ne fait plus partie de ta vie actuelle.")
         if (target.availability <= 0) return LifeActionResult(state, "Indisponible", "Cette personne n'a plus de place disponible pour toi cette année.")
+        if (action.type == LifeActionType.ASK_HELP && target.closeness < 35) {
+            return LifeActionResult(state, "Lien encore fragile", "Vous n'avez pas encore construit assez de confiance pour demander ce type d'aide.")
+        }
+        if (action.type == LifeActionType.REVEAL_IDENTITY && target.closeness < 30) {
+            return LifeActionResult(state, "Trop tôt", "Révéler ton identité à quelqu'un d'aussi peu proche serait un pari énorme.")
+        }
         val next = state.relationshipLives.map { rel ->
             if (rel.personId != id) rel else when (action.type) {
-                LifeActionType.VISIT_PERSON -> rel.copy(availability = (rel.availability - 25).coerceAtLeast(0), lastContactTurn = state.calendarYear)
-                LifeActionType.APOLOGIZE -> rel.copy(promises = (rel.promises + "Excuses reçues").takeLast(8), availability = (rel.availability - 15).coerceAtLeast(0), lastContactTurn = state.calendarYear)
-                LifeActionType.ASK_HELP -> rel.copy(promises = (rel.promises + "Aide demandée").takeLast(8), availability = (rel.availability - 30).coerceAtLeast(0), lastContactTurn = state.calendarYear)
-                LifeActionType.REVEAL_IDENTITY -> rel.copy(secretKnowledge = SecretKnowledge.KNOWS, sharedSecrets = (rel.sharedSecrets + "Identité métahumaine").distinct(), availability = (rel.availability - 20).coerceAtLeast(0))
-                LifeActionType.DISTANCE_PERSON -> rel.copy(bond = if (rel.bond == BondStatus.PARTNER) BondStatus.SEPARATED else BondStatus.NONE, availability = 100)
+                LifeActionType.VISIT_PERSON -> rel.copy(
+                    closeness = (rel.closeness + 10).coerceAtMost(100),
+                    availability = (rel.availability - 25).coerceAtLeast(0),
+                    lastContactTurn = state.calendarYear
+                )
+                LifeActionType.APOLOGIZE -> rel.copy(
+                    closeness = (rel.closeness + 6).coerceAtMost(100),
+                    promises = (rel.promises + "Excuses reçues").takeLast(8),
+                    availability = (rel.availability - 15).coerceAtLeast(0),
+                    lastContactTurn = state.calendarYear
+                )
+                LifeActionType.ASK_HELP -> rel.copy(
+                    closeness = (rel.closeness + 3).coerceAtMost(100),
+                    promises = (rel.promises + "Aide demandée").takeLast(8),
+                    availability = (rel.availability - 30).coerceAtLeast(0),
+                    lastContactTurn = state.calendarYear
+                )
+                LifeActionType.REVEAL_IDENTITY -> rel.copy(
+                    closeness = (rel.closeness + 12).coerceAtMost(100),
+                    secretKnowledge = SecretKnowledge.KNOWS,
+                    sharedSecrets = (rel.sharedSecrets + "Identité métahumaine").distinct(),
+                    availability = (rel.availability - 20).coerceAtLeast(0),
+                    lastContactTurn = state.calendarYear
+                )
+                LifeActionType.DISTANCE_PERSON -> rel.copy(
+                    closeness = (rel.closeness - 35).coerceAtLeast(-40),
+                    bond = if (rel.bond == BondStatus.PARTNER) BondStatus.SEPARATED else BondStatus.NONE,
+                    availability = 100,
+                    lastContactTurn = state.calendarYear
+                )
                 else -> rel
             }
         }
         val knownBy = if (action.type == LifeActionType.REVEAL_IDENTITY) state.secretIdentity.knownBy + (id to SecretKnowledge.KNOWS) else state.secretIdentity.knownBy
         val text = when (action.type) {
-            LifeActionType.REVEAL_IDENTITY -> "Tu confies quelque chose qui ne pourra plus être repris."
+            LifeActionType.REVEAL_IDENTITY -> "Tu confies quelque chose qui ne pourra plus être repris. Ce niveau de confiance change durablement votre relation."
             LifeActionType.APOLOGIZE -> "Tu affrontes ce qui s'est passé au lieu de laisser le silence décider."
-            LifeActionType.ASK_HELP -> "Tu acceptes de ne pas tout porter seul·e."
-            LifeActionType.DISTANCE_PERSON -> "Tu crées volontairement de la distance, avec les conséquences que cela implique."
-            else -> "Tu consacres du temps à cette personne. La relation existe aussi entre les crises."
+            LifeActionType.ASK_HELP -> "Tu acceptes de ne pas tout porter seul·e, et cette confiance renforce le lien."
+            LifeActionType.DISTANCE_PERSON -> "Tu crées volontairement de la distance. Le lien recule réellement au lieu de rester figé dans les statistiques."
+            else -> "Tu consacres du temps à cette personne. Votre proximité augmente et peut ouvrir des choix plus intimes plus tard."
         }
         return result(state.copy(relationshipLives = next, secretIdentity = state.secretIdentity.copy(knownBy = knownBy)), action, "Un moment personnel", text)
     }
+
+    private fun initialCloseness(person: DeepRelationship): Int =
+        (((person.trust + person.affection) / 2) - 40).coerceIn(0, 60)
 
     private fun annualMoments(age: Int): Int = when {
         age < 12 -> 2

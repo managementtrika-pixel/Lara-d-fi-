@@ -59,9 +59,39 @@ class LifeSimulationDirectorTest {
         assertTrue(result.state.secretIdentity.exposure > state.secretIdentity.exposure)
     }
 
-    @Test fun revealingIdentityPersistsForThatPerson() {
+    @Test fun spendingTimeWithSomeoneBuildsClosenessAndDeepTrust() {
         val c = campaign()
         val deep = DeepLifeState(seed = c.seed, relationships = listOf(DeepRelationship("ami", "Ami", "ami")))
+        var state = LifeSimulationDirector.bootstrap(c, deep).copy(civil = CivilLifeState(freeMoments = 8))
+        val start = state.relationshipLives.first().closeness
+        repeat(4) {
+            state = LifeSimulationDirector.perform(c, state, LifeAction(LifeActionType.VISIT_PERSON, "ami", "Voir Ami")).state
+            state = state.copy(relationshipLives = state.relationshipLives.map { rel -> if (rel.personId == "ami") rel.copy(availability = 100) else rel })
+        }
+        assertTrue(state.relationshipLives.first().closeness > start)
+        val merged = LifeSimulationDirector.mergedIntoDeep(deep, state).relationships.first()
+        assertTrue(merged.trust >= 60)
+        assertTrue(merged.phase in setOf(RelationshipPhase.FRIEND, RelationshipPhase.CLOSE, RelationshipPhase.TRUSTED))
+    }
+
+    @Test fun askingForHelpRequiresARealRelationship() {
+        val c = campaign()
+        val weak = LifeSimulationState(
+            civil = CivilLifeState(freeMoments = 2),
+            relationshipLives = listOf(RelationshipLifeState("ami", closeness = 10))
+        )
+        val blocked = LifeSimulationDirector.perform(c, weak, LifeAction(LifeActionType.ASK_HELP, "ami", "Aide"))
+        assertEquals("Lien encore fragile", blocked.headline)
+
+        val trusted = weak.copy(relationshipLives = listOf(RelationshipLifeState("ami", closeness = 50)))
+        val allowed = LifeSimulationDirector.perform(c, trusted, LifeAction(LifeActionType.ASK_HELP, "ami", "Aide"))
+        assertEquals("Un moment personnel", allowed.headline)
+        assertTrue(allowed.state.relationshipLives.first().closeness > 50)
+    }
+
+    @Test fun revealingIdentityPersistsForThatPerson() {
+        val c = campaign()
+        val deep = DeepLifeState(seed = c.seed, relationships = listOf(DeepRelationship("ami", "Ami", "ami", trust = 80, affection = 80)))
         val state = LifeSimulationDirector.bootstrap(c, deep)
         val result = LifeSimulationDirector.perform(c, state, LifeAction(LifeActionType.REVEAL_IDENTITY, "ami", "Révéler"))
         assertEquals(SecretKnowledge.KNOWS, result.state.relationshipLives.first().secretKnowledge)
