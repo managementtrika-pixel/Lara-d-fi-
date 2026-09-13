@@ -44,6 +44,7 @@ internal fun GameplayRebuildActionsHub(
     } else {
         GameplayLifeSimulationScreen(
             c = c,
+            annual = annual,
             deep = deep,
             onAction = onLifeAction,
             onCareerActions = { classic = true },
@@ -55,6 +56,7 @@ internal fun GameplayRebuildActionsHub(
 @Composable
 private fun GameplayLifeSimulationScreen(
     c: Campaign,
+    annual: AnnualActionState,
     deep: DeepLifeState,
     onAction: (LifeAction) -> LifeActionResult?,
     onCareerActions: () -> Unit,
@@ -62,13 +64,14 @@ private fun GameplayLifeSimulationScreen(
 ) {
     val raw = deep.lifeSimulation ?: LifeSimulationDirector.bootstrap(c, deep)
     val simulation = LifeSimulationDirector.synced(c, deep, raw)
+    val remainingMoments = UnifiedTimeBudget.remaining(simulation, annual)
     var feedback by remember(c.seed, c.turn) { mutableStateOf<LifeActionResult?>(null) }
     val peopleById = deep.relationships.associateBy { it.id }
-    val actions = LifeSimulationDirector.availableActions(c, simulation)
+    val actions = if (remainingMoments > 0) LifeSimulationDirector.availableActions(c, simulation) else emptyList()
 
     Column(Modifier.fillMaxSize().padding(14.dp).verticalScroll(rememberScrollState())) {
         Text("TA VIE, PAS JUSTE TA LÉGENDE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 10.sp)
-        Text("${simulation.civil.freeMoments} moment${if (simulation.civil.freeMoments > 1) "s" else ""} à choisir à ${c.age} ans.", color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 25.sp)
+        Text("$remainingMoments moment${if (remainingMoments > 1) "s" else ""} à choisir à ${c.age} ans.", color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 25.sp)
         Text("Travail, proches, logement, récupération et pouvoir se disputent le même temps.", color = UltimateMuted, fontSize = 12.sp)
         Spacer(Modifier.height(10.dp))
 
@@ -150,26 +153,33 @@ private fun GameplayLifeSimulationScreen(
         Spacer(Modifier.height(10.dp))
         Text("QUE FAIS-TU DE TON TEMPS ?", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 9.sp)
         Spacer(Modifier.height(6.dp))
-        actions.forEach { action ->
-            val name = peopleById[action.targetId]?.name ?: "un proche"
-            val closeness = simulation.relationshipLives.firstOrNull { it.personId == action.targetId }?.closeness
-            val label = when (action.type) {
-                LifeActionType.VISIT_PERSON -> "Voir $name${closeness?.let { " · ${relationshipBand(it)}" } ?: ""}"
-                LifeActionType.ASK_HELP -> "Demander de l'aide à $name"
-                LifeActionType.REVEAL_IDENTITY -> "Révéler ton identité à $name"
-                LifeActionType.DISTANCE_PERSON -> "Prendre de la distance avec $name"
-                LifeActionType.USE_TECHNIQUE -> action.label
-                else -> action.label
+        if (remainingMoments <= 0) {
+            UltimatePanel(accent = UltimateMuted) {
+                Text("ANNÉE REMPLIE", color = UltimateMuted, fontWeight = FontWeight.Black, fontSize = 9.sp)
+                Text("Tes trois créneaux annuels sont déjà engagés. Les actions de vie et de carrière utilisent désormais le même budget.", color = UltimateIvory, fontSize = 11.sp, lineHeight = 16.sp)
             }
-            MhlSecondaryButton(
-                label,
-                {
-                    val result = onAction(action)
-                    if (result != null) feedback = result
-                },
-                Modifier.fillMaxWidth()
-            )
-            Spacer(Modifier.height(5.dp))
+        } else {
+            actions.forEach { action ->
+                val name = peopleById[action.targetId]?.name ?: "un proche"
+                val closeness = simulation.relationshipLives.firstOrNull { it.personId == action.targetId }?.closeness
+                val label = when (action.type) {
+                    LifeActionType.VISIT_PERSON -> "Voir $name${closeness?.let { " · ${relationshipBand(it)}" } ?: ""}"
+                    LifeActionType.ASK_HELP -> "Demander de l'aide à $name"
+                    LifeActionType.REVEAL_IDENTITY -> "Révéler ton identité à $name"
+                    LifeActionType.DISTANCE_PERSON -> "Prendre de la distance avec $name"
+                    LifeActionType.USE_TECHNIQUE -> action.label
+                    else -> action.label
+                }
+                MhlSecondaryButton(
+                    label,
+                    {
+                        val result = onAction(action)
+                        if (result != null) feedback = result
+                    },
+                    Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(5.dp))
+            }
         }
 
         Spacer(Modifier.height(8.dp))
