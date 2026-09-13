@@ -37,7 +37,7 @@ class VisualRebuild4Test {
         assertTrue(pixelAgeTier(65) > pixelAgeTier(35))
     }
 
-    @Test fun sceneRouterHasDedicatedPreCampaignContexts() {
+    @Test fun sceneRouterSeparatesMenuAndArchiveContexts() {
         assertEquals(CinematicSceneKind.HOME, cinematicSceneKind("HOME", null))
         assertEquals(CinematicSceneKind.DOSSIER, cinematicSceneKind("HALL", null))
         assertEquals(CinematicSceneKind.DOSSIER, cinematicSceneKind("SETTINGS", null))
