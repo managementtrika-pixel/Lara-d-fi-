@@ -54,7 +54,11 @@ internal fun GameplayRebuildEarlyShell(
             ) { Text("⚙", fontSize = 15.sp) }
         }
         Box(Modifier.weight(1f)) {
-            GameplayRebuildDestinyScreen(c, state, annual, deep, outcome, onContinue, onChoice)
+            if (c.powerRevealed && c.turn > 10 && outcome == null) {
+                GameplayStoryTechniqueDestinyScreen(c, state, annual, deep, onChoice)
+            } else {
+                GameplayRebuildDestinyScreen(c, state, annual, deep, outcome, onContinue, onChoice)
+            }
         }
         val items = listOf(
             Triple("DESTIN", "alt_01", "Vie"),

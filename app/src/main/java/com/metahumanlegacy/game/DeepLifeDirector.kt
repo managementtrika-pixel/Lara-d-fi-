@@ -89,7 +89,8 @@ internal object DeepLifeDirector {
             relationshipPressure = (state.drama.relationshipPressure + if (choice.relationDelta < 0) 6 else -1).coerceIn(0, 100),
             recentMajorEvents = (state.drama.recentMajorEvents + event.id).takeLast(8)
         )
-        return state.copy(memories = memories, relationships = relationships, perception = perception, personality = personality, drama = drama)
+        val updated = state.copy(memories = memories, relationships = relationships, perception = perception, personality = personality, drama = drama)
+        return StoryTechniqueDirector.applyUse(after, updated, choice)
     }
 
     /**
