@@ -10,7 +10,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
@@ -31,15 +30,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.math.absoluteValue
 
-internal val UltimateGold = Color(0xFFF1C75B)
-internal val UltimateBlue = Color(0xFF3A8DFF)
-internal val UltimateRed = Color(0xFFFF554D)
-internal val UltimateGreen = Color(0xFF57D884)
-internal val UltimateViolet = Color(0xFFA57BFF)
-internal val UltimateInk = Color(0xFF070A0F)
-internal val UltimatePanelColor = Color(0xED111925)
-internal val UltimateMuted = Color(0xFFA8B3C2)
-internal val UltimateIvory = Color(0xFFF5F1E8)
+internal val UltimateGold = Color(0xFFFFC857)
+internal val UltimateBlue = Color(0xFF67B7FF)
+internal val UltimateRed = Color(0xFFFF625C)
+internal val UltimateGreen = Color(0xFF66E29A)
+internal val UltimateViolet = Color(0xFFB88CFF)
+internal val UltimateInk = Color(0xFF03060B)
+internal val UltimatePanelColor = Color(0xD90B111A)
+internal val UltimateMuted = Color(0xFF9EACBC)
+internal val UltimateIvory = Color(0xFFF4F1EA)
+
+private val CinematicPanelShape = RoundedCornerShape(18.dp)
 
 @Composable
 internal fun UltimatePanel(
@@ -47,31 +48,50 @@ internal fun UltimatePanel(
     accent: Color = UltimateBlue,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Column(
+    Box(
         modifier
-            .clip(CutCornerShape(topStart = 2.dp, topEnd = 16.dp, bottomStart = 16.dp, bottomEnd = 2.dp))
-            .background(Brush.verticalGradient(listOf(Color(0xF2161F2C), Color(0xF20B1018))))
-            .border(1.dp, accent.copy(alpha = .72f), CutCornerShape(topStart = 2.dp, topEnd = 16.dp, bottomStart = 16.dp, bottomEnd = 2.dp))
-            .padding(12.dp),
-        content = content
-    )
+            .clip(CinematicPanelShape)
+            .background(
+                Brush.verticalGradient(
+                    listOf(Color(0xE6111924), Color(0xE9070B11))
+                )
+            )
+            .border(1.dp, Color.White.copy(alpha = .075f), CinematicPanelShape)
+    ) {
+        Canvas(Modifier.matchParentSize()) {
+            drawRect(accent.copy(alpha = .72f), Offset(0f, 0f), Size(size.width * .012f, size.height))
+            drawCircle(accent.copy(alpha = .055f), size.minDimension * .72f, Offset(size.width * .92f, size.height * .08f))
+            drawLine(Color.White.copy(alpha = .035f), Offset(size.width * .06f, size.height - 1f), Offset(size.width * .94f, size.height - 1f), 1f)
+        }
+        Column(Modifier.padding(horizontal = 15.dp, vertical = 14.dp), content = content)
+    }
 }
 
 @Composable
 internal fun UltimateSectionHeader(kicker: String, title: String, subtitle: String? = null, accent: Color = UltimateGold) {
-    Text(kicker.uppercase(), color = accent, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.5.sp)
-    Text(title.uppercase(), color = UltimateIvory, fontSize = 23.sp, lineHeight = 25.sp, fontWeight = FontWeight.Black)
-    if (!subtitle.isNullOrBlank()) Text(subtitle, color = UltimateMuted, fontSize = 12.sp, lineHeight = 17.sp)
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.width(24.dp).height(2.dp).background(accent))
+        Spacer(Modifier.width(7.dp))
+        Text(kicker.uppercase(), color = accent, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.8.sp)
+    }
+    Spacer(Modifier.height(5.dp))
+    Text(title.uppercase(), color = UltimateIvory, fontSize = 25.sp, lineHeight = 27.sp, fontWeight = FontWeight.Black, letterSpacing = .2.sp)
+    if (!subtitle.isNullOrBlank()) {
+        Spacer(Modifier.height(4.dp))
+        Text(subtitle, color = UltimateMuted, fontSize = 12.sp, lineHeight = 18.sp)
+    }
 }
 
 @Composable
 internal fun UltimatePill(text: String, accent: Color = UltimateBlue, modifier: Modifier = Modifier) {
     Box(
-        modifier.clip(RoundedCornerShape(20.dp)).background(accent.copy(alpha = .13f))
-            .border(1.dp, accent.copy(alpha = .55f), RoundedCornerShape(20.dp))
-            .padding(horizontal = 8.dp, vertical = 4.dp)
+        modifier
+            .clip(RoundedCornerShape(100.dp))
+            .background(Color.Black.copy(alpha = .26f))
+            .border(1.dp, accent.copy(alpha = .36f), RoundedCornerShape(100.dp))
+            .padding(horizontal = 9.dp, vertical = 4.dp)
     ) {
-        Text(text.uppercase(), color = accent, fontSize = 8.sp, fontWeight = FontWeight.Black, letterSpacing = .5.sp)
+        Text(text.uppercase(), color = accent.copy(alpha = .94f), fontSize = 8.sp, fontWeight = FontWeight.Black, letterSpacing = .7.sp)
     }
 }
 
@@ -85,20 +105,21 @@ internal fun UltimateMeter(label: String, value: Int, accent: Color, modifier: M
         label = "meter-$label"
     )
     Column(modifier) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(label.uppercase(), color = UltimateMuted, fontSize = 8.sp, fontWeight = FontWeight.Black)
-            Text(value.toString(), color = UltimateIvory, fontSize = 9.sp, fontWeight = FontWeight.Black)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Text(label.uppercase(), color = UltimateMuted, fontSize = 8.sp, fontWeight = FontWeight.Black, letterSpacing = .55.sp)
+            Text(value.toString(), color = accent, fontSize = 10.sp, fontWeight = FontWeight.Black)
         }
-        Spacer(Modifier.height(3.dp))
-        LinearProgressIndicator(progress = { animated }, modifier = Modifier.fillMaxWidth().height(4.dp), color = accent, trackColor = Color(0xFF26303C))
+        Spacer(Modifier.height(5.dp))
+        LinearProgressIndicator(
+            progress = { animated },
+            modifier = Modifier.fillMaxWidth().height(3.dp).clip(RoundedCornerShape(2.dp)),
+            color = accent,
+            trackColor = Color.White.copy(alpha = .08f)
+        )
     }
 }
 
-/**
- * Single source of truth for the player character's appearance.
- * The creator, story, profile, alias screen and Hall all render the same PixelAvatar state.
- * Power presentation is layered around the avatar instead of replacing it with a second portrait renderer.
- */
+/** Same persistent Pixel DNA is used in creator, story, profile, alias and legacy screens. */
 @Composable
 internal fun UltimatePortrait(
     c: Campaign,
@@ -109,45 +130,43 @@ internal fun UltimatePortrait(
     contentDescription: String = "Avatar pixel persistant du personnage"
 ) {
     val profile = powerVisualProfile(c.powerFamily)
+    val accent = if (heroMode) profile.accent else UltimateBlue
     Box(
         modifier
-            .background(Brush.verticalGradient(listOf(Color(0xFF111C2A), Color(0xFF070A0F))))
-            .border(1.dp, (if (heroMode) profile.accent else UltimateBlue).copy(alpha = .55f), CutCornerShape(8.dp))
+            .clip(RoundedCornerShape(22.dp))
+            .background(Brush.verticalGradient(listOf(Color(0xFF16283C), Color(0xFF080D14), Color(0xFF040609))))
+            .border(1.dp, Color.White.copy(alpha = .10f), RoundedCornerShape(22.dp))
     ) {
         Canvas(Modifier.matchParentSize()) {
-            val step = (size.minDimension / 14f).coerceAtLeast(8f)
-            var x = 0f
-            while (x < size.width) {
-                drawLine(Color.White.copy(alpha = .025f), Offset(x, 0f), Offset(x, size.height), 1f)
-                x += step
-            }
-            var y = 0f
-            while (y < size.height) {
-                drawLine(Color.White.copy(alpha = .025f), Offset(0f, y), Offset(size.width, y), 1f)
-                y += step
-            }
+            val horizon = size.height * .72f
+            drawCircle(accent.copy(alpha = if (showAura) .10f else .035f), size.minDimension * .48f, Offset(size.width * .5f, size.height * .48f))
             if (showAura) {
-                drawCircle(profile.accent.copy(alpha = .12f), size.minDimension * .42f, center)
-                drawCircle(profile.secondary.copy(alpha = .10f), size.minDimension * .31f, center)
+                drawCircle(profile.secondary.copy(alpha = .07f), size.minDimension * .35f, Offset(size.width * .5f, size.height * .48f))
             }
+            repeat(7) { i ->
+                val x = size.width * i / 6f
+                val bh = size.height * (.05f + (i % 4) * .025f)
+                drawRect(Color(0xFF0B141F).copy(alpha = .9f), Offset(x - size.width * .06f, horizon - bh), Size(size.width * .13f, bh + size.height - horizon))
+            }
+            drawRect(Color.Black.copy(alpha = .32f), Offset(0f, size.height * .90f), Size(size.width, size.height * .10f))
         }
         PixelAvatar(
             state = state,
-            modifier = Modifier.fillMaxSize().padding(if (heroMode) 4.dp else 2.dp),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 3.dp, vertical = 2.dp),
             age = c.age,
             temperament = c.temperament,
             heroMode = heroMode,
             powerFamily = c.powerFamily
         )
         if (heroMode) {
-            Text(
-                c.alias.ifBlank { c.name }.uppercase(),
-                color = UltimateIvory,
-                fontSize = 7.sp,
-                fontWeight = FontWeight.Black,
-                modifier = Modifier.align(Alignment.BottomCenter).background(Color.Black.copy(alpha = .58f)).padding(horizontal = 5.dp, vertical = 2.dp),
-                maxLines = 1
-            )
+            Box(
+                Modifier.align(Alignment.BottomCenter).fillMaxWidth()
+                    .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = .82f))))
+                    .padding(top = 16.dp, bottom = 5.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(c.alias.ifBlank { c.name }.uppercase(), color = UltimateIvory, fontSize = 8.sp, fontWeight = FontWeight.Black, letterSpacing = .8.sp, maxLines = 1)
+            }
         }
     }
 }
@@ -156,56 +175,60 @@ internal fun UltimatePortrait(
 internal fun UltimateCityArtwork(c: Campaign, state: UltimateState, modifier: Modifier = Modifier) {
     val profile = powerVisualProfile(c.powerFamily)
     Canvas(modifier) {
-        val horizon = size.height * .66f
+        val horizon = size.height * .68f
+        val storm = state.climate.contains("Orage", true) || state.climate.contains("Pluv", true)
         val skyTop = when {
-            state.climate.contains("Brouillard") -> Color(0xFF607184)
-            state.climate.contains("Orage") -> Color(0xFF171C35)
-            state.climate.contains("Chaud") -> Color(0xFF5D2D2B)
-            state.climate.contains("Pollué") -> Color(0xFF414840)
-            else -> Color(0xFF0B1E37)
+            state.climate.contains("Brouillard", true) -> Color(0xFF4D6172)
+            state.climate.contains("Orage", true) -> Color(0xFF11172A)
+            state.climate.contains("Chaud", true) -> Color(0xFF57302E)
+            state.climate.contains("Pollué", true) -> Color(0xFF343E39)
+            else -> Color(0xFF071B31)
         }
-        drawRect(Brush.verticalGradient(listOf(skyTop, Color(0xFF16131A), Color(0xFF05070A))))
-        val sun = if (state.climate.contains("Pluv", true) || state.climate.contains("Orage", true)) Color(0xFF9AB6C8) else UltimateGold
-        drawCircle(sun.copy(alpha = .35f), size.minDimension * .09f, Offset(size.width * .78f, size.height * .20f))
+        drawRect(Brush.verticalGradient(listOf(skyTop, Color(0xFF171820), Color(0xFF05070A))))
+        drawCircle((if (storm) Color(0xFFABC0D0) else UltimateGold).copy(alpha = .28f), size.minDimension * .10f, Offset(size.width * .78f, size.height * .20f))
+
         val buildings = when {
-            state.cityArchetype.contains("vertical", true) -> 18
-            state.cityArchetype.contains("Mégalopole", true) -> 22
-            state.cityArchetype.contains("ancienne", true) -> 14
-            else -> 16
+            state.cityArchetype.contains("vertical", true) -> 20
+            state.cityArchetype.contains("Mégalopole", true) -> 24
+            state.cityArchetype.contains("ancienne", true) -> 15
+            else -> 18
         }
         repeat(buildings) { i ->
             val x = size.width * i / buildings
-            val bw = size.width / buildings * (1.04f + (i % 3) * .10f)
+            val bw = size.width / buildings * 1.12f
             val seed = ((c.seed ushr (i % 15)) + i * 31).toInt().absoluteValue
-            val bh = size.height * (.18f + (seed % 42) / 100f)
+            val bh = size.height * (.17f + (seed % 44) / 100f)
             val y = horizon - bh
-            val buildingColor = when {
-                state.architecture.contains("Brique", true) -> Color(0xFF382525)
-                state.architecture.contains("Brut", true) -> Color(0xFF292D32)
-                state.architecture.contains("Futur", true) -> Color(0xFF192B3C)
-                else -> Color(0xFF202731)
+            val building = when {
+                state.architecture.contains("Brique", true) -> Color(0xFF342023)
+                state.architecture.contains("Brut", true) -> Color(0xFF252A30)
+                state.architecture.contains("Futur", true) -> Color(0xFF12283A)
+                else -> Color(0xFF172331)
             }
-            drawRect(buildingColor, Offset(x, y), Size(bw, bh))
-            drawRect(Color.Black.copy(alpha = .4f), Offset(x + bw * .78f, y), Size(bw * .22f, bh))
-            val rows = (bh / (size.height * .05f)).toInt().coerceAtLeast(2)
-            repeat(rows) { row ->
-                if ((seed + row) % 3 != 0) drawRect(UltimateGold.copy(alpha = .35f), Offset(x + bw * .18f, y + bh * .12f + row * size.height * .05f), Size(bw * .12f, size.height * .012f))
+            drawRect(building, Offset(x, y), Size(bw, bh + size.height - horizon))
+            drawRect(Color.Black.copy(alpha = .30f), Offset(x + bw * .82f, y), Size(bw * .18f, bh))
+            repeat((bh / (size.height * .05f)).toInt().coerceAtLeast(2)) { row ->
+                if ((seed + row) % 3 != 0) drawRect(UltimateGold.copy(alpha = .28f), Offset(x + bw * .18f, y + bh * .13f + row * size.height * .05f), Size(bw * .11f, size.height * .008f))
             }
         }
+
         val road = Path().apply {
-            moveTo(size.width * .18f, size.height); lineTo(size.width * .45f, horizon); lineTo(size.width * .57f, horizon); lineTo(size.width * .92f, size.height); close()
+            moveTo(size.width * .16f, size.height); lineTo(size.width * .44f, horizon); lineTo(size.width * .57f, horizon); lineTo(size.width * .94f, size.height); close()
         }
-        drawPath(road, Color(0xFF11151B))
-        drawLine(UltimateBlue.copy(alpha = .35f), Offset(size.width * .50f, horizon), Offset(size.width * .56f, size.height), size.width * .008f)
-        if (state.cityCondition < 55) repeat(((55 - state.cityCondition) / 6).coerceAtLeast(1)) { i ->
-            drawCircle(UltimateRed.copy(alpha = .20f), size.minDimension * (.04f + i * .004f), Offset(size.width * (.08f + (i * .17f) % .82f), horizon * (.50f + (i % 3) * .11f)))
+        drawPath(road, Color(0xFF080D13))
+        drawLine(Color.White.copy(alpha = .08f), Offset(size.width * .50f, horizon), Offset(size.width * .57f, size.height), size.width * .004f)
+
+        if (state.cityCondition < 55) repeat(((55 - state.cityCondition) / 7).coerceAtLeast(1)) { i ->
+            drawCircle(UltimateRed.copy(alpha = .15f), size.minDimension * (.04f + i * .003f), Offset(size.width * (.10f + (i * .19f) % .78f), horizon * (.54f + (i % 3) * .10f)))
         }
-        if (state.cityTech >= 55) repeat(4) { i -> drawLine(profile.accent.copy(alpha = .34f), Offset(size.width * (.15f + i * .20f), horizon * .92f), Offset(size.width * (.22f + i * .20f), horizon * .25f), size.width * .004f) }
-        if (state.climate.contains("Pluv", true)) repeat(28) { i ->
-            val x = size.width * ((i * 37 % 101) / 100f); val y = size.height * ((i * 61 % 97) / 100f)
-            drawLine(Color.White.copy(alpha = .18f), Offset(x, y), Offset(x - size.width * .018f, y + size.height * .05f), size.width * .002f)
+        if (state.cityTech >= 55) repeat(4) { i ->
+            drawLine(profile.accent.copy(alpha = .24f), Offset(size.width * (.15f + i * .20f), horizon * .94f), Offset(size.width * (.22f + i * .20f), horizon * .28f), size.width * .003f)
         }
-        drawRect(UltimateGold.copy(alpha = .55f), Offset(0f, size.height - size.width * .01f), Size(size.width, size.width * .01f))
+        if (storm) repeat(32) { i ->
+            val x = size.width * ((i * 37 % 101) / 100f)
+            val y = size.height * ((i * 61 % 97) / 100f)
+            drawLine(Color.White.copy(alpha = .17f), Offset(x, y), Offset(x - size.width * .016f, y + size.height * .045f), size.width * .0016f)
+        }
     }
 }
 
@@ -213,25 +236,28 @@ internal fun UltimateCityArtwork(c: Campaign, state: UltimateState, modifier: Mo
 internal fun UltimateHeroBanner(c: Campaign, state: UltimateState, modifier: Modifier = Modifier) {
     val profile = powerVisualProfile(c.powerFamily)
     Box(
-        modifier.height(118.dp).clip(CutCornerShape(topEnd = 24.dp, bottomStart = 24.dp))
-            .background(Brush.horizontalGradient(listOf(Color(0xFF101A28), profile.accent.copy(alpha = .22f), Color(0xFF090C12))))
-            .border(1.dp, profile.accent.copy(alpha = .6f), CutCornerShape(topEnd = 24.dp, bottomStart = 24.dp))
+        modifier.height(132.dp).clip(RoundedCornerShape(22.dp))
+            .background(Brush.horizontalGradient(listOf(Color(0xE90A111A), Color(0xD70D1722), profile.accent.copy(alpha = .13f))))
+            .border(1.dp, Color.White.copy(alpha = .08f), RoundedCornerShape(22.dp))
     ) {
-        MhlBoardTexture(if (c.powerRevealed) MotionBoard.AURA else MotionBoard.PANEL_TRANSITION, Modifier.matchParentSize(), profile.accent, .10f)
-        Row(Modifier.fillMaxSize().padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
-            UltimatePortrait(c, state, Modifier.width(82.dp).fillMaxHeight().clip(CutCornerShape(10.dp)), heroMode = c.powerRevealed)
-            Spacer(Modifier.width(11.dp))
-            Column(Modifier.weight(1f)) {
-                Text(c.alias.ifBlank { c.name }.uppercase(), color = UltimateIvory, fontSize = 18.sp, fontWeight = FontWeight.Black)
-                Text("${c.age} ANS · ${if (c.powerRevealed) state.heroPresentation else state.civilianStyle}", color = UltimateGold, fontSize = 9.sp, fontWeight = FontWeight.Black)
-                Spacer(Modifier.height(5.dp))
+        Canvas(Modifier.matchParentSize()) {
+            drawCircle(profile.accent.copy(alpha = .08f), size.height * 1.5f, Offset(size.width * .98f, size.height * .5f))
+            drawLine(profile.accent.copy(alpha = .55f), Offset(0f, size.height - 2f), Offset(size.width * .36f, size.height - 2f), 2f)
+        }
+        Row(Modifier.fillMaxSize().padding(11.dp), verticalAlignment = Alignment.CenterVertically) {
+            UltimatePortrait(c, state, Modifier.width(86.dp).fillMaxHeight(), heroMode = c.powerRevealed)
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
+                Text(c.alias.ifBlank { c.name }.uppercase(), color = UltimateIvory, fontSize = 19.sp, fontWeight = FontWeight.Black, letterSpacing = .4.sp)
+                Text("${c.age} ANS  ·  ${if (c.powerRevealed) state.heroPresentation else state.civilianStyle}", color = profile.accent, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = .5.sp)
+                Spacer(Modifier.height(7.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                     UltimatePill(if (c.powerRevealed) c.scope.label else "Civil", profile.accent)
                     UltimatePill(state.ageAppearance(c), UltimateMuted)
                 }
                 if (c.powerRevealed) {
-                    Spacer(Modifier.height(5.dp))
-                    Text("${state.costumePalette} · ${state.maskStyle}", color = UltimateMuted, fontSize = 9.sp)
+                    Spacer(Modifier.height(6.dp))
+                    Text("${state.costumePalette}  ·  ${state.maskStyle}", color = UltimateMuted, fontSize = 9.sp)
                 }
             }
         }
@@ -252,25 +278,31 @@ internal fun UltimateActionTile(title: String, subtitle: String, accent: Color =
     val surface by animateColorAsState(
         targetValue = when {
             !enabled -> Color(0x9910161E)
-            pressed -> accent.copy(alpha = .18f)
-            else -> Color(0xE8141D29)
+            pressed -> accent.copy(alpha = .16f)
+            else -> Color(0xD90A1119)
         },
         animationSpec = tween(MetahumanMotionTokens.duration(MetahumanMotionTokens.MICRO, settings)),
         label = "action-tile-surface"
     )
-    Column(
-        Modifier.fillMaxWidth().heightIn(min = 56.dp)
+    Box(
+        Modifier.fillMaxWidth().heightIn(min = 62.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
-            .clip(CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp))
+            .clip(RoundedCornerShape(16.dp))
             .background(surface)
-            .border(1.dp, if (enabled) accent.copy(alpha = if (pressed) .92f else .6f) else Color(0xFF343B45), CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp))
+            .border(1.dp, if (enabled) Color.White.copy(alpha = if (pressed) .15f else .07f) else Color.White.copy(alpha = .035f), RoundedCornerShape(16.dp))
             .clickable(enabled = enabled, interactionSource = interaction, indication = null) {
                 haptic(MetahumanMotionLevel.MOTION_SUBTLE)
                 onClick()
             }
-            .padding(11.dp)
     ) {
-        Text(title, color = if (enabled) UltimateIvory else UltimateMuted, fontWeight = FontWeight.Black, fontSize = 14.sp)
-        Text(subtitle, color = UltimateMuted, fontSize = 11.sp, lineHeight = 15.sp)
+        Canvas(Modifier.matchParentSize()) {
+            drawRect(accent.copy(alpha = if (enabled) .72f else .20f), Offset(0f, 0f), Size(3f, size.height))
+            if (pressed) drawCircle(accent.copy(alpha = .08f), size.height * 1.2f, Offset(size.width, size.height * .5f))
+        }
+        Column(Modifier.padding(horizontal = 14.dp, vertical = 11.dp)) {
+            Text(title, color = if (enabled) UltimateIvory else UltimateMuted, fontWeight = FontWeight.Black, fontSize = 14.sp)
+            Spacer(Modifier.height(2.dp))
+            Text(subtitle, color = UltimateMuted.copy(alpha = if (enabled) 1f else .62f), fontSize = 11.sp, lineHeight = 15.sp)
+        }
     }
 }
