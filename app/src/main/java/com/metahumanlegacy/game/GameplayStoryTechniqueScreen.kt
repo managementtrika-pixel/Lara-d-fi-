@@ -26,6 +26,7 @@ internal fun GameplayStoryTechniqueDestinyScreen(
 ) {
     val life = deep.lifeSimulation
     val identityState = life?.let { IdentityPressureDirector.sync(c, deep, it) }
+    val knownIdentityCount = identityState?.let(IdentityPressureDirector::knownCount) ?: 0
     val lifeKey = listOf(
         life?.powerRules?.techniques?.hashCode() ?: 0,
         life?.districts?.hashCode() ?: 0,
@@ -88,7 +89,7 @@ internal fun GameplayStoryTechniqueDestinyScreen(
                 ) {
                     Text("IDENTITÉ SOUS PRESSION", color = identityAccent, fontWeight = FontWeight.Black, fontSize = 9.sp)
                     Text(
-                        "Exposition ${identity.exposure}/100 · ${identity.evidenceIds.size} preuve${if (identity.evidenceIds.size > 1) "s" else ""} · ${IdentityPressureDirector.knownCount(identityState!!)} personne${if (IdentityPressureDirector.knownCount(identityState) > 1) "s" else ""} au courant",
+                        "Exposition ${identity.exposure}/100 · ${identity.evidenceIds.size} preuve${if (identity.evidenceIds.size > 1) "s" else ""} · $knownIdentityCount personne${if (knownIdentityCount > 1) "s" else ""} au courant",
                         color = UltimateIvory,
                         fontSize = 11.sp
                     )
