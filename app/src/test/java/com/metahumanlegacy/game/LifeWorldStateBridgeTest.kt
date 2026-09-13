@@ -132,4 +132,15 @@ class LifeWorldStateBridgeTest {
         assertEquals(55, synced.secretIdentity.exposure)
         assertEquals(48, synced.powerRules.overload)
     }
+
+    @Test
+    fun preAwakeningLifeHistoryIsNeverOverwrittenByFutureWorldState() {
+        val formative = GameEngine.newCampaign(808080L).copy(turn = 0, flags = emptySet())
+        val before = life(safety = 67, crime = 11, trust = 22, exposure = 19)
+        val world = ultimate(formative).copy(
+            districts = listOf(UltimateDistrict(name = formative.district, sentiment = -60, crime = 90, damage = 70))
+        )
+
+        assertEquals(before, LifeWorldStateBridge.syncLifeFromWorld(formative, world, before))
+    }
 }
