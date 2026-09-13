@@ -42,4 +42,33 @@ class VisualRebuild4Test {
         assertEquals(CinematicSceneKind.DOSSIER, cinematicSceneKind("HALL", null))
         assertEquals(CinematicSceneKind.DOSSIER, cinematicSceneKind("SETTINGS", null))
     }
+
+    @Test fun visualPressureMirrorsPersistentWorldState() {
+        val state = UltimateState(
+            seed = 7L,
+            bodyBuild = "Athlétique",
+            stature = "Moyenne",
+            skinTone = "Moyen",
+            faceShape = "Ovale",
+            hair = "Court texturé",
+            hairColor = "Brun",
+            facialHair = "Aucune",
+            eyes = "Bruns",
+            civilianStyle = "Street sobre",
+            accessory = "Aucun",
+            cityArchetype = "Métropole verticale",
+            climate = "Quatre saisons",
+            architecture = "Contemporaine",
+            cityMood = "Contrastes sociaux",
+            cityCondition = 20,
+            cityTech = 90,
+            legalStatus = "Recherché",
+            mediaFrame = "Icône controversée"
+        )
+        val visual = worldVisualPressure(state)
+        assertTrue(visual.damage > .70f)
+        assertTrue(visual.technology > .80f)
+        assertTrue(visual.surveillance > .80f)
+        assertTrue(visual.publicAttention > .80f)
+    }
 }
