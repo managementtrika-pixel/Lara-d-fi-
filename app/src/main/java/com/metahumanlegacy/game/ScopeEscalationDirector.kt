@@ -11,13 +11,13 @@ internal object ScopeEscalationDirector {
     fun enrich(c: Campaign, base: EventNode): EventNode {
         if (!c.powerRevealed || base.kind in setOf("FORMATIVE", "AWAKENING", "ENDING")) return base
         if (base.choices.any { it.flag?.startsWith(FLAG_PREFIX) == true }) return base
-        if (base.choices.size >= 7) return base
 
         val choice = responseFor(c.scope, base)
         val context = contextFor(c.scope, c)
+        val retained = base.choices.distinctBy { it.label }.take(6)
         return base.copy(
             text = base.text + "\n\nÉCHELLE ${c.scope.label.uppercase()}\n$context",
-            choices = (base.choices + choice).distinctBy { it.label }.take(7)
+            choices = (retained + choice).distinctBy { it.label }.take(7)
         )
     }
 
