@@ -92,6 +92,24 @@ class IdentityPressureDirectorTest {
     }
 
     @Test
+    fun persistedStrongKnowledgeRestoresAfterGenericLifeSync() {
+        val afterGenericSync = state(SecretKnowledge.KNOWS).copy(
+            secretIdentity = IdentitySecretState(
+                exposure = 35,
+                knownBy = mapOf("journalist" to SecretKnowledge.PROTECTS)
+            )
+        )
+        val restored = IdentityPressureDirector.sync(
+            campaign(),
+            deep(knows = true, trust = 40),
+            afterGenericSync
+        )
+
+        assertEquals(SecretKnowledge.PROTECTS, restored.relationshipLives.first().secretKnowledge)
+        assertEquals(SecretKnowledge.PROTECTS, restored.secretIdentity.knownBy["journalist"])
+    }
+
+    @Test
     fun journalistKnowledgeCreatesCriticalRumorEvenBelowExposureThreshold() {
         val synced = IdentityPressureDirector.sync(
             campaign(35),
