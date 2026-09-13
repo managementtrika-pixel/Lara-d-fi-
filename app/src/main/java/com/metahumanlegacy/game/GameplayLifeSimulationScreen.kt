@@ -62,7 +62,10 @@ private fun GameplayLifeSimulationScreen(
 ) {
     val raw = deep.lifeSimulation ?: LifeSimulationDirector.bootstrap(c, deep)
     val simulation = LifeSimulationDirector.synced(c, deep, raw)
-    var feedback by remember(c.turn, simulation.actionLog.size) { mutableStateOf<LifeActionResult?>(null) }
+    // Keep the result visible while the simulation persists the action. Using actionLog.size as a
+    // remember key recreated this state on every successful action and could erase the feedback
+    // before the player had a chance to read it. A new narrative turn still clears old feedback.
+    var feedback by remember(c.seed, c.turn) { mutableStateOf<LifeActionResult?>(null) }
     val peopleById = deep.relationships.associateBy { it.id }
     val actions = LifeSimulationDirector.availableActions(c, simulation)
 
