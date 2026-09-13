@@ -60,6 +60,17 @@ class IdentityNarrativeDirectorTest {
     }
 
     @Test
+    fun identityStoryChoiceReducesAuthoritativeExposure() {
+        val before = campaign(58)
+        val enriched = IdentityNarrativeDirector.enrich(before, deep(), event())
+        val choice = enriched.choices.first { IdentityNarrativeDirector.isIdentityChoice(it) }
+        val resolved = GameEngine.resolve(before, enriched, choice)
+
+        assertTrue(resolved.campaign.identityExposure < before.identityExposure)
+        assertTrue(resolved.outcome.contains("brouilles", ignoreCase = true) || resolved.outcome.contains("pistes", ignoreCase = true))
+    }
+
+    @Test
     fun threateningKnowerMakesIdentityChoiceRiskierAndDeferred() {
         val enriched = IdentityNarrativeDirector.enrich(campaign(), deep(threat = true), event())
         val choice = enriched.choices.first { IdentityNarrativeDirector.isIdentityChoice(it) }
