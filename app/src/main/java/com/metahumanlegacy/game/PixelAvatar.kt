@@ -13,10 +13,12 @@ private fun pxSkin(name: String): Color = when (name) {
     "Très clair" -> Color(0xFFF3D2BD); "Clair" -> Color(0xFFE8BFA4); "Moyen" -> Color(0xFFC88E67)
     "Mat" -> Color(0xFFAA714F); "Foncé" -> Color(0xFF794A34); "Très foncé" -> Color(0xFF4C2B22); else -> Color(0xFFC88E67)
 }
+
 private fun pxHair(name: String): Color = when (name) {
     "Noir" -> Color(0xFF111318); "Brun" -> Color(0xFF3B261E); "Châtain" -> Color(0xFF6A4630); "Blond" -> Color(0xFFD4B06A)
     "Roux" -> Color(0xFFA9502B); "Gris" -> Color(0xFF9699A0); "Blanc" -> Color(0xFFE8E5DE); else -> Color(0xFF3B261E)
 }
+
 private fun pxOutfit(style: String): Pair<Color, Color> = when {
     style.contains("Sport", true) -> Color(0xFF2E6CA4) to Color(0xFFB9D9FF)
     style.contains("Class", true) -> Color(0xFF27303A) to Color(0xFFD7DFEA)
@@ -25,17 +27,30 @@ private fun pxOutfit(style: String): Pair<Color, Color> = when {
     style.contains("Vintage", true) -> Color(0xFF795B3E) to Color(0xFFE1C49F)
     else -> Color(0xFF2A415D) to Color(0xFF8AB4E8)
 }
-private fun pxHero(power: String): Pair<Color, Color> = when (power) {
+
+private fun pxPowerPalette(power: String): Pair<Color, Color> = when (power) {
     "Énergie" -> Color(0xFF205BD7) to Color(0xFF78D7FF); "Force" -> Color(0xFF8D2834) to Color(0xFFFFC85B)
     "Vitesse" -> Color(0xFF183D7A) to Color(0xFF66E5FF); "Télékinésie" -> Color(0xFF55338E) to Color(0xFFC69BFF)
     "Élémentaire" -> Color(0xFF2B6B54) to Color(0xFF9BE88B); "Mental" -> Color(0xFF44327D) to Color(0xFFE0B4FF)
     "Technologique" -> Color(0xFF273D52) to Color(0xFF61D5E8); else -> Color(0xFF28384E) to Color(0xFFE6C35A)
 }
 
+internal fun pixelHeroPalette(costumePalette: String, powerFamily: String): Pair<Color, Color> = when (costumePalette) {
+    "Bleu / or" -> Color(0xFF1F4E9A) to Color(0xFFF2C85A)
+    "Noir / argent" -> Color(0xFF15191F) to Color(0xFFC6CDD6)
+    "Rouge / anthracite" -> Color(0xFF8F2831) to Color(0xFF343A42)
+    "Blanc / cobalt" -> Color(0xFFE7ECF2) to Color(0xFF2456B8)
+    "Violet / noir" -> Color(0xFF573A8A) to Color(0xFF15131B)
+    "Vert / cuivre" -> Color(0xFF2F684E) to Color(0xFFC07A43)
+    "Ivoire / or" -> Color(0xFFE8DFC8) to Color(0xFFD0A841)
+    else -> pxPowerPalette(powerFamily)
+}
+
 internal fun pixelLegHeight(age: Int, stature: String): Int {
     val base = if (age < 13) 5 else 6
     return (base + when (stature) { "Petite" -> -1; "Grande" -> 1; else -> 0 }).coerceIn(4, 7)
 }
+
 internal fun pixelAgeTier(age: Int): Int = when { age < 18 -> 0; age < 35 -> 1; age < 50 -> 2; age < 65 -> 3; else -> 4 }
 
 @Composable
@@ -48,17 +63,18 @@ internal fun PixelAvatar(
     powerFamily: String = ""
 ) {
     Canvas(modifier) {
-        // 32x40 native logical canvas: enough facial identity for modern mobile pixel art,
-        // still scaled on integer cells so every edge remains deliberately crisp.
         val cols = 32; val rows = 40
         val cell = floor(minOf(size.width / cols, size.height / rows)).coerceAtLeast(1f)
         val ox = floor((size.width - cols * cell) / 2f); val oy = floor((size.height - rows * cell) / 2f)
         fun p(x: Int, y: Int, w: Int = 1, h: Int = 1, color: Color) = drawRect(color, Offset(ox + x * cell, oy + y * cell), Size(w * cell, h * cell))
 
-        val skin = pxSkin(state.skinTone); val skinShade = skin.copy(red = skin.red * .82f, green = skin.green * .82f, blue = skin.blue * .82f)
+        val skin = pxSkin(state.skinTone)
+        val skinShade = skin.copy(red = skin.red * .82f, green = skin.green * .82f, blue = skin.blue * .82f)
         val hair = if (age >= 65 && state.hairColor !in listOf("Blanc", "Gris")) Color(0xFFB9BBC0) else pxHair(state.hairColor)
-        val (civilMain, civilTrim) = pxOutfit(state.civilianStyle); val hero = pxHero(powerFamily)
-        val shirt = if (heroMode) hero.first else civilMain; val trim = if (heroMode) hero.second else civilTrim
+        val (civilMain, civilTrim) = pxOutfit(state.civilianStyle)
+        val hero = pixelHeroPalette(state.costumePalette, powerFamily)
+        val shirt = if (heroMode) hero.first else civilMain
+        val trim = if (heroMode) hero.second else civilTrim
         val outline = Color(0xFF0B1017); val white = Color(0xFFF1F3F4)
         val eye = when (state.eyes) { "Bleus" -> Color(0xFF4B8BC4); "Verts" -> Color(0xFF5A8D62); "Noisette" -> Color(0xFF8B693D); "Gris" -> Color(0xFF87929D); "Très sombres" -> Color(0xFF17191C); else -> Color(0xFF49362C) }
         val child = age < 13; val teen = age in 13..17
@@ -66,23 +82,30 @@ internal fun PixelAvatar(
         val headX = (cols - headW) / 2; val headY = if (child) 4 else 3
         val torsoY = if (child) 22 else if (teen) 20 else 19
         val torsoH = if (child) 8 else if (teen) 10 else 11
-        val torsoW = when (state.bodyBuild) { "Fin" -> 12; "Massif" -> 20; "Robuste" -> 18; "Souple" -> 13; else -> 15 } - if (child) 2 else 0
+        val baseTorsoW = when (state.bodyBuild) { "Fin" -> 12; "Massif" -> 20; "Robuste" -> 18; "Souple" -> 13; else -> 15 }
+        val presentationDelta = if (!heroMode) 0 else when (state.heroPresentation) { "Intimidant" -> 2; "Flamboyant" -> 1; "Clandestin" -> -1; else -> 0 }
+        val torsoW = (baseTorsoW - if (child) 2 else 0 + presentationDelta).coerceIn(10, 22)
         val torsoX = (cols - torsoW) / 2; val legH = pixelLegHeight(age, state.stature)
 
-        // Ground and readable stance.
         p(7, 38, 18, 1, Color.Black.copy(alpha = .34f))
         val legY = torsoY + torsoH - 1
         p(torsoX + 2, legY, 4, legH, outline); p(torsoX + 3, legY, 3, legH - 1, Color(0xFF182331))
         p(torsoX + torsoW - 6, legY, 4, legH, outline); p(torsoX + torsoW - 5, legY, 3, legH - 1, Color(0xFF182331))
         p(torsoX + 1, (legY + legH - 1).coerceAtMost(38), 6, 2, Color(0xFF080B10)); p(torsoX + torsoW - 6, (legY + legH - 1).coerceAtMost(38), 6, 2, Color(0xFF080B10))
 
-        // Layered torso: outline, base, highlight, seam. This gives clothing volume without anti-aliasing.
         p(torsoX, torsoY, torsoW, torsoH, outline); p(torsoX + 1, torsoY + 1, torsoW - 2, torsoH - 2, shirt)
         p(torsoX + 2, torsoY + 2, (torsoW - 4).coerceAtLeast(3), 1, Color.White.copy(alpha = .11f))
         p(torsoX + 1, torsoY + torsoH - 2, torsoW - 2, 1, trim.copy(alpha = .75f))
         if (heroMode) {
-            p(torsoX + torsoW / 2 - 2, torsoY + 3, 4, 4, trim.copy(alpha = .85f))
-            p(torsoX + torsoW / 2 - 1, torsoY + 4, 2, 2, shirt)
+            when (state.heroPresentation) {
+                "Tactique" -> { p(torsoX + 2, torsoY + 4, torsoW - 4, 2, trim.copy(alpha = .55f)); p(torsoX + 3, torsoY + 7, 3, 2, outline.copy(alpha = .8f)); p(torsoX + torsoW - 6, torsoY + 7, 3, 2, outline.copy(alpha = .8f)) }
+                "Flamboyant" -> { p(torsoX + 1, torsoY + 2, 2, torsoH - 3, trim); p(torsoX + torsoW - 3, torsoY + 2, 2, torsoH - 3, trim) }
+                "Institutionnel" -> { p(torsoX + torsoW / 2, torsoY + 2, 1, torsoH - 4, trim); p(torsoX + 2, torsoY + 3, torsoW - 4, 1, trim.copy(alpha = .7f)) }
+                "Clandestin", "Mystérieux" -> { p(torsoX + 2, torsoY + 2, torsoW - 4, torsoH - 4, shirt.copy(alpha = .90f)); p(torsoX + torsoW / 2 - 1, torsoY + 4, 2, 4, trim.copy(alpha = .55f)) }
+                else -> { p(torsoX + torsoW / 2 - 2, torsoY + 3, 4, 4, trim.copy(alpha = .85f)); p(torsoX + torsoW / 2 - 1, torsoY + 4, 2, 2, shirt) }
+            }
+            if (state.costumeEra >= 2) p(torsoX + 2, torsoY + torsoH - 4, torsoW - 4, 1, trim.copy(alpha = .9f))
+            if (state.costumeEra >= 3) { p(torsoX + 3, torsoY + 2, 2, 2, trim); p(torsoX + torsoW - 5, torsoY + 2, 2, 2, trim) }
         } else when {
             state.civilianStyle.contains("Sport", true) -> p(torsoX + torsoW / 2, torsoY + 2, 1, torsoH - 4, trim.copy(alpha = .7f))
             state.civilianStyle.contains("Class", true) || state.civilianStyle.contains("Profession", true) -> { p(torsoX + torsoW / 2, torsoY + 2, 1, torsoH - 4, trim); p(torsoX + torsoW / 2 - 1, torsoY + 6, 3, 1, trim) }
@@ -90,12 +113,10 @@ internal fun PixelAvatar(
             state.civilianStyle.contains("Vintage", true) -> { p(torsoX + 2, torsoY + 4, torsoW - 4, 1, Color(0xFF4D3425)); p(torsoX + 3, torsoY + 7, torsoW - 6, 1, Color(0xFF4D3425)) }
         }
 
-        // Arms and hands follow body width, so silhouette choices are obvious even as thumbnails.
         val armH = torsoH - 1
         p((torsoX - 3).coerceAtLeast(1), torsoY + 1, 3, armH, outline); p((torsoX - 2).coerceAtLeast(2), torsoY + 2, 2, armH - 2, shirt); p((torsoX - 2).coerceAtLeast(2), torsoY + armH - 1, 2, 2, skin)
         p((torsoX + torsoW).coerceAtMost(29), torsoY + 1, 3, armH, outline); p((torsoX + torsoW).coerceAtMost(29), torsoY + 2, 2, armH - 2, shirt); p((torsoX + torsoW).coerceAtMost(29), torsoY + armH - 1, 2, 2, skin)
 
-        // Neck + face with a two-tone pixel ramp.
         p(13, 16, 6, 5, outline); p(14, 16, 4, 5, skin)
         p(headX, headY, headW, 13, outline); p(headX + 1, headY + 1, headW - 2, 11, skin)
         p(headX + 1, headY + 9, 2, 2, skinShade.copy(alpha = .55f)); p(headX + headW - 3, headY + 9, 2, 2, skinShade.copy(alpha = .55f))
@@ -103,7 +124,6 @@ internal fun PixelAvatar(
         if (state.faceShape == "Carré") { p(headX, headY + 9, 2, 3, outline); p(headX + headW - 2, headY + 9, 2, 3, outline) }
         p(headX - 1, headY + 5, 1, 4, skinShade); p(headX + headW, headY + 5, 1, 4, skinShade)
 
-        // Separate eyes / irises / brows: higher identity density than the old 20x30 renderer.
         val eyeY = headY + 6; val lx = headX + 3; val rx = headX + headW - 6
         p(lx, eyeY, 3, 2, white); p(rx, eyeY, 3, 2, white); p(lx + 1, eyeY, 1, 2, eye); p(rx + 1, eyeY, 1, 2, eye)
         p(lx + 1, eyeY, 1, 1, Color.White.copy(alpha = .55f)); p(rx + 1, eyeY, 1, 1, Color.White.copy(alpha = .55f))
@@ -111,7 +131,6 @@ internal fun PixelAvatar(
         p(lx, browYLeft, 3, 1, hair); p(rx, browYRight, 3, 1, hair)
         if (temperament in listOf("Impulsif", "Ambitieux")) { p(lx + 2, headY + 4, 2, 1, hair); p(rx - 1, headY + 4, 2, 1, hair) }
 
-        // Nose, mouth and age marks.
         p(headX + headW / 2, headY + 7, 1, 3, skinShade.copy(alpha = .72f)); p(headX + headW / 2 - 1, headY + 9, 2, 1, skinShade.copy(alpha = .55f))
         val mouth = Color(0xFF713B3B); p(headX + 4, headY + 11, (headW - 8).coerceAtLeast(3), 1, mouth)
         when (pixelAgeTier(age)) {
@@ -128,7 +147,6 @@ internal fun PixelAvatar(
             else -> { p(headX + 1, headY + 9, headW - 2, 3, hair.copy(alpha = .92f)); p(headX + 3, headY + 12, headW - 6, 2, hair.copy(alpha = .92f)) }
         }
 
-        // Accessories are independent paper-doll layers and therefore persist everywhere.
         when {
             state.accessory.contains("Lun", true) -> { p(lx - 1, eyeY - 1, 5, 4, outline); p(rx - 1, eyeY - 1, 5, 4, outline); p(lx, eyeY, 3, 2, Color(0xFF5C7FA1)); p(rx, eyeY, 3, 2, Color(0xFF5C7FA1)); p(lx + 4, eyeY, (rx - lx - 4).coerceAtLeast(1), 1, outline) }
             state.accessory.contains("Casquette", true) -> { p(headX, headY - 2, headW, 3, Color(0xFF384F6C)); p(headX + headW - 3, headY + 1, 5, 1, Color(0xFF384F6C)) }
@@ -138,7 +156,6 @@ internal fun PixelAvatar(
             state.accessory.contains("Montre", true) -> p((torsoX + torsoW + 1).coerceAtMost(30), torsoY + 7, 2, 2, Color(0xFFC8B56A))
         }
 
-        // Hero equipment overlays the same body rather than swapping the player's identity.
         if (heroMode) when (state.maskStyle) {
             "Demi-masque", "Masque minimal" -> { p(lx - 1, eyeY - 1, 5, 3, trim.copy(alpha = .88f)); p(rx - 1, eyeY - 1, 5, 3, trim.copy(alpha = .88f)); p(lx, eyeY, 3, 1, eye); p(rx, eyeY, 3, 1, eye) }
             "Visière" -> { p(headX + 2, eyeY - 1, headW - 4, 4, trim.copy(alpha = .82f)); p(headX + 3, eyeY, headW - 6, 1, Color.White.copy(alpha = .25f)) }
@@ -146,6 +163,9 @@ internal fun PixelAvatar(
             "Capuche" -> { p(headX - 2, headY - 2, headW + 4, 2, shirt); p(headX - 2, headY, 2, 12, shirt); p(headX + headW, headY, 2, 12, shirt) }
         }
         if (heroMode && state.signatureItem == "Manteau") { p((torsoX - 2).coerceAtLeast(1), torsoY + 2, 2, torsoH + 5, shirt.copy(alpha = .88f)); p((torsoX + torsoW).coerceAtMost(29), torsoY + 2, 2, torsoH + 5, shirt.copy(alpha = .88f)) }
+        if (heroMode && state.signatureItem == "Gants") { p((torsoX - 2).coerceAtLeast(2), torsoY + armH - 2, 2, 2, trim); p((torsoX + torsoW).coerceAtMost(29), torsoY + armH - 2, 2, 2, trim) }
+        if (heroMode && state.signatureItem == "Ceinture technique") p(torsoX + 1, torsoY + torsoH - 3, torsoW - 2, 2, trim.copy(alpha = .82f))
+        if (heroMode && state.signatureItem == "Pendentif") p(15, torsoY + 2, 2, 3, trim)
     }
 }
 
