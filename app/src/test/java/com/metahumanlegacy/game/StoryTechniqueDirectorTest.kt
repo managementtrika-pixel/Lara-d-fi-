@@ -47,7 +47,6 @@ class StoryTechniqueDirectorTest {
         val c = campaign()
         val enriched = StoryTechniqueDirector.enrich(c, deepWithTechnique(c), crisis())
         val techniqueChoice = enriched.choices.firstOrNull { StoryTechniqueDirector.techniqueId(it) == "projector_zone" }
-
         assertNotNull(techniqueChoice)
         assertTrue(techniqueChoice!!.label.contains("Zone contrôlée"))
         assertTrue(enriched.text.contains("Zone contrôlée"))
@@ -71,20 +70,27 @@ class StoryTechniqueDirectorTest {
     @Test
     fun identityAndTechniqueChoicesCoexistAtSevenChoiceCap() {
         val c = campaign()
-        val identity = Choice(
-            "Détourner l'attention avant d'agir",
-            risk = 3,
-            approach = "TRUTH",
-            identityDelta = -2,
-            flag = "identity_pressure:contain"
-        )
+        val identity = Choice("Détourner l'attention avant d'agir", risk = 3, approach = "TRUTH", identityDelta = -2, flag = "identity_pressure:contain")
+        val crowded = crisis().copy(choices = (1..6).map { Choice("Choix générique $it", risk = it.coerceAtMost(7)) } + identity)
+        val enriched = StoryTechniqueDirector.enrich(c, deepWithTechnique(c), crowded)
+        assertEquals(7, enriched.choices.size)
+        assertTrue(enriched.choices.any { it.flag == "identity_pressure:contain" })
+        assertTrue(enriched.choices.any { StoryTechniqueDirector.techniqueId(it) == "projector_zone" })
+    }
+
+    @Test
+    fun scopeIdentityAndTechniqueAllSurviveSevenChoiceCap() {
+        val c = campaign()
+        val identity = Choice("Détourner l'attention", flag = "identity_pressure:contain")
+        val scope = Choice("Coordonner la ville", flag = "scope_response_city")
         val crowded = crisis().copy(
-            choices = (1..6).map { Choice("Choix générique $it", risk = it.coerceAtMost(7)) } + identity
+            choices = (1..5).map { Choice("Choix générique $it") } + identity + scope
         )
         val enriched = StoryTechniqueDirector.enrich(c, deepWithTechnique(c), crowded)
 
         assertEquals(7, enriched.choices.size)
         assertTrue(enriched.choices.any { it.flag == "identity_pressure:contain" })
+        assertTrue(enriched.choices.any { it.flag == "scope_response_city" })
         assertTrue(enriched.choices.any { StoryTechniqueDirector.techniqueId(it) == "projector_zone" })
     }
 
@@ -92,14 +98,12 @@ class StoryTechniqueDirectorTest {
     fun usingStoryTechniqueBuildsProficiencyAndCostsFatigue() {
         val c = campaign()
         val before = deepWithTechnique(c)
-        val choice = StoryTechniqueDirector.enrich(c, before, crisis()).choices
-            .first { StoryTechniqueDirector.techniqueId(it) == "projector_zone" }
+        val choice = StoryTechniqueDirector.enrich(c, before, crisis()).choices.first { StoryTechniqueDirector.techniqueId(it) == "projector_zone" }
         val after = StoryTechniqueDirector.applyUse(c, before, choice)
         val beforeRules = before.lifeSimulation!!.powerRules
         val afterRules = after.lifeSimulation!!.powerRules
         val beforeTechnique = beforeRules.techniques.first()
         val afterTechnique = afterRules.techniques.first()
-
         assertTrue(afterTechnique.proficiency > beforeTechnique.proficiency)
         assertTrue(afterRules.fatigue > beforeRules.fatigue)
         assertTrue(after.lifeSimulation!!.secretIdentity.exposure > before.lifeSimulation!!.secretIdentity.exposure)
@@ -115,10 +119,8 @@ class StoryTechniqueDirectorTest {
                 powerRules = PowerRulesState(control = 80, techniques = listOf(technique))
             )
         )
-        val choice = StoryTechniqueDirector.enrich(c, deep, crisis()).choices
-            .first { StoryTechniqueDirector.techniqueId(it) == technique.id }
+        val choice = StoryTechniqueDirector.enrich(c, deep, crisis()).choices.first { StoryTechniqueDirector.techniqueId(it) == technique.id }
         val after = StoryTechniqueDirector.applyUse(c, deep, choice)
-
         assertEquals(1, after.lifeSimulation!!.powerRules.techniques.first().cooldownTurns)
     }
 }
