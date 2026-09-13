@@ -71,12 +71,14 @@ class IdentityRumorActionDirectorTest {
     fun actionIsUnavailableBeforePowerReveal() {
         val formative = campaign().copy(flags = emptySet())
         assertFalse(IdentityRumorActionDirector.available(formative, state()))
+        assertFalse(LifeSimulationDirector.availableActions(formative, state()).any { IdentityRumorActionDirector.handles(it) })
     }
 
     @Test
     fun actionIsUnavailableWithoutPressure() {
         val quiet = LifeSimulationState(civil = CivilLifeState(freeMoments = 3))
         assertFalse(IdentityRumorActionDirector.available(campaign(), quiet))
+        assertFalse(LifeSimulationDirector.availableActions(campaign(), quiet).any { IdentityRumorActionDirector.handles(it) })
     }
 
     @Test
