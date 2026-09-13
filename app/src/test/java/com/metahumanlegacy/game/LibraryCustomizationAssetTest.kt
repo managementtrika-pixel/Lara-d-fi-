@@ -1,12 +1,10 @@
 package com.metahumanlegacy.game
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class LibraryCustomizationAssetTest {
-
-
-
     @Test
     fun cityPresetsOnlyUseSupportedCityOptions() {
         assertTrue(LibraryCustomizationCatalog.cityPresets.isNotEmpty())
@@ -20,7 +18,7 @@ class LibraryCustomizationAssetTest {
     }
 
     @Test
-    fun costumePresetsAreAwakeningOnlyAndCatalogSafe() {
+    fun costumePresetsAreCatalogSafe() {
         assertTrue(LibraryCustomizationCatalog.costumePresets.isNotEmpty())
         LibraryCustomizationCatalog.costumePresets.forEach { preset ->
             assertTrue(preset.presentation in UltimateCatalog.heroPresentations)
@@ -33,11 +31,17 @@ class LibraryCustomizationAssetTest {
     }
 
     @Test
-    fun onlyCoherentCityCellsAreExposed() {
-        // The curated city atlas has 12 cells, but two non-urban fantasy/cosmic cells are deliberately
-        // not exposed as city presets. This guards against future accidental inclusion.
-        assertTrue(LibraryCustomizationCatalog.cityPresets.size == 10)
-        assertTrue(LibraryCustomizationCatalog.cityPresets.all { it.atlasIndex in 0..9 })
+    fun proceduralCityVariantsStayStableAndUnique() {
+        val presets = LibraryCustomizationCatalog.cityPresets
+        assertEquals(10, presets.size)
+        assertEquals((0..9).toSet(), presets.map { it.atlasIndex }.toSet())
+    }
+
+    @Test
+    fun proceduralCostumeVariantsStayStableAndUnique() {
+        val presets = LibraryCustomizationCatalog.costumePresets
+        assertEquals(8, presets.size)
+        assertEquals((0..7).toSet(), presets.map { it.atlasIndex }.toSet())
     }
 
     @Test
@@ -49,8 +53,18 @@ class LibraryCustomizationAssetTest {
         assertTrue(advanced.none { it.minimumEra <= 1 })
     }
 
+    @Test
+    fun applyingProceduralPresetsStillChangesGameplayFields() {
+        val blueprint = GameEngine.randomBlueprint(31313L)
+        val draft = UltimateCreationDraft(blueprint = blueprint)
+        val cityPreset = LibraryCustomizationCatalog.cityPresets.last()
+        val cityApplied = cityPreset.apply(draft)
+        assertTrue(cityPreset.matches(cityApplied))
 
-
-
-
+        val campaign = GameEngine.newCampaign(31313L, blueprint)
+        val state = UltimateStore.create(campaign, draft)
+        val costumePreset = LibraryCustomizationCatalog.costumePresets.last()
+        val costumeApplied = costumePreset.apply(state)
+        assertTrue(costumePreset.matches(costumeApplied))
+    }
 }
