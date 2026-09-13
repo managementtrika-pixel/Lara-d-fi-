@@ -115,6 +115,7 @@ internal object LifeSimulationDirector {
             }
             civil += LifeAction(LifeActionType.PATROL, targetId = "quartier", label = "Patrouiller")
             civil += LifeAction(LifeActionType.INVESTIGATE, targetId = "quartier", label = "Enquêter")
+            if (IdentityRumorActionDirector.available(c, state)) civil += IdentityRumorActionDirector.action()
         }
         state.relationshipLives.filter { it.availability > 0 }.take(4).forEach { rel ->
             civil += LifeAction(LifeActionType.VISIT_PERSON, rel.personId, "Voir ${rel.personId}")
@@ -128,6 +129,7 @@ internal object LifeSimulationDirector {
     }
 
     fun perform(c: Campaign, state: LifeSimulationState, action: LifeAction): LifeActionResult {
+        IdentityRumorActionDirector.perform(c, state, action)?.let { return it }
         if (state.civil.freeMoments <= 0) return LifeActionResult(state, "Plus de temps", "Cette année est déjà remplie. Tes choix de temps ont un coût.")
         val spent = state.civil.copy(freeMoments = state.civil.freeMoments - 1)
         return when (action.type) {
