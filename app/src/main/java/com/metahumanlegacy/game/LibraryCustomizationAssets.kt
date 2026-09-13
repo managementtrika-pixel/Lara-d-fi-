@@ -246,8 +246,8 @@ private fun DrawScope.drawProceduralCostumePreset(preset: LibraryCostumePreset) 
         "Masque intégral", "Casque" -> drawRect(accent.copy(alpha = .82f), Offset(headX, headY), Size(headW, headH))
         "Capuche" -> {
             drawRect(main, Offset(headX - headW * .18f, headY - headH * .18f), Size(headW * 1.36f, headH * .22f))
-            drawRect(main, Offset(headX - headW * .18f, headY, headW * .16f), Size(headW * .16f, headH * 1.15f))
-            drawRect(main, Offset(headX + headW * 1.02f, headY, headW * .16f), Size(headW * .16f, headH * 1.15f))
+            drawRect(main, Offset(headX - headW * .18f, headY), Size(headW * .16f, headH * 1.15f))
+            drawRect(main, Offset(headX + headW * 1.02f, headY), Size(headW * .16f, headH * 1.15f))
         }
     }
 
