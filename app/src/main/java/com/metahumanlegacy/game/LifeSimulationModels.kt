@@ -24,6 +24,7 @@ internal data class RelationshipLifeState(
     val personId: String,
     val bond: BondStatus = BondStatus.NONE,
     val attraction: Int = 0,
+    val closeness: Int = 0,
     val availability: Int = 100,
     val secretKnowledge: SecretKnowledge = SecretKnowledge.UNAWARE,
     val sharedSecrets: List<String> = emptyList(),
@@ -69,7 +70,7 @@ internal data class IdentitySecretState(
 )
 
 internal data class LifeSimulationState(
-    val schemaVersion: Int = 1,
+    val schemaVersion: Int = 2,
     val civil: CivilLifeState = CivilLifeState(),
     val relationshipLives: List<RelationshipLifeState> = emptyList(),
     val districts: List<DistrictLifeState> = emptyList(),
