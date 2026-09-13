@@ -1,6 +1,7 @@
 package com.metahumanlegacy.game
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -15,7 +16,24 @@ class VisualRebuild4Test {
     }
 
     @Test fun visualLanguageUsesSceneSpecificAccents() {
-        assertTrue(VisualRebuild4.sceneAccent("HOME") != VisualRebuild4.sceneAccent("DESTIN"))
-        assertTrue(VisualRebuild4.sceneAccent("VILLE") != VisualRebuild4.sceneAccent("CREATE"))
+        assertNotEquals(VisualRebuild4.sceneAccent("HOME"), VisualRebuild4.sceneAccent("DESTIN"))
+        assertNotEquals(VisualRebuild4.sceneAccent("VILLE"), VisualRebuild4.sceneAccent("CREATE"))
+    }
+
+    @Test fun majorPowerFamiliesHaveDistinctVfxLanguages() {
+        assertEquals(PowerVfxKind.FIRE, powerVfxKind("Feu"))
+        assertEquals(PowerVfxKind.ICE, powerVfxKind("Glace"))
+        assertEquals(PowerVfxKind.ENERGY, powerVfxKind("Énergie électrique"))
+        assertEquals(PowerVfxKind.PSYCHIC, powerVfxKind("Mental psychique"))
+        assertEquals(PowerVfxKind.COSMIC, powerVfxKind("Cosmique gravité"))
+        assertNotEquals(powerVfxKind("Feu"), powerVfxKind("Mental"))
+    }
+
+    @Test fun avatarGrowthContractIsPreservedByFourPointZeroRenderer() {
+        assertTrue(pixelLegHeight(8, "Moyenne") < pixelLegHeight(18, "Moyenne"))
+        assertTrue(pixelLegHeight(18, "Petite") < pixelLegHeight(18, "Grande"))
+        assertEquals(0, pixelAgeTier(17))
+        assertEquals(1, pixelAgeTier(18))
+        assertTrue(pixelAgeTier(65) > pixelAgeTier(35))
     }
 }
