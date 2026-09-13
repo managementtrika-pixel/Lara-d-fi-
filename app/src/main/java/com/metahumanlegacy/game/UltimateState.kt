@@ -214,7 +214,7 @@ internal object UltimateStore {
             facialHair = draft.facialHair, eyes = draft.eyes, civilianStyle = draft.civilianStyle,
             accessory = draft.accessory, cityArchetype = draft.cityArchetype, climate = draft.climate,
             architecture = draft.architecture, cityMood = draft.cityMood,
-            libraryFaceIndex = -1,
+            libraryFaceIndex = draft.libraryFaceIndex,
             journalist = relations.first { it.id == "journalist" }.name,
             relations = relations,
             districts = districts,
@@ -241,7 +241,6 @@ internal object UltimateStore {
         val raw = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(c.seed.toString(), null)
         val loaded = raw?.let(::decode)?.takeIf { it.seed == c.seed } ?: fallback(c)
         return loaded.copy(
-            libraryFaceIndex = -1,
             facialHair = if (c.age < 16) "Aucune" else loaded.facialHair
         )
     }
