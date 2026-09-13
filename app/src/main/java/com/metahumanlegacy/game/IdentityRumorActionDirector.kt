@@ -51,7 +51,7 @@ internal object IdentityRumorActionDirector {
             civil = civil,
             secretIdentity = identity,
             districts = districts,
-            actionLog = (state.actionLog + "Identité · rumeurs contenues (-$reduction exposition)").takeLast(24)
+            actionLog = (state.actionLog + "Identité · rumeurs contenues (-$reduction exposition)").takeLast(80)
         )
 
         val headline = if (threatCount > 0) "Tu gagnes du temps, pas le silence" else "La piste se refroidit"
