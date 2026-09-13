@@ -65,7 +65,7 @@ class PowerTechniqueSimulationTest {
         val state = LifeSimulationDirector.bootstrap(c, DeepLifeState(seed = c.seed)).copy(
             civil = CivilLifeState(freeMoments = 3)
         )
-        val technique = state.powerRules.techniques.first { it.unlocked && it.masteryRequired >= 40 }
+        val technique = state.powerRules.techniques.first { it.unlocked && it.masteryRequired >= 55 }
         val used = LifeSimulationDirector.perform(
             c,
             state,
