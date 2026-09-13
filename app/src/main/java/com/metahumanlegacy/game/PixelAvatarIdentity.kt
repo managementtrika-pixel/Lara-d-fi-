@@ -24,10 +24,10 @@ internal fun pixelFaceIdentity(state: UltimateState): PixelFaceIdentity {
     val h = source.hashCode().toUInt().toLong()
     return PixelFaceIdentity(
         eyeInset = ((h ushr 1) % 2L).toInt(),
-        eyeLevel = ((h ushr 3) % 3L).toInt() - 1,
+        eyeLevel = ((h ushr 3) % 2L).toInt(),
         noseOffset = ((h ushr 6) % 3L).toInt() - 1,
         mouthInset = ((h ushr 9) % 2L).toInt(),
-        browOffset = ((h ushr 11) % 3L).toInt() - 1,
+        browOffset = -((h ushr 11) % 2L).toInt(),
         cheekMark = ((h ushr 14) % 3L).toInt()
     )
 }
