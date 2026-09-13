@@ -70,14 +70,17 @@ internal object LifeWorldStateBridge {
 
     /**
      * Reconciles consequences produced by authored story/world systems back into the life layer.
-     * This is intentionally absolute for facts the main world owns (crime/damage/exposure), while
-     * simulation-only fields such as promises, availability and technique proficiency are preserved.
+     * Before awakening, life history remains isolated from future metahuman world state.
+     * After awakening, authoritative crime/damage/exposure facts are reconciled while simulation-only
+     * fields such as promises, availability and technique proficiency are preserved.
      */
     fun syncLifeFromWorld(
         campaign: Campaign,
         ultimate: UltimateState,
         life: LifeSimulationState
     ): LifeSimulationState {
+        if (!campaign.powerRevealed) return life
+
         val worldDistrict = ultimate.districts.firstOrNull { it.name == campaign.district }
             ?: ultimate.districts.firstOrNull()
 
