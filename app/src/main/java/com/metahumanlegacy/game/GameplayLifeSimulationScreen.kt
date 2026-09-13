@@ -108,6 +108,24 @@ private fun GameplayLifeSimulationScreen(
                 Text("MAÎTRISE DU POUVOIR", color = UltimateViolet, fontWeight = FontWeight.Black, fontSize = 9.sp)
                 Text("Contrôle ${lifeBand(simulation.powerRules.control)} · précision ${lifeBand(simulation.powerRules.precision)}", color = UltimateIvory, fontSize = 11.sp)
                 Text("Fatigue ${lifeBand(simulation.powerRules.fatigue)} · surcharge ${lifeBand(simulation.powerRules.overload)}", color = if (simulation.powerRules.overload >= 70) UltimateRed else UltimateMuted, fontSize = 11.sp)
+                Spacer(Modifier.height(5.dp))
+                val unlocked = simulation.powerRules.techniques.filter { it.unlocked }
+                if (unlocked.isEmpty()) {
+                    Text("Aucune technique stabilisée pour l'instant. L'entraînement peut en faire émerger une.", color = UltimateMuted, fontSize = 10.sp)
+                } else {
+                    Text("TECHNIQUES", color = UltimateViolet, fontWeight = FontWeight.Black, fontSize = 8.sp)
+                    unlocked.take(4).forEach { technique ->
+                        val cooldown = if (technique.cooldownTurns > 0) " · récupération" else " · prête"
+                        Text(
+                            "${technique.name} · maîtrise ${technique.proficiency}%$cooldown",
+                            color = if (technique.cooldownTurns > 0) UltimateMuted else UltimateIvory,
+                            fontSize = 10.sp
+                        )
+                    }
+                }
+                simulation.powerRules.techniques.firstOrNull { !it.unlocked }?.let { next ->
+                    Text("Prochaine : ${next.name} · seuil ${next.masteryRequired}", color = UltimateMuted, fontSize = 9.sp)
+                }
             }
         }
 
@@ -140,6 +158,7 @@ private fun GameplayLifeSimulationScreen(
                 LifeActionType.ASK_HELP -> "Demander de l'aide à $name"
                 LifeActionType.REVEAL_IDENTITY -> "Révéler ton identité à $name"
                 LifeActionType.DISTANCE_PERSON -> "Prendre de la distance avec $name"
+                LifeActionType.USE_TECHNIQUE -> action.label
                 else -> action.label
             }
             MhlSecondaryButton(
