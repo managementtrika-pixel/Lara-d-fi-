@@ -28,7 +28,7 @@ internal fun GameplayRebuildEarlyShell(
         if (c.powerRevealed && c.turn > 10 && outcome == null) {
             GameplayStoryTechniqueDestinyScreen(c, state, annual, deep, onChoice)
         } else {
-            GameplayRebuildDestinyScreen(c, state, annual, deep, outcome, onContinue, onChoice)
+            CinematicDestiny43(c, state, annual, deep, outcome, onContinue, onChoice)
         }
 
         Box(
