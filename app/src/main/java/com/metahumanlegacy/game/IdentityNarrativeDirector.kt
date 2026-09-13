@@ -39,7 +39,12 @@ internal object IdentityNarrativeDirector {
                 else "les rumeurs et les preuves accumulées obligent désormais à penser aussi à ce que tu laisses derrière toi."
             )
         }
-        return event.copy(text = text, choices = (event.choices + choice).take(7))
+        val choices = if (event.choices.size < 7) {
+            event.choices + choice
+        } else {
+            event.choices.take(6) + choice
+        }
+        return event.copy(text = text, choices = choices)
     }
 
     fun isIdentityChoice(choice: Choice): Boolean = choice.flag == FLAG
