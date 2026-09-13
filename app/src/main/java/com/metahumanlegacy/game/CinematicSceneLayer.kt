@@ -77,27 +77,33 @@ internal fun CinematicSceneLayer(
             else -> h * .69f
         }
 
+        val condition = state?.cityCondition ?: 72
+        val tech = state?.cityTech ?: 20
+        val wounded = condition < 48
+        val thriving = condition > 76
         val sky = when (kind) {
             CinematicSceneKind.HOME -> listOf(Color(0xFF090D16), Color(0xFF101827), Color(0xFF06070B))
             CinematicSceneKind.CHILDHOOD -> listOf(Color(0xFF273B55), Color(0xFF17283A), Color(0xFF0A0E14))
             CinematicSceneKind.TEEN -> listOf(Color(0xFF101C31), Color(0xFF1C2037), Color(0xFF080A0F))
             CinematicSceneKind.AWAKENING -> listOf(Color(0xFF080914), power.accent.copy(alpha = .38f), Color(0xFF05060A))
-            CinematicSceneKind.CITY, CinematicSceneKind.WORLD -> listOf(Color(0xFF0A1B31), Color(0xFF151C29), Color(0xFF05070A))
+            CinematicSceneKind.CITY, CinematicSceneKind.WORLD -> when {
+                wounded -> listOf(Color(0xFF17151B), Color(0xFF21191B), Color(0xFF050607))
+                thriving -> listOf(Color(0xFF09213A), Color(0xFF112637), Color(0xFF05080C))
+                else -> listOf(Color(0xFF0A1B31), Color(0xFF151C29), Color(0xFF05070A))
+            }
             CinematicSceneKind.LEGACY -> listOf(Color(0xFF15120D), Color(0xFF171016), Color(0xFF050505))
             CinematicSceneKind.DOSSIER -> listOf(Color(0xFF090D12), Color(0xFF10151D), Color(0xFF060708))
         }
         drawRect(Brush.verticalGradient(sky))
 
-        // Far atmospheric glow.
         val glow = when (kind) {
             CinematicSceneKind.LEGACY -> UltimateGold
             CinematicSceneKind.AWAKENING -> power.accent
-            else -> Color(0xFF6DA9E8)
+            else -> if (tech > 60) Color(0xFF65DAFF) else Color(0xFF6DA9E8)
         }
         drawCircle(glow.copy(alpha = .07f + animatedPulse * .05f), w * .55f, Offset(w * (.76f + animatedDrift * .015f), h * .18f))
         drawCircle(Color(0xFF90C7FF).copy(alpha = .04f), w * .42f, Offset(w * .12f, h * .32f))
 
-        // Distant skyline with deterministic silhouettes.
         val buildingCount = 18
         val step = w / buildingCount
         repeat(buildingCount) { index ->
@@ -106,14 +112,22 @@ internal fun CinematicSceneLayer(
             val x = index * step + animatedDrift * ((index % 4) - 1.5f) * 2.1f
             val y = horizon - height
             val brickBias = state?.architecture?.contains("Brique", true) == true
-            val base = if (brickBias) Color(0xFF24181A) else Color(0xFF131C29)
-            drawRect(base.copy(alpha = .92f), Offset(x, y), Size(step * 1.08f, height + h - horizon))
-            if (index % 2 == 0) {
+            val base = when {
+                brickBias -> Color(0xFF24181A)
+                tech > 70 -> Color(0xFF102436)
+                wounded -> Color(0xFF17171A)
+                else -> Color(0xFF131C29)
+            }
+            val collapse = wounded && index % 5 == 2
+            val drawnHeight = if (collapse) height * .62f else height
+            val drawnY = if (collapse) horizon - drawnHeight else y
+            drawRect(base.copy(alpha = .92f), Offset(x, drawnY), Size(step * 1.08f, drawnHeight + h - horizon))
+            if (index % 2 == 0 && !collapse) {
                 repeat(4) { row ->
                     if ((hash + row) % 3 != 0) {
                         drawRect(
-                            UltimateGold.copy(alpha = .18f + (hash % 4) * .04f),
-                            Offset(x + step * .18f, y + height * (.15f + row * .18f)),
+                            (if (tech > 65) Color(0xFF7FE8FF) else UltimateGold).copy(alpha = .18f + (hash % 4) * .04f),
+                            Offset(x + step * .18f, drawnY + drawnHeight * (.15f + row * .18f)),
                             Size(step * .12f, h * .006f)
                         )
                     }
@@ -121,12 +135,10 @@ internal fun CinematicSceneLayer(
             }
         }
 
-        // Midground architectural masses and parallax framing.
         val midOffset = animatedDrift * w * .008f
         drawRect(Color(0xFF0B111A).copy(alpha = .94f), Offset(-w * .08f + midOffset, horizon * .93f), Size(w * .33f, h))
         drawRect(Color(0xFF0A0F17).copy(alpha = .94f), Offset(w * .79f - midOffset, horizon * .88f), Size(w * .34f, h))
 
-        // Road / ground perspective.
         val road = Path().apply {
             moveTo(w * .20f, h)
             lineTo(w * .44f, horizon)
@@ -137,7 +149,6 @@ internal fun CinematicSceneLayer(
         drawPath(road, Color(0xFF090D12))
         drawLine(Color(0xFFB4C5D8).copy(alpha = .08f), Offset(w * .50f, horizon), Offset(w * .56f, h), w * .004f)
 
-        // Weather, age and scene atmosphere.
         val rainy = state?.climate?.contains("Pluv", true) == true || state?.climate?.contains("Orage", true) == true || kind == CinematicSceneKind.TEEN
         if (rainy) {
             repeat(38) { i ->
@@ -149,7 +160,6 @@ internal fun CinematicSceneLayer(
         }
 
         if (kind == CinematicSceneKind.CHILDHOOD) {
-            // Warm window glow: the early years feel intimate before the metahuman spectacle.
             drawRect(Color(0xFFFFD98C).copy(alpha = .12f), Offset(w * .12f, h * .28f), Size(w * .26f, h * .17f))
             drawCircle(Color(0xFFFFD88A).copy(alpha = .10f), w * .22f, Offset(w * .23f, h * .35f))
         }
@@ -159,7 +169,7 @@ internal fun CinematicSceneLayer(
             drawCircle(power.accent.copy(alpha = .08f), rr * 2.2f, Offset(w * .50f, h * .55f))
             drawCircle(power.accent.copy(alpha = .19f), rr, Offset(w * .50f, h * .55f))
             repeat(18) { i ->
-                val phase = (i * 0.31f + animatedPulse * 2f)
+                val phase = i * .31f + animatedPulse * 2f
                 val px = w * .5f + sin(phase) * rr * (1f + (i % 4) * .22f)
                 val py = h * .55f - rr * .9f + (i % 7) * rr * .24f
                 drawCircle(power.secondary.copy(alpha = .42f), size.minDimension * .006f, Offset(px, py))
@@ -167,12 +177,10 @@ internal fun CinematicSceneLayer(
         }
 
         if (kind == CinematicSceneKind.LEGACY) {
-            // A distant monument silhouette gives end screens a mythic, archived feeling.
             drawRect(Color(0xFF0B0A09), Offset(w * .46f, h * .36f), Size(w * .08f, h * .34f))
             drawCircle(UltimateGold.copy(alpha = .16f), w * .13f, Offset(w * .50f, h * .34f))
         }
 
-        // Foreground silhouettes create depth without obscuring the UI.
         drawRect(Color.Black.copy(alpha = .34f), Offset(0f, h * .91f), Size(w, h * .09f))
         drawCircle(Color.Black.copy(alpha = .30f), w * .19f, Offset(-w * .03f, h * .91f))
         drawCircle(Color.Black.copy(alpha = .28f), w * .17f, Offset(w * 1.02f, h * .90f))
