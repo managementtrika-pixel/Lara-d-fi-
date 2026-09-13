@@ -1,11 +1,18 @@
 package com.metahumanlegacy.game
 
+import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 
 class ScopeEscalationDirectorTest {
+    @Before
+    fun installNarrativeBundle() {
+        NarrativeCodec.installAssetParts { path -> File("src/main/assets/$path").readBytes() }
+    }
+
     private fun campaign(influence: Int) = GameEngine.newCampaign(939393L).copy(
         turn = 24,
         powerFamily = "Énergie",
@@ -76,5 +83,22 @@ class ScopeEscalationDirectorTest {
         val once = ScopeEscalationDirector.enrich(c, crisis())
         val twice = ScopeEscalationDirector.enrich(c, once)
         assertEquals(once, twice)
+    }
+
+    @Test
+    fun guardPreventsFallbackFromJumpingAboveEarnedScope() {
+        val c = campaign(0).copy(turn = 100)
+        assertEquals(Scope.STREET, c.scope)
+        val highScopeBeat = NarrativeCodec.beats().first {
+            it.stage == 1 && it.minAge <= c.age && it.minScope.ordinal > c.scope.ordinal
+        }
+        val unsafe = NarrativeRepository.byId(highScopeBeat.id, c)!!
+        val guarded = NarrativeScopeGuard.enforce(c, unsafe)
+
+        assertNotEquals(unsafe.id, guarded.id)
+        val replacementBeat = NarrativeCodec.beats().firstOrNull { it.id == guarded.id }
+        assertTrue(
+            replacementBeat == null || replacementBeat.minScope.ordinal <= c.scope.ordinal
+        )
     }
 }
