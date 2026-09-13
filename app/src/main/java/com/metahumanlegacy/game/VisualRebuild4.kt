@@ -77,16 +77,25 @@ internal fun VisualRebuild4App(context: Context) {
     }
     val motion = LocalMetahumanMotion.current.settings
     val campaign = snapshot.campaign
+    val state = snapshot.state
     Box(Modifier.fillMaxSize()) {
         GameplayRebuildApp(context)
         CinematicSceneLayer(
             campaign = campaign,
-            state = snapshot.state,
+            state = state,
             scene = sceneHint(campaign),
             modifier = Modifier.fillMaxSize().graphicsLayer {
                 alpha = if (motion.highContrast) .10f else .17f
             }
         )
+        if (state != null) {
+            WorldStateVisualLayer4(
+                state = state,
+                modifier = Modifier.fillMaxSize().graphicsLayer {
+                    alpha = if (motion.highContrast) .15f else .34f
+                }
+            )
+        }
         if (campaign?.powerRevealed == true) {
             CinematicPowerVfx(
                 powerFamily = campaign.powerFamily,
