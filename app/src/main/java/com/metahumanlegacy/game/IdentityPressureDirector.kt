@@ -10,13 +10,14 @@ internal object IdentityPressureDirector {
             val person = deep.relationships.firstOrNull { it.id == life.personId }
             if (person == null || !person.alive) return@map life
 
+            val priorKnowledge = state.secretIdentity.knownBy[person.id] ?: life.secretKnowledge
             val knowledge = when {
-                life.secretKnowledge == SecretKnowledge.THREATENS -> SecretKnowledge.THREATENS
-                life.secretKnowledge == SecretKnowledge.PROTECTS -> SecretKnowledge.PROTECTS
+                priorKnowledge == SecretKnowledge.THREATENS -> SecretKnowledge.THREATENS
+                priorKnowledge == SecretKnowledge.PROTECTS -> SecretKnowledge.PROTECTS
                 person.knowsIdentity && (person.grudge >= 55 || person.trust <= 25) -> SecretKnowledge.THREATENS
                 person.knowsIdentity && person.trust >= 70 && person.affection >= 60 -> SecretKnowledge.PROTECTS
                 person.knowsIdentity -> SecretKnowledge.KNOWS
-                life.secretKnowledge == SecretKnowledge.SUSPECTS -> SecretKnowledge.SUSPECTS
+                priorKnowledge == SecretKnowledge.SUSPECTS -> SecretKnowledge.SUSPECTS
                 else -> SecretKnowledge.UNAWARE
             }
             if (knowledge != SecretKnowledge.UNAWARE) knownBy[person.id] = knowledge
