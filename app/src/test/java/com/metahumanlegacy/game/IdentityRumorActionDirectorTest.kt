@@ -50,6 +50,16 @@ class IdentityRumorActionDirectorTest {
     }
 
     @Test
+    fun containmentKeepsNormalEightyEntryLifeHistoryWindow() {
+        val before = state().copy(actionLog = (1..40).map { "Action $it" })
+        val after = IdentityRumorActionDirector.perform(campaign(), before, IdentityRumorActionDirector.action())!!.state
+
+        assertEquals(41, after.actionLog.size)
+        assertEquals("Action 1", after.actionLog.first())
+        assertTrue(after.actionLog.last().contains("rumeurs contenues", ignoreCase = true))
+    }
+
+    @Test
     fun existingEvidenceIsNotErasedByRumorContainment() {
         val c = campaign()
         val before = state()
