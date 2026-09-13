@@ -23,7 +23,7 @@ class IdentityNarrativeDirectorTest {
         kind = kind
     )
 
-    private fun deep(threat: Boolean = false, evidenceCount: Int = 2): DeepLifeState {
+    private fun deep(threat: Boolean = false, evidenceCount: Int = 2, lifeExposure: Int = 58): DeepLifeState {
         val knowledge = if (threat) SecretKnowledge.THREATENS else SecretKnowledge.UNAWARE
         return DeepLifeState(
             seed = 737373L,
@@ -43,7 +43,7 @@ class IdentityNarrativeDirectorTest {
             lifeSimulation = LifeSimulationState(
                 relationshipLives = listOf(RelationshipLifeState("journalist", closeness = 40, secretKnowledge = knowledge)),
                 districts = listOf(DistrictLifeState("quartier")),
-                secretIdentity = IdentitySecretState(exposure = 58)
+                secretIdentity = IdentitySecretState(exposure = lifeExposure)
             )
         )
     }
@@ -82,7 +82,7 @@ class IdentityNarrativeDirectorTest {
 
     @Test
     fun lowPressureDoesNotInventIdentityChoice() {
-        val enriched = IdentityNarrativeDirector.enrich(campaign(12), deep(evidenceCount = 0), event())
+        val enriched = IdentityNarrativeDirector.enrich(campaign(12), deep(evidenceCount = 0, lifeExposure = 12), event())
         assertFalse(enriched.choices.any { IdentityNarrativeDirector.isIdentityChoice(it) })
     }
 
