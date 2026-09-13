@@ -6,9 +6,9 @@ internal data class LifeWorldBridgeUpdate(
 )
 
 /**
- * Mirrors consequences from the free-time life simulation into the authoritative campaign/world
- * state. The bridge is delta-based so persisting the same LifeSimulationState twice cannot stack
- * the same consequence again.
+ * Keeps the free-time life simulation and the authoritative campaign/world state coherent.
+ * Life actions are mirrored into the main world using deltas, while narrative/world consequences
+ * are reconciled back into life simulation without erasing simulation-only history.
  */
 internal object LifeWorldStateBridge {
     fun afterLifeAction(
@@ -66,5 +66,55 @@ internal object LifeWorldStateBridge {
         }
 
         return LifeWorldBridgeUpdate(nextCampaign, nextUltimate)
+    }
+
+    /**
+     * Reconciles consequences produced by authored story/world systems back into the life layer.
+     * This is intentionally absolute for facts the main world owns (crime/damage/exposure), while
+     * simulation-only fields such as promises, availability and technique proficiency are preserved.
+     */
+    fun syncLifeFromWorld(
+        campaign: Campaign,
+        ultimate: UltimateState,
+        life: LifeSimulationState
+    ): LifeSimulationState {
+        val worldDistrict = ultimate.districts.firstOrNull { it.name == campaign.district }
+            ?: ultimate.districts.firstOrNull()
+
+        val districts = if (worldDistrict == null) life.districts else {
+            val targetSafety = (
+                100 - worldDistrict.crime - worldDistrict.damage / 2 + worldDistrict.reconstruction / 2
+            ).coerceIn(0, 100)
+            val targetTrust = worldDistrict.sentiment.coerceIn(0, 100)
+            val targetHeat = maxOf(
+                life.districts.firstOrNull { it.id == "quartier" }?.mediaHeat ?: 0,
+                campaign.identityExposure / 2
+            ).coerceIn(0, 100)
+            val existing = life.districts.firstOrNull { it.id == "quartier" }
+                ?: DistrictLifeState("quartier")
+            val syncedHome = existing.copy(
+                safety = targetSafety,
+                damage = worldDistrict.damage.coerceIn(0, 100),
+                localTrust = targetTrust,
+                criminalControl = worldDistrict.crime.coerceIn(0, 100),
+                mediaHeat = targetHeat
+            )
+            if (life.districts.any { it.id == "quartier" }) {
+                life.districts.map { if (it.id == "quartier") syncedHome else it }
+            } else {
+                listOf(syncedHome) + life.districts
+            }
+        }
+
+        return life.copy(
+            powerRules = life.powerRules.copy(
+                control = maxOf(life.powerRules.control, campaign.control).coerceIn(0, 100),
+                overload = maxOf(life.powerRules.overload, ultimate.powerStrain).coerceIn(0, 100)
+            ),
+            secretIdentity = life.secretIdentity.copy(
+                exposure = maxOf(life.secretIdentity.exposure, campaign.identityExposure).coerceIn(0, 100)
+            ),
+            districts = districts
+        )
     }
 }
