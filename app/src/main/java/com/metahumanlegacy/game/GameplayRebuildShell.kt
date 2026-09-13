@@ -26,7 +26,7 @@ internal fun GameplayRebuildEarlyShell(
     val accent = if (c.turn == 10) UltimateViolet else if (c.powerRevealed) powerVisualProfile(c.powerFamily).accent else UltimateBlue
     Box(Modifier.fillMaxSize()) {
         if (c.powerRevealed && c.turn > 10 && outcome == null) {
-            GameplayStoryTechniqueDestinyScreen(c, state, annual, deep, onChoice)
+            CinematicAdultDestiny44(c, state, annual, deep, onChoice)
         } else {
             CinematicDestiny43(c, state, annual, deep, outcome, onContinue, onChoice)
         }
