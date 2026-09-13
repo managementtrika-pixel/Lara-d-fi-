@@ -1,13 +1,16 @@
 package com.metahumanlegacy.game
 
 /** Safety net for the authored arc selector: a fallback may repeat old content, but it must never
- * promote the player into an arc whose minimum career scope has not been earned yet. */
+ * promote the player into a new arc whose minimum career scope has not been earned yet.
+ * minScope is an entry requirement only: once an arc is opened, later stages are allowed to
+ * continue even if the campaign's current reach falls below that original threshold. */
 internal object NarrativeScopeGuard {
     fun enforce(c: Campaign, base: EventNode): EventNode {
         if (!c.powerRevealed || base.kind != "MAJOR") return base
         val beats = NarrativeCodec.beats()
         val selected = beats.firstOrNull { it.id == base.id } ?: return base
-        if (c.scope.ordinal >= selected.minScope.ordinal) return base
+        val arcAlreadyStarted = c.threads.any { it.id == selected.arc }
+        if (arcAlreadyStarted || c.scope.ordinal >= selected.minScope.ordinal) return base
 
         val eligible = beats.asSequence()
             .filter { it.stage == 1 }
