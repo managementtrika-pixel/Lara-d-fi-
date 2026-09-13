@@ -26,6 +26,7 @@ internal object LifeSimulationJson {
                     put("personId", rel.personId)
                     put("bond", rel.bond.name)
                     put("attraction", rel.attraction)
+                    put("closeness", rel.closeness)
                     put("availability", rel.availability)
                     put("secretKnowledge", rel.secretKnowledge.name)
                     put("sharedSecrets", strings(rel.sharedSecrets))
@@ -106,6 +107,7 @@ internal object LifeSimulationJson {
                     personId = o.optString("personId"),
                     bond = enumValue(o.optString("bond"), BondStatus.NONE),
                     attraction = o.optInt("attraction"),
+                    closeness = o.optInt("closeness"),
                     availability = o.optInt("availability", 100),
                     secretKnowledge = enumValue(o.optString("secretKnowledge"), SecretKnowledge.UNAWARE),
                     sharedSecrets = o.optJSONArray("sharedSecrets").strings(),
