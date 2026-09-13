@@ -92,7 +92,7 @@ internal fun CinematicAdultDestiny44(
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    AdultContextStrip44(home, identity, identityState, deep, learnedTechnique, accent)
+                    AdultContextStrip44(home, identity, identityState, learnedTechnique, accent)
 
                     Spacer(Modifier.height(13.dp))
                     Text("TA RÉPONSE", color = accent, fontWeight = FontWeight.Black, fontSize = 9.sp, letterSpacing = 1.5.sp)
@@ -133,10 +133,9 @@ private fun AdultSceneStatus44(c: Campaign, state: UltimateState, event: EventNo
 @Composable
 private fun AdultContextStrip44(
     home: DistrictLifeState?,
-    identity: SecretIdentityState?,
+    identity: IdentitySecretState?,
     identityState: LifeSimulationState?,
-    deep: DeepLifeState,
-    learned: LearnedTechnique?,
+    learned: TechniqueState?,
     accent: Color
 ) {
     val known = identityState?.let(IdentityPressureDirector::knownCount) ?: 0
