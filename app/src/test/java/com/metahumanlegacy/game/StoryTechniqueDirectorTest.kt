@@ -69,6 +69,26 @@ class StoryTechniqueDirectorTest {
     }
 
     @Test
+    fun identityAndTechniqueChoicesCoexistAtSevenChoiceCap() {
+        val c = campaign()
+        val identity = Choice(
+            "Détourner l'attention avant d'agir",
+            risk = 3,
+            approach = "TRUTH",
+            identityDelta = -2,
+            flag = "identity_pressure:contain"
+        )
+        val crowded = crisis().copy(
+            choices = (1..6).map { Choice("Choix générique $it", risk = it.coerceAtMost(7)) } + identity
+        )
+        val enriched = StoryTechniqueDirector.enrich(c, deepWithTechnique(c), crowded)
+
+        assertEquals(7, enriched.choices.size)
+        assertTrue(enriched.choices.any { it.flag == "identity_pressure:contain" })
+        assertTrue(enriched.choices.any { StoryTechniqueDirector.techniqueId(it) == "projector_zone" })
+    }
+
+    @Test
     fun usingStoryTechniqueBuildsProficiencyAndCostsFatigue() {
         val c = campaign()
         val before = deepWithTechnique(c)

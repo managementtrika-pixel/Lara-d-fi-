@@ -61,7 +61,7 @@ private fun GameplayLifeSimulationScreen(
     onBack: () -> Unit
 ) {
     val raw = deep.lifeSimulation ?: LifeSimulationDirector.bootstrap(c, deep)
-    val simulation = LifeSimulationDirector.synced(c, deep, raw)
+    val simulation = IdentityPressureDirector.sync(c, deep, LifeSimulationDirector.synced(c, deep, raw))
     var feedback by remember(c.seed, c.turn) { mutableStateOf<LifeActionResult?>(null) }
     val peopleById = deep.relationships.associateBy { it.id }
     val actions = LifeSimulationDirector.availableActions(c, simulation)
@@ -87,14 +87,15 @@ private fun GameplayLifeSimulationScreen(
                 closePeople.forEach { rel ->
                     val person = peopleById[rel.personId]
                     val secret = when (rel.secretKnowledge) {
-                        SecretKnowledge.KNOWS, SecretKnowledge.PROTECTS -> " · connaît ton identité"
+                        SecretKnowledge.KNOWS -> " · connaît ton identité"
+                        SecretKnowledge.PROTECTS -> " · protège ton identité"
                         SecretKnowledge.SUSPECTS -> " · soupçonne quelque chose"
-                        SecretKnowledge.THREATENS -> " · identité sous tension"
+                        SecretKnowledge.THREATENS -> " · peut exposer ton identité"
                         else -> ""
                     }
                     Text(
                         "${person?.name ?: rel.personId} · ${relationshipBand(rel.closeness)}$secret",
-                        color = UltimateIvory,
+                        color = if (rel.secretKnowledge == SecretKnowledge.THREATENS) UltimateRed else UltimateIvory,
                         fontSize = 11.sp
                     )
                 }
@@ -103,6 +104,30 @@ private fun GameplayLifeSimulationScreen(
         }
 
         if (c.powerRevealed) {
+            Spacer(Modifier.height(7.dp))
+            val identityAccent = when {
+                simulation.secretIdentity.exposure >= 75 -> UltimateRed
+                simulation.secretIdentity.exposure >= 45 -> UltimateGold
+                else -> UltimateBlue
+            }
+            UltimatePanel(accent = identityAccent) {
+                Text("IDENTITÉ SOUS PRESSION", color = identityAccent, fontWeight = FontWeight.Black, fontSize = 9.sp)
+                Text(
+                    "Exposition ${lifeBand(simulation.secretIdentity.exposure)} · ${simulation.secretIdentity.evidenceIds.size} preuve${if (simulation.secretIdentity.evidenceIds.size > 1) "s" else ""} · ${IdentityPressureDirector.knownCount(simulation)} personne${if (IdentityPressureDirector.knownCount(simulation) > 1) "s" else ""} au courant",
+                    color = UltimateIvory,
+                    fontSize = 11.sp
+                )
+                if (simulation.secretIdentity.activeRumors.isEmpty()) {
+                    Text("Aucune rumeur structurée ne relie encore ta vie civile à ton identité métahumaine.", color = UltimateMuted, fontSize = 10.sp)
+                } else {
+                    Spacer(Modifier.height(4.dp))
+                    Text("RUMEURS ACTIVES", color = identityAccent, fontWeight = FontWeight.Black, fontSize = 8.sp)
+                    simulation.secretIdentity.activeRumors.take(4).forEach { rumor ->
+                        Text("• $rumor", color = UltimateMuted, fontSize = 10.sp, lineHeight = 14.sp)
+                    }
+                }
+            }
+
             Spacer(Modifier.height(7.dp))
             UltimatePanel(accent = UltimateViolet) {
                 Text("MAÎTRISE DU POUVOIR", color = UltimateViolet, fontWeight = FontWeight.Black, fontSize = 9.sp)
