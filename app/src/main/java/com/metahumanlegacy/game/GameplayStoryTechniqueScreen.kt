@@ -15,7 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-/** Career-only scene renderer that exposes techniques actually learned in LifeSimulationState. */
+/** Career-only scene renderer that exposes persistent world, identity and learned-technique state. */
 @Composable
 internal fun GameplayStoryTechniqueDestinyScreen(
     c: Campaign,
@@ -25,19 +25,24 @@ internal fun GameplayStoryTechniqueDestinyScreen(
     onChoice: (EventNode, Choice) -> Unit
 ) {
     val life = deep.lifeSimulation
+    val identityState = life?.let { IdentityPressureDirector.sync(c, deep, it) }
     val lifeKey = listOf(
         life?.powerRules?.techniques?.hashCode() ?: 0,
         life?.districts?.hashCode() ?: 0,
-        life?.secretIdentity?.exposure ?: 0
+        identityState?.secretIdentity?.hashCode() ?: 0,
+        deep.identityEvidence.hashCode(),
+        deep.relationships.filter { it.knowsIdentity }.hashCode()
     ).hashCode()
     val event = remember(c.seed, c.turn, state.hashCode(), annual.hashCode(), lifeKey) {
         val base = UltimateGameEngine.event(c, state, annual)
         val worldAware = LifeWorldNarrativeDirector.enrich(c, deep, base)
-        StoryTechniqueDirector.enrich(c, deep, worldAware)
+        val identityAware = IdentityNarrativeDirector.enrich(c, deep, worldAware)
+        StoryTechniqueDirector.enrich(c, deep, identityAware)
     }
     val accent = powerVisualProfile(c.powerFamily).accent
     val technique = event.choices.firstOrNull { StoryTechniqueDirector.techniqueId(it) != null }
     val home = life?.districts?.firstOrNull { it.id == "quartier" }
+    val identity = identityState?.secretIdentity
 
     MhlSceneFrame(
         "story-technique-${c.seed}-${c.turn}-${event.id}",
@@ -72,6 +77,27 @@ internal fun GameplayStoryTechniqueDestinyScreen(
                 }
             }
 
+            if (identity != null && (identity.activeRumors.isNotEmpty() || identity.evidenceIds.isNotEmpty())) {
+                val identityAccent = if (identity.exposure >= 70 || identity.knownBy.values.any { it == SecretKnowledge.THREATENS }) UltimateRed else UltimateGold
+                Spacer(Modifier.height(9.dp))
+                Column(
+                    Modifier.fillMaxWidth()
+                        .background(Color(0xB9161015), CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp))
+                        .border(1.dp, identityAccent.copy(alpha = .5f), CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp))
+                        .padding(10.dp)
+                ) {
+                    Text("IDENTITÉ SOUS PRESSION", color = identityAccent, fontWeight = FontWeight.Black, fontSize = 9.sp)
+                    Text(
+                        "Exposition ${identity.exposure}/100 · ${identity.evidenceIds.size} preuve${if (identity.evidenceIds.size > 1) "s" else ""} · ${IdentityPressureDirector.knownCount(identityState!!)} personne${if (IdentityPressureDirector.knownCount(identityState) > 1) "s" else ""} au courant",
+                        color = UltimateIvory,
+                        fontSize = 11.sp
+                    )
+                    identity.activeRumors.takeLast(2).forEach { rumor ->
+                        Text("• $rumor", color = UltimateMuted, fontSize = 10.sp, lineHeight = 14.sp)
+                    }
+                }
+            }
+
             if (technique != null) {
                 val id = StoryTechniqueDirector.techniqueId(technique)
                 val learned = life?.powerRules?.techniques?.firstOrNull { it.id == id }
@@ -100,7 +126,10 @@ internal fun GameplayStoryTechniqueDestinyScreen(
             Spacer(Modifier.height(6.dp))
             event.choices.forEachIndexed { index, choice ->
                 val isTechnique = StoryTechniqueDirector.techniqueId(choice) != null
-                val choiceAccent = if (isTechnique) accent else when {
+                val isIdentity = IdentityNarrativeDirector.isIdentityChoice(choice)
+                val choiceAccent = when {
+                    isTechnique -> accent
+                    isIdentity -> UltimateGold
                     choice.risk >= 7 -> UltimateRed
                     choice.risk >= 4 -> UltimateGold
                     else -> UltimateBlue
@@ -111,11 +140,20 @@ internal fun GameplayStoryTechniqueDestinyScreen(
                         .border(1.dp, choiceAccent.copy(alpha = .45f), CutCornerShape(topEnd = 16.dp, bottomStart = 16.dp))
                         .padding(10.dp)
                 ) {
-                    Text("${index + 1} · ${if (isTechnique) "TECHNIQUE" else "CHOIX"}", color = choiceAccent, fontWeight = FontWeight.Black, fontSize = 8.sp)
+                    Text(
+                        "${index + 1} · ${when { isTechnique -> "TECHNIQUE"; isIdentity -> "IDENTITÉ"; else -> "CHOIX" }}",
+                        color = choiceAccent,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 8.sp
+                    )
                     Text(choice.label, color = UltimateIvory, fontWeight = FontWeight.Bold, fontSize = 14.sp, lineHeight = 18.sp)
                     Text(storyChoiceConsequence(choice), color = UltimateMuted, fontSize = 10.sp, lineHeight = 14.sp)
                     Spacer(Modifier.height(7.dp))
-                    MhlPrimaryButton(if (isTechnique) "Employer cette technique" else "Faire ce choix", { onChoice(event, choice) }, Modifier.fillMaxWidth())
+                    MhlPrimaryButton(
+                        when { isTechnique -> "Employer cette technique"; isIdentity -> "Protéger ton secret"; else -> "Faire ce choix" },
+                        { onChoice(event, choice) },
+                        Modifier.fillMaxWidth()
+                    )
                 }
                 Spacer(Modifier.height(7.dp))
             }
@@ -128,6 +166,7 @@ private fun storyChoiceConsequence(choice: Choice): String = buildString {
     if (choice.moral > 0) signals += "protège davantage"
     if (choice.moral < 0) signals += "sacrifie la prudence morale"
     if (choice.power > 0) signals += "engage ton pouvoir"
+    if (choice.power < 0) signals += "limite volontairement ton efficacité"
     if (choice.identityDelta > 0) signals += "laisse des traces sur ton identité"
     if (choice.identityDelta < 0) signals += "protège ton secret"
     if (choice.healthDelta < 0) signals += "coûte physiquement"
