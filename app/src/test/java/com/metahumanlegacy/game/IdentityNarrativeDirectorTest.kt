@@ -90,9 +90,10 @@ class IdentityNarrativeDirectorTest {
     }
 
     @Test
-    fun choiceCapRemainsSeven() {
+    fun identityResponseSurvivesSevenChoiceCap() {
         val crowded = event().copy(choices = (1..7).map { Choice("Choix $it", risk = it) })
         val enriched = IdentityNarrativeDirector.enrich(campaign(), deep(), crowded)
-        assertTrue(enriched.choices.size <= 7)
+        assertEquals(7, enriched.choices.size)
+        assertTrue(enriched.choices.any { IdentityNarrativeDirector.isIdentityChoice(it) })
     }
 }
