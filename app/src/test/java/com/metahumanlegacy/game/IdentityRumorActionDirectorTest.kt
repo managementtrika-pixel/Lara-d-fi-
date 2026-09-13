@@ -40,6 +40,16 @@ class IdentityRumorActionDirectorTest {
     }
 
     @Test
+    fun availableActionsSurfacesRumorContainmentWhenPressureIsReal() {
+        val actions = LifeSimulationDirector.availableActions(campaign(), state())
+        val action = actions.firstOrNull { it.targetId == "identity_rumor" }
+
+        assertNotNull(action)
+        assertEquals(LifeActionType.INVESTIGATE, action!!.type)
+        assertTrue(action.label.contains("rumeur", ignoreCase = true))
+    }
+
+    @Test
     fun existingEvidenceIsNotErasedByRumorContainment() {
         val c = campaign()
         val before = state()
