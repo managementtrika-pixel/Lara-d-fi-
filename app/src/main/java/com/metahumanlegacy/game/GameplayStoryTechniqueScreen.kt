@@ -86,7 +86,7 @@ internal fun GameplayStoryTechniqueDestinyScreen(
                 ) {
                     Text("${index + 1} · ${if (isTechnique) "TECHNIQUE" else "CHOIX"}", color = choiceAccent, fontWeight = FontWeight.Black, fontSize = 8.sp)
                     Text(choice.label, color = UltimateIvory, fontWeight = FontWeight.Bold, fontSize = 14.sp, lineHeight = 18.sp)
-                    Text(choiceHumanConsequence(choice), color = UltimateMuted, fontSize = 10.sp, lineHeight = 14.sp)
+                    Text(storyChoiceConsequence(choice), color = UltimateMuted, fontSize = 10.sp, lineHeight = 14.sp)
                     Spacer(Modifier.height(7.dp))
                     MhlPrimaryButton(if (isTechnique) "Employer cette technique" else "Faire ce choix", { onChoice(event, choice) }, Modifier.fillMaxWidth())
                 }
@@ -94,4 +94,23 @@ internal fun GameplayStoryTechniqueDestinyScreen(
             }
         }
     }
+}
+
+private fun storyChoiceConsequence(choice: Choice): String = buildString {
+    val signals = mutableListOf<String>()
+    if (choice.moral > 0) signals += "protège davantage"
+    if (choice.moral < 0) signals += "sacrifie la prudence morale"
+    if (choice.power > 0) signals += "engage ton pouvoir"
+    if (choice.identityDelta > 0) signals += "laisse des traces sur ton identité"
+    if (choice.identityDelta < 0) signals += "protège ton secret"
+    if (choice.healthDelta < 0) signals += "coûte physiquement"
+    if (choice.relationDelta > 0) signals += "renforce un lien"
+    if (choice.relationDelta < 0) signals += "fragilise un lien"
+    signals += when {
+        choice.risk >= 7 -> "risque extrême"
+        choice.risk >= 4 -> "risque élevé"
+        choice.risk >= 2 -> "risque réel"
+        else -> "risque contenu"
+    }
+    append(signals.distinct().take(3).joinToString(" · ").replaceFirstChar { it.uppercase() })
 }
