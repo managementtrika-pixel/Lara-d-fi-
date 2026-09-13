@@ -101,4 +101,22 @@ class StoryTechniqueDirectorTest {
 
         assertEquals(1, after.lifeSimulation!!.powerRules.techniques.first().cooldownTurns)
     }
+
+    @Test
+    fun fullScopeSceneStillKeepsLearnedTechniqueAndScopeResponsibility() {
+        val c = campaign().copy(influence = 250)
+        val crowded = crisis().copy(
+            choices = (1..7).map { index ->
+                Choice("Choix $index", risk = 3, approach = "CARE", stakes = 4)
+            }
+        )
+        val withScope = ScopeEscalationDirector.enrich(c, crowded)
+        assertEquals(7, withScope.choices.size)
+        assertTrue(withScope.choices.any { it.flag == "scope_response_city" })
+
+        val enriched = StoryTechniqueDirector.enrich(c, deepWithTechnique(c), withScope)
+        assertEquals(7, enriched.choices.size)
+        assertTrue(enriched.choices.any { it.flag == "scope_response_city" })
+        assertTrue(enriched.choices.any { StoryTechniqueDirector.techniqueId(it) == "projector_zone" })
+    }
 }
