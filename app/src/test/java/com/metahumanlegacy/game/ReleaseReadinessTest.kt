@@ -165,29 +165,23 @@ class ReleaseReadinessTest {
     }
 
     @Test
-    fun canonicalChildhoodEventsAreAgeAppropriateAndFullyInteractive() {
+    fun formativeChildhoodEventsRemainAgeAppropriateAndMechanicallyCanonical() {
         var c = GameEngine.newCampaign(817181L)
-        val expectedTitles = listOf(
-            "LE SAC DANS LA COUR",
-            "UNE PLACE À TABLE",
-            "LE DÉFI DU TOIT",
-            "CE QUE TU AS VU",
-            "LA PORTE FERMÉE",
-            "LE GROUPE",
-            "LE MESSAGE QUI TOURNE",
-            "APRÈS LES COURS",
-            "LA NUIT DU QUARTIER",
-            "CE QUE TU VEUX DEVENIR"
-        )
-
         repeat(10) { index ->
+            val canonical = NarrativeRepository.event(c)
             val event = GameEngine.event(c)
             assertEquals(8 + index, c.age)
-            assertEquals(expectedTitles[index], event.title)
             assertEquals("FORMATIVE", event.kind)
+            assertEquals(canonical.id, event.id)
+            assertEquals(canonical.threadStage, event.threadStage)
             assertEquals(4, event.choices.size)
+            assertTrue(event.title.isNotBlank())
             assertTrue(event.text.isNotBlank())
+            assertTrue(event.text.contains((8 + index).toString()))
             assertTrue(event.choices.all { it.label.isNotBlank() })
+            canonical.choices.zip(event.choices).forEach { (before, after) ->
+                assertEquals(before.copy(label = after.label), after)
+            }
             c = GameEngine.resolve(c, event, event.choices[index % 4]).campaign
         }
 
