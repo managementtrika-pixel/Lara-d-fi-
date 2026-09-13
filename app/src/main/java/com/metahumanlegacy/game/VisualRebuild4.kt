@@ -95,6 +95,14 @@ internal fun VisualRebuild4App(context: Context) {
                     alpha = if (motion.highContrast) .32f else .58f
                 }
             )
+            if (campaign.age == 18) {
+                AwakeningCinematic4(
+                    campaign = campaign,
+                    modifier = Modifier.fillMaxSize().graphicsLayer {
+                        alpha = if (motion.highContrast) .45f else .82f
+                    }
+                )
+            }
         }
         VisualRebuild4Overlay(campaign = campaign, modifier = Modifier.fillMaxSize())
     }
