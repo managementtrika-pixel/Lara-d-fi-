@@ -69,7 +69,7 @@ internal fun CinematicPowerVfx(
         val unit = size.minDimension
 
         fun particle(i: Int, radius: Float, speed: Float = 1f): Offset {
-            val angle = (i * .71f + p * PI.toFloat() * 2f * speed)
+            val angle = i * .71f + p * PI.toFloat() * 2f * speed
             val r = radius * (.55f + (i % 5) * .10f)
             return Offset(center.x + cos(angle) * r, center.y + sin(angle) * r)
         }
@@ -115,7 +115,7 @@ internal fun CinematicPowerVfx(
                 }
             }
             PowerVfxKind.STRENGTH -> {
-                val shake = sin(p * PI * 8).toFloat() * unit * .006f * safeIntensity
+                val shake = sin(p * PI.toFloat() * 8f) * unit * .006f * safeIntensity
                 repeat(8) { i ->
                     val a = i * PI.toFloat() / 4f
                     val inner = Offset(center.x + cos(a) * unit * .12f + shake, center.y + sin(a) * unit * .12f)
@@ -126,7 +126,7 @@ internal fun CinematicPowerVfx(
             PowerVfxKind.ENERGY -> {
                 repeat(7) { i ->
                     val base = particle(i, unit * .24f, 1.4f)
-                    val mid = Offset((base.x + center.x) / 2f + sin(i + p * 10f) * unit * .035f, (base.y + center.y) / 2f)
+                    val mid = Offset((base.x + center.x) / 2f + sin(i.toFloat() + p * 10f) * unit * .035f, (base.y + center.y) / 2f)
                     val bolt = Path().apply { moveTo(center.x, center.y); lineTo(mid.x, mid.y); lineTo(base.x, base.y) }
                     drawPath(bolt, profile.secondary.copy(alpha = .30f * safeIntensity), style = Stroke(unit * .004f))
                 }
@@ -135,18 +135,18 @@ internal fun CinematicPowerVfx(
                 repeat(3) { i ->
                     val rr = unit * (.13f + i * .07f)
                     drawCircle(profile.accent.copy(alpha = .12f * safeIntensity), rr, center, style = Stroke(unit * .003f))
-                    val a = p * PI.toFloat() * 2f * (if (i % 2 == 0) 1f else -1f) + i
+                    val a = p * PI.toFloat() * 2f * (if (i % 2 == 0) 1f else -1f) + i.toFloat()
                     drawCircle(profile.secondary.copy(alpha = .48f * safeIntensity), unit * .008f, Offset(center.x + cos(a) * rr, center.y + sin(a) * rr))
                 }
             }
             PowerVfxKind.FORCEFIELD -> {
-                val rr = unit * (.26f + sin(p * PI * 2).toFloat() * .01f)
+                val rr = unit * (.26f + sin(p * PI.toFloat() * 2f) * .01f)
                 drawCircle(profile.accent.copy(alpha = .055f * safeIntensity), rr, center)
                 drawCircle(profile.secondary.copy(alpha = .25f * safeIntensity), rr, center, style = Stroke(unit * .005f))
             }
             PowerVfxKind.PSYCHIC -> {
                 repeat(5) { i ->
-                    val offset = sin(p * PI * 2 + i) * unit * .012f
+                    val offset = sin(p * PI.toFloat() * 2f + i.toFloat()) * unit * .012f
                     drawCircle(profile.accent.copy(alpha = (.10f - i * .012f) * safeIntensity), unit * (.13f + i * .035f), Offset(center.x + offset, center.y), style = Stroke(unit * .003f))
                 }
             }
@@ -168,9 +168,7 @@ internal fun CinematicPowerVfx(
                 }
                 drawCircle(profile.accent.copy(alpha = .045f * safeIntensity), unit * .30f, center)
             }
-            PowerVfxKind.UNKNOWN -> {
-                drawCircle(profile.accent.copy(alpha = .04f * safeIntensity), unit * .25f, center)
-            }
+            PowerVfxKind.UNKNOWN -> drawCircle(profile.accent.copy(alpha = .04f * safeIntensity), unit * .25f, center)
         }
     }
 }
