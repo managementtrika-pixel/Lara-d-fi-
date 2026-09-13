@@ -24,12 +24,20 @@ internal fun GameplayStoryTechniqueDestinyScreen(
     deep: DeepLifeState,
     onChoice: (EventNode, Choice) -> Unit
 ) {
-    val lifeKey = deep.lifeSimulation?.powerRules?.techniques?.hashCode() ?: 0
+    val life = deep.lifeSimulation
+    val lifeKey = listOf(
+        life?.powerRules?.techniques?.hashCode() ?: 0,
+        life?.districts?.hashCode() ?: 0,
+        life?.secretIdentity?.exposure ?: 0
+    ).hashCode()
     val event = remember(c.seed, c.turn, state.hashCode(), annual.hashCode(), lifeKey) {
-        StoryTechniqueDirector.enrich(c, deep, UltimateGameEngine.event(c, state, annual))
+        val base = UltimateGameEngine.event(c, state, annual)
+        val worldAware = LifeWorldNarrativeDirector.enrich(c, deep, base)
+        StoryTechniqueDirector.enrich(c, deep, worldAware)
     }
     val accent = powerVisualProfile(c.powerFamily).accent
     val technique = event.choices.firstOrNull { StoryTechniqueDirector.techniqueId(it) != null }
+    val home = life?.districts?.firstOrNull { it.id == "quartier" }
 
     MhlSceneFrame(
         "story-technique-${c.seed}-${c.turn}-${event.id}",
@@ -45,9 +53,28 @@ internal fun GameplayStoryTechniqueDestinyScreen(
             Spacer(Modifier.height(9.dp))
             Text(event.text, color = UltimateIvory, fontSize = 14.sp, lineHeight = 21.sp)
 
+            if (home != null) {
+                Spacer(Modifier.height(9.dp))
+                Column(
+                    Modifier.fillMaxWidth()
+                        .background(Color(0xB90C1620), CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp))
+                        .border(1.dp, UltimateBlue.copy(alpha = .45f), CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp))
+                        .padding(10.dp)
+                ) {
+                    Text("MÉMOIRE DU QUARTIER", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 9.sp)
+                    Text(
+                        "Sécurité ${home.safety} · crime ${home.criminalControl} · confiance ${home.localTrust} · médias ${home.mediaHeat}",
+                        color = UltimateIvory,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 11.sp
+                    )
+                    Text("Ces valeurs viennent de tes actions libres précédentes et peuvent modifier cette scène.", color = UltimateMuted, fontSize = 10.sp)
+                }
+            }
+
             if (technique != null) {
                 val id = StoryTechniqueDirector.techniqueId(technique)
-                val learned = deep.lifeSimulation?.powerRules?.techniques?.firstOrNull { it.id == id }
+                val learned = life?.powerRules?.techniques?.firstOrNull { it.id == id }
                 Spacer(Modifier.height(9.dp))
                 Column(
                     Modifier.fillMaxWidth()
