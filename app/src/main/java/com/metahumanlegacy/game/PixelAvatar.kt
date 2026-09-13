@@ -77,6 +77,7 @@ internal fun PixelAvatar(
         val trim = if (heroMode) hero.second else civilTrim
         val outline = Color(0xFF0B1017); val white = Color(0xFFF1F3F4)
         val eye = when (state.eyes) { "Bleus" -> Color(0xFF4B8BC4); "Verts" -> Color(0xFF5A8D62); "Noisette" -> Color(0xFF8B693D); "Gris" -> Color(0xFF87929D); "Très sombres" -> Color(0xFF17191C); else -> Color(0xFF49362C) }
+        val identity = pixelFaceIdentity(state)
         val child = age < 13; val teen = age in 13..17
         val headW = when (state.faceShape) { "Fin" -> 12; "Rond" -> 16; "Carré" -> 15; "Anguleux" -> 14; else -> 14 }
         val headX = (cols - headW) / 2; val headY = if (child) 4 else 3
@@ -120,19 +121,28 @@ internal fun PixelAvatar(
         p(13, 16, 6, 5, outline); p(14, 16, 4, 5, skin)
         p(headX, headY, headW, 13, outline); p(headX + 1, headY + 1, headW - 2, 11, skin)
         p(headX + 1, headY + 9, 2, 2, skinShade.copy(alpha = .55f)); p(headX + headW - 3, headY + 9, 2, 2, skinShade.copy(alpha = .55f))
+        if (identity.cheekMark == 1) p(headX + 2, headY + 9, 1, 1, skinShade.copy(alpha = .42f))
+        if (identity.cheekMark == 2) p(headX + headW - 3, headY + 9, 1, 1, skinShade.copy(alpha = .42f))
         if (state.faceShape == "Fin") { p(headX + 1, headY + 10, 2, 2, outline); p(headX + headW - 3, headY + 10, 2, 2, outline) }
         if (state.faceShape == "Carré") { p(headX, headY + 9, 2, 3, outline); p(headX + headW - 2, headY + 9, 2, 3, outline) }
         p(headX - 1, headY + 5, 1, 4, skinShade); p(headX + headW, headY + 5, 1, 4, skinShade)
 
-        val eyeY = headY + 6; val lx = headX + 3; val rx = headX + headW - 6
+        val eyeY = headY + 6 + identity.eyeLevel
+        val lx = headX + 3 - identity.eyeInset
+        val rx = headX + headW - 6 + identity.eyeInset
         p(lx, eyeY, 3, 2, white); p(rx, eyeY, 3, 2, white); p(lx + 1, eyeY, 1, 2, eye); p(rx + 1, eyeY, 1, 2, eye)
         p(lx + 1, eyeY, 1, 1, Color.White.copy(alpha = .55f)); p(rx + 1, eyeY, 1, 1, Color.White.copy(alpha = .55f))
-        val browYLeft = headY + if (temperament == "Curieux") 4 else 5; val browYRight = headY + if (temperament == "Méfiant") 4 else 5
-        p(lx, browYLeft, 3, 1, hair); p(rx, browYRight, 3, 1, hair)
+        val browYLeft = headY + if (temperament == "Curieux") 4 else 5
+        val browYRight = headY + if (temperament == "Méfiant") 4 else 5
+        p(lx, (browYLeft + identity.browOffset).coerceIn(headY + 3, headY + 6), 3, 1, hair)
+        p(rx, (browYRight - identity.browOffset).coerceIn(headY + 3, headY + 6), 3, 1, hair)
         if (temperament in listOf("Impulsif", "Ambitieux")) { p(lx + 2, headY + 4, 2, 1, hair); p(rx - 1, headY + 4, 2, 1, hair) }
 
-        p(headX + headW / 2, headY + 7, 1, 3, skinShade.copy(alpha = .72f)); p(headX + headW / 2 - 1, headY + 9, 2, 1, skinShade.copy(alpha = .55f))
-        val mouth = Color(0xFF713B3B); p(headX + 4, headY + 11, (headW - 8).coerceAtLeast(3), 1, mouth)
+        val noseX = headX + headW / 2 + identity.noseOffset
+        p(noseX, headY + 7, 1, 3, skinShade.copy(alpha = .72f)); p(noseX - 1, headY + 9, 2, 1, skinShade.copy(alpha = .55f))
+        val mouth = Color(0xFF713B3B)
+        val mouthInset = identity.mouthInset
+        p(headX + 4 + mouthInset, headY + 11, (headW - 8 - mouthInset * 2).coerceAtLeast(3), 1, mouth)
         when (pixelAgeTier(age)) {
             2 -> { p(headX + 2, headY + 9, 1, 1, outline.copy(alpha = .28f)); p(headX + headW - 3, headY + 9, 1, 1, outline.copy(alpha = .28f)) }
             3 -> { p(headX + 2, headY + 8, 1, 2, outline.copy(alpha = .36f)); p(headX + headW - 3, headY + 8, 1, 2, outline.copy(alpha = .36f)); p(headX + 5, headY + 12, headW - 10, 1, outline.copy(alpha = .20f)) }

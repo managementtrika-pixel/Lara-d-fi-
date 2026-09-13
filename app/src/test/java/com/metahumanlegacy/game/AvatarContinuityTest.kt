@@ -1,6 +1,7 @@
 package com.metahumanlegacy.game
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
 class AvatarContinuityTest {
@@ -58,6 +59,7 @@ class AvatarContinuityTest {
 
         assertEquals(first.appearanceFingerprint(), second.appearanceFingerprint())
         assertEquals(draft.appearanceFingerprint(), first.appearanceFingerprint())
+        assertEquals(pixelFaceIdentityKey(first), pixelFaceIdentityKey(second))
     }
 
     @Test
@@ -82,5 +84,40 @@ class AvatarContinuityTest {
         )
 
         assertEquals(initial.appearanceFingerprint(), hero.appearanceFingerprint())
+        assertEquals(pixelFaceIdentityKey(initial), pixelFaceIdentityKey(hero))
+    }
+
+    @Test
+    fun differentCreatorTraitsProduceDifferentProceduralFaceIdentity() {
+        val c = GameEngine.newCampaign(818181L, blueprint())
+        val first = UltimateStore.create(
+            c,
+            UltimateCreationDraft(
+                blueprint = blueprint(),
+                skinTone = "Clair",
+                faceShape = "Ovale",
+                hair = "Court texturé",
+                hairColor = "Brun",
+                eyes = "Bruns"
+            )
+        )
+        val second = first.copy(
+            faceShape = "Anguleux",
+            eyes = "Verts",
+            hair = "Tresses"
+        )
+
+        assertNotEquals(pixelFaceIdentityKey(first), pixelFaceIdentityKey(second))
+        assertNotEquals(pixelFaceIdentity(first), pixelFaceIdentity(second))
+    }
+
+    @Test
+    fun legacyLibraryFaceIndexStillHasAVisibleStableIdentity() {
+        val c = GameEngine.newCampaign(929292L, blueprint())
+        val base = UltimateStore.create(c, UltimateCreationDraft(blueprint = blueprint(), libraryFaceIndex = 1))
+        val other = base.copy(libraryFaceIndex = 7)
+
+        assertNotEquals(pixelFaceIdentityKey(base), pixelFaceIdentityKey(other))
+        assertNotEquals(pixelFaceIdentity(base), pixelFaceIdentity(other))
     }
 }
