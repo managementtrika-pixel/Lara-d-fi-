@@ -25,7 +25,23 @@ class CinematicAdultDestiny44Test {
         val high = low.copy(power = 100)
         val calm = EventNode("a", "A", "A", emptyList(), "TEST", "", 1)
         val crisis = calm.copy(id = "b", stakes = 8)
-        val state = UltimateState()
+        val state = UltimateState(
+            seed = 1L,
+            bodyBuild = "Athlétique",
+            stature = "Moyenne",
+            skinTone = "Moyen",
+            faceShape = "Ovale",
+            hair = "Court texturé",
+            hairColor = "Brun",
+            facialHair = "Aucune",
+            eyes = "Bruns",
+            civilianStyle = "Street sobre",
+            accessory = "Aucun",
+            cityArchetype = "Métropole verticale",
+            climate = "Quatre saisons",
+            architecture = "Contemporaine",
+            cityMood = "Contrastes sociaux"
+        )
 
         val lowValue = CinematicAdult44.powerIntensity(low, state, calm)
         val highValue = CinematicAdult44.powerIntensity(high, state.copy(powerStrain = 100), crisis)
