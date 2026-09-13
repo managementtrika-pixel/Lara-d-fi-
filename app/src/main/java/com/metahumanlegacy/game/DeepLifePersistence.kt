@@ -14,9 +14,12 @@ internal object DeepLifePersistence {
             .getString(campaign.seed.toString(), null)
         val decoded = raw?.let(::decode)?.takeIf { it.seed == campaign.seed }
         val migrated = migrate(decoded ?: DeepLifeDirector.bootstrap(campaign, ultimate))
-        return if (migrated.lifeSimulation == null) {
+        val base = if (migrated.lifeSimulation == null) {
             migrated.copy(lifeSimulation = LifeSimulationDirector.bootstrap(campaign, migrated))
         } else migrated
+        val life = base.lifeSimulation ?: LifeSimulationDirector.bootstrap(campaign, base)
+        val worldSynced = LifeWorldStateBridge.syncLifeFromWorld(campaign, ultimate, life)
+        return if (worldSynced == life) base else base.copy(lifeSimulation = worldSynced)
     }
 
     fun save(context: Context, state: DeepLifeState) {
