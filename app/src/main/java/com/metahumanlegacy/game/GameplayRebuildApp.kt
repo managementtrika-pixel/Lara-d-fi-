@@ -165,7 +165,7 @@ internal fun GameplayRebuildApp(context: Context) {
                             onBack = { go("HOME") }
                         )
 
-                        renderedScreen == "HOME" -> UltimateHomeScreen(
+                        renderedScreen == "HOME" -> InterfaceHome41(
                             campaign = campaign,
                             state = ultimate,
                             hallCount = maxOf(hall.size, DeepLegacyArchive.load(context).size),
@@ -183,7 +183,7 @@ internal fun GameplayRebuildApp(context: Context) {
                             onStart = { startLife(it) }
                         )
 
-                        campaign == null -> UltimateHomeScreen(
+                        campaign == null -> InterfaceHome41(
                             campaign = null,
                             state = null,
                             hallCount = maxOf(hall.size, DeepLegacyArchive.load(context).size),
@@ -220,7 +220,7 @@ internal fun GameplayRebuildApp(context: Context) {
                                 heroPresentation = presentation,
                                 costumePalette = palette,
                                 maskStyle = mask,
-                                costumeEra = maxOf(1, (ultimate ?: UltimateStore.fallback(c)).costumeEra)
+                                costumeEra = 1.coerceAtLeast((ultimate ?: UltimateStore.fallback(c)).costumeEra)
                             )
                             persist(c, u)
                             haptic(MetahumanMotionLevel.MOTION_MAJOR)
