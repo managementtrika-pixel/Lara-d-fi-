@@ -42,7 +42,14 @@ internal object IdentityNarrativeDirector {
         val choices = if (event.choices.size < 7) {
             event.choices + choice
         } else {
-            event.choices.take(6) + choice
+            val protected = event.choices.filter {
+                it.flag?.startsWith("scope_response_") == true ||
+                    it.flag?.startsWith("story_technique:") == true
+            }
+            val ordinary = event.choices.filterNot { it in protected || isIdentityChoice(it) }
+            (ordinary.take((6 - protected.size).coerceAtLeast(0)) + protected + choice)
+                .distinctBy { it.label }
+                .take(7)
         }
         return event.copy(text = text, choices = choices)
     }

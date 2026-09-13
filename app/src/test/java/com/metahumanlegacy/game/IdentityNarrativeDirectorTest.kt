@@ -107,4 +107,15 @@ class IdentityNarrativeDirectorTest {
         assertEquals(7, enriched.choices.size)
         assertTrue(enriched.choices.any { IdentityNarrativeDirector.isIdentityChoice(it) })
     }
+
+    @Test
+    fun identityPressureDoesNotEvictCareerScaleResponse() {
+        val scope = Choice("Coordonner à l'échelle nationale", flag = "scope_response_country")
+        val crowded = event().copy(choices = (1..6).map { Choice("Choix $it") } + scope)
+        val enriched = IdentityNarrativeDirector.enrich(campaign(), deep(), crowded)
+
+        assertEquals(7, enriched.choices.size)
+        assertTrue(enriched.choices.any { it.flag == "scope_response_country" })
+        assertTrue(enriched.choices.any { IdentityNarrativeDirector.isIdentityChoice(it) })
+    }
 }

@@ -44,16 +44,19 @@ internal object StoryTechniqueDirector {
             else -> "« ${technique.name} » est disponible, mais la scène réelle reste plus dangereuse que l'entraînement."
         }
 
-        val hasIdentityChoice = base.choices.any { it.flag?.startsWith("identity_pressure:") == true }
-        val choices = when {
-            base.choices.size < 7 -> (base.choices + choice).distinctBy { it.label }.take(7)
-            hasIdentityChoice -> {
-                val identity = base.choices.first { it.flag?.startsWith("identity_pressure:") == true }
-                val generic = base.choices.filterNot { it === identity || it.flag?.startsWith("story_technique:") == true }
-                (generic.take(5) + identity + choice).distinctBy { it.label }.take(7)
-            }
-            else -> return base
+        val protected = base.choices.filter {
+            it.flag?.startsWith("identity_pressure:") == true ||
+                it.flag?.startsWith("scope_response_") == true
         }
+        val ordinary = base.choices.filterNot {
+            it in protected || it.flag?.startsWith("story_technique:") == true
+        }
+        val retained = if (base.choices.size < 7) {
+            base.choices
+        } else {
+            ordinary.take((6 - protected.size).coerceAtLeast(0)) + protected
+        }
+        val choices = (retained + choice).distinctBy { it.label }.take(7)
 
         return base.copy(
             text = base.text + "\n\n" + note,
