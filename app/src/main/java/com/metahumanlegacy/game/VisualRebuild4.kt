@@ -65,10 +65,6 @@ private fun sceneHint(campaign: Campaign?): String = when {
     else -> "MONDE"
 }
 
-/**
- * The 4.0 presentation stays outside simulation authority. It observes persisted state only,
- * so visual failures can never mutate story, saves, relationships or progression.
- */
 @Composable
 internal fun VisualRebuild4App(context: Context) {
     var snapshot by remember { mutableStateOf(loadVisualSnapshot(context)) }
@@ -80,20 +76,27 @@ internal fun VisualRebuild4App(context: Context) {
         }
     }
     val motion = LocalMetahumanMotion.current.settings
+    val campaign = snapshot.campaign
     Box(Modifier.fillMaxSize()) {
         GameplayRebuildApp(context)
         CinematicSceneLayer(
-            campaign = snapshot.campaign,
+            campaign = campaign,
             state = snapshot.state,
-            scene = sceneHint(snapshot.campaign),
+            scene = sceneHint(campaign),
             modifier = Modifier.fillMaxSize().graphicsLayer {
                 alpha = if (motion.highContrast) .10f else .17f
             }
         )
-        VisualRebuild4Overlay(
-            campaign = snapshot.campaign,
-            modifier = Modifier.fillMaxSize()
-        )
+        if (campaign?.powerRevealed == true) {
+            CinematicPowerVfx(
+                powerFamily = campaign.powerFamily,
+                intensity = if (campaign.age == 18) .78f else .46f,
+                modifier = Modifier.fillMaxSize().graphicsLayer {
+                    alpha = if (motion.highContrast) .32f else .58f
+                }
+            )
+        }
+        VisualRebuild4Overlay(campaign = campaign, modifier = Modifier.fillMaxSize())
     }
 }
 
