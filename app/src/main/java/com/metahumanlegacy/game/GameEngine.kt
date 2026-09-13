@@ -96,7 +96,8 @@ object GameEngine {
         val replayable = FormativeVariationDirector.enrich(c, authoredBase)
         val authored = NarrativeRepairDirector.repair(c, replayable)
         val deep = DepthDirector.enrichEvent(c, authored)
-        val varied = CareerVariationDirector.enrich(c, deep)
+        val scaled = ScopeEscalationDirector.enrich(c, deep)
+        val varied = CareerVariationDirector.enrich(c, scaled)
         val powered = PowerGameplayDirector.enrich(c, varied)
         return LifeStageDirector.enrich(c, powered)
     }
