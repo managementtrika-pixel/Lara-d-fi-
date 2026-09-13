@@ -119,9 +119,7 @@ internal object LifeSimulationDirector {
         state.relationshipLives.filter { it.availability > 0 }.take(4).forEach { rel ->
             civil += LifeAction(LifeActionType.VISIT_PERSON, rel.personId, "Voir ${rel.personId}")
             if (rel.closeness >= 35) civil += LifeAction(LifeActionType.ASK_HELP, rel.personId, "Demander de l'aide")
-            if (c.powerRevealed && rel.secretKnowledge == SecretKnowledge.UNAWARE && rel.closeness >= 30) {
-                civil += LifeAction(LifeActionType.REVEAL_IDENTITY, rel.personId, "Révéler mon identité")
-            }
+            if (c.powerRevealed && rel.secretKnowledge == SecretKnowledge.UNAWARE && rel.closeness >= 30) civil += LifeAction(LifeActionType.REVEAL_IDENTITY, rel.personId, "Révéler mon identité")
             if (rel.closeness >= 20) civil += LifeAction(LifeActionType.DISTANCE_PERSON, rel.personId, "Prendre de la distance")
         }
         return civil
@@ -200,13 +198,19 @@ internal object LifeSimulationDirector {
             LifeActionType.REVEAL_IDENTITY, LifeActionType.DISTANCE_PERSON -> relationshipAction(state.copy(civil = spent), action)
             LifeActionType.MOVE_HOME -> {
                 val nextHousing = when (spent.housing) {
-                    HousingTier.FAMILY_HOME -> HousingTier.ROOM; HousingTier.ROOM -> HousingTier.STUDIO
-                    HousingTier.STUDIO -> HousingTier.APARTMENT; HousingTier.APARTMENT -> HousingTier.HOUSE
+                    HousingTier.FAMILY_HOME -> HousingTier.ROOM
+                    HousingTier.ROOM -> HousingTier.STUDIO
+                    HousingTier.STUDIO -> HousingTier.APARTMENT
+                    HousingTier.APARTMENT -> HousingTier.HOUSE
                     HousingTier.HOUSE, HousingTier.BASE -> HousingTier.BASE
                 }
                 val cost = when (nextHousing) {
-                    HousingTier.FAMILY_HOME -> 0; HousingTier.ROOM -> 300; HousingTier.STUDIO -> 550
-                    HousingTier.APARTMENT -> 850; HousingTier.HOUSE -> 1400; HousingTier.BASE -> 2200
+                    HousingTier.FAMILY_HOME -> 0
+                    HousingTier.ROOM -> 300
+                    HousingTier.STUDIO -> 550
+                    HousingTier.APARTMENT -> 850
+                    HousingTier.HOUSE -> 1400
+                    HousingTier.BASE -> 2200
                 }
                 if (spent.savings < cost && nextHousing != HousingTier.ROOM) return LifeActionResult(state, "Projet trop cher", "Tu n'as pas encore les économies nécessaires pour ce logement.")
                 result(state.copy(civil = spent.copy(housing = nextHousing, housingCost = cost, savings = (spent.savings - cost).coerceAtLeast(0))), action, "Tu changes de lieu de vie", "Ton quotidien et ce que les autres peuvent découvrir sur toi changent avec ton logement.")
@@ -244,7 +248,8 @@ internal object LifeSimulationDirector {
 
     private fun initialCloseness(person: DeepRelationship): Int = (((person.trust + person.affection) / 2) - 40).coerceIn(0, 60)
 
-    private fun annualMoments(age: Int): Int = when { age < 12 -> 2; age < 18 -> 3; age < 65 -> 4; else -> 3 }
+    /** One source of truth: life actions and career actions share the same three annual time slots. */
+    private fun annualMoments(age: Int): Int = ANNUAL_ACTION_LIMIT
 
     private fun result(state: LifeSimulationState, action: LifeAction, headline: String, detail: String): LifeActionResult =
         LifeActionResult(state.copy(actionLog = (state.actionLog + "${state.calendarYear}: ${action.label}").takeLast(80)), headline, detail)
