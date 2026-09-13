@@ -15,7 +15,7 @@ internal object StoryTechniqueDirector {
         val available = life.powerRules.techniques
             .filter { it.unlocked && it.cooldownTurns <= 0 }
             .sortedWith(compareByDescending<TechniqueState> { it.proficiency }.thenByDescending { it.masteryRequired })
-        if (available.isEmpty() || base.choices.size >= 7) return base
+        if (available.isEmpty()) return base
 
         val technique = available[positive(c.seed xor base.id.hashCode().toLong(), available.size)]
         val tier = tier(technique)
@@ -43,9 +43,18 @@ internal object StoryTechniqueDirector {
             technique.proficiency >= 40 -> "Tu as assez pratiqué « ${technique.name} » pour l'utiliser autrement qu'en improvisation."
             else -> "« ${technique.name} » est disponible, mais la scène réelle reste plus dangereuse que l'entraînement."
         }
+        val scopeChoice = base.choices.firstOrNull { it.flag?.startsWith("scope_response_") == true }
+        val ordinaryChoices = base.choices.filterNot {
+            it === scopeChoice || techniqueId(it) != null
+        }
+        val retained = if (scopeChoice == null) {
+            ordinaryChoices.take(6)
+        } else {
+            ordinaryChoices.take(5) + scopeChoice
+        }
         return base.copy(
             text = base.text + "\n\n" + note,
-            choices = (base.choices + choice).distinctBy { it.label }.take(7)
+            choices = (retained + choice).distinctBy { it.label }.take(7)
         )
     }
 
