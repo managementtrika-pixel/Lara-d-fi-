@@ -313,10 +313,11 @@ internal fun GameplayRebuildApp(context: Context) {
                                     val synced = LifeSimulationDirector.synced(current, currentDeep, baseLife)
                                     val result = LifeSimulationDirector.perform(current, synced, lifeAction)
                                     if (result.state == synced) result else {
+                                        val bridge = LifeWorldStateBridge.afterLifeAction(current, currentState, synced, result.state)
                                         val nextDeep = LifeSimulationDirector.mergedIntoDeep(currentDeep, result.state)
-                                        val currentAnnual = (annual ?: AnnualActionPersistence.load(context, current)).synced(current)
+                                        val currentAnnual = (annual ?: AnnualActionPersistence.load(context, current)).synced(bridge.campaign)
                                         val nextAnnual = currentAnnual.copy(used = (currentAnnual.used + 1).coerceAtMost(ANNUAL_ACTION_LIMIT))
-                                        persist(current, currentState, nextAnnual, nextDeep)
+                                        persist(bridge.campaign, bridge.ultimate, nextAnnual, nextDeep)
                                         result
                                     }
                                 }
