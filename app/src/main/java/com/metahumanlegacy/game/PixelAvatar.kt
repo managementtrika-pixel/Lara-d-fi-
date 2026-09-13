@@ -46,13 +46,13 @@ private fun pxOutfit(style: String): Pair<Color, Color> = when {
 }
 
 private fun pxPowerPalette(power: String): Pair<Color, Color> = when (power) {
-    "Énergie" -> Color(0xFF154CA8) to Color(0xFF72DDFF)
-    "Force" -> Color(0xFF922E3A) to Color(0xFFFFC75A)
-    "Vitesse" -> Color(0xFF173D79) to Color(0xFF67E9FF)
-    "Télékinésie" -> Color(0xFF593793) to Color(0xFFCFA6FF)
-    "Élémentaire" -> Color(0xFF27644E) to Color(0xFFA7F096)
-    "Mental" -> Color(0xFF47317E) to Color(0xFFE5B6FF)
-    "Technologique" -> Color(0xFF263E54) to Color(0xFF67DAE9)
+    "Énergie" -> Color(0xFF205BD7) to Color(0xFF78D7FF)
+    "Force" -> Color(0xFF8D2834) to Color(0xFFFFC85B)
+    "Vitesse" -> Color(0xFF183D7A) to Color(0xFF66E5FF)
+    "Télékinésie" -> Color(0xFF55338E) to Color(0xFFC69BFF)
+    "Élémentaire" -> Color(0xFF2B6B54) to Color(0xFF9BE88B)
+    "Mental" -> Color(0xFF44327D) to Color(0xFFE0B4FF)
+    "Technologique" -> Color(0xFF273D52) to Color(0xFF61D5E8)
     else -> Color(0xFF28384E) to Color(0xFFE6C35A)
 }
 
@@ -103,7 +103,7 @@ internal fun PixelAvatar(
             animation = tween(MetahumanMotionTokens.duration(2100, settings), easing = MetahumanMotionTokens.Standard),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "pixel-dna-breath"
+        label = "pixel-dna-breathe"
     )
     val breathing = if (settings.reduceMotion) 0f else sin(breath * 3.1415927f) * .35f
 
@@ -160,11 +160,9 @@ internal fun PixelAvatar(
         val legScale = pixelLegHeight(age, state.stature) - 6
         val legH = (15 + legScale * 2 - if (child) 5 else if (teen) 2 else 0).coerceIn(9, 19)
 
-        // Soft pixel shadow anchors the character instead of letting it float in the UI.
         p(11, 60, 26, 2, Color.Black.copy(alpha = .30f))
         p(15, 59, 18, 1, Color.Black.copy(alpha = .45f))
 
-        // Legs: outline, trousers/hero suit, light-facing strip, boots.
         val legY = torsoY + torsoH - 2
         val legMain = if (heroMode) main else Color(0xFF172331)
         val leftLegX = torsoX + 3
@@ -177,7 +175,6 @@ internal fun PixelAvatar(
             p(x + 1, (legY + legH - 3).coerceAtMost(61), 6, 1, Color.White.copy(alpha = .05f))
         }
 
-        // Torso silhouette has shoulders and waist tapering rather than one rectangular block.
         p(torsoX + 2, torsoY - 2, torsoW - 4, 3, outline)
         p(torsoX, torsoY + 1, torsoW, torsoH - 3, outline)
         p(torsoX + 2, torsoY + torsoH - 2, torsoW - 4, 3, outline)
@@ -185,7 +182,6 @@ internal fun PixelAvatar(
         p(torsoX + 3, torsoY + 1, (torsoW - 6).coerceAtLeast(5), 2, Color.White.copy(alpha = .08f))
         p(torsoX + 3, torsoY + torsoH - 4, torsoW - 6, 2, Color.Black.copy(alpha = .16f))
 
-        // Arms are slimmer at the hands and slightly asymmetric for a less mannequin-like pose.
         val armTop = torsoY + 1
         val armH = torsoH - 2
         p(torsoX - 5, armTop, 6, armH - 2, outline)
@@ -196,7 +192,6 @@ internal fun PixelAvatar(
         p(torsoX + torsoW, armTop + armH - 4, 4, 4, skin)
         p(torsoX - 3, armTop + 2, 1, armH - 7, Color.White.copy(alpha = .07f))
 
-        // Costume language: presentation and era materially change the sprite.
         if (heroMode) {
             when (state.heroPresentation) {
                 "Tactique" -> {
@@ -249,7 +244,6 @@ internal fun PixelAvatar(
             }
         }
 
-        // Neck and head use more vertical resolution so eyes/hair remain identifiable in gameplay.
         p(20, 22, 8, 7, outline)
         p(21, 22, 6, 7, skin)
         val headW = when (state.faceShape) { "Fin" -> 17; "Rond" -> 21; "Carré" -> 20; "Anguleux" -> 19; else -> 19 }
@@ -295,7 +289,6 @@ internal fun PixelAvatar(
         if (identity.cheekMark == 1) p(headX + 3, mouthY - 3, 2, 1, skinShadow.copy(alpha = .42f))
         if (identity.cheekMark == 2) p(headX + headW - 5, mouthY - 3, 2, 1, skinShadow.copy(alpha = .42f))
 
-        // Hair has silhouette, shadow and highlight rather than a single cap.
         val hairTop = when {
             state.hair.contains("Ras", true) -> 3
             state.hair.contains("Long", true) -> 7
@@ -318,7 +311,6 @@ internal fun PixelAvatar(
             p(headX + headW - 8, headY - 2, 4, 3, oldHair)
         }
 
-        // Mask is genuinely visible in hero mode.
         if (heroMode && state.maskStyle != "Aucun") {
             when {
                 state.maskStyle.contains("intégr", true) -> {
@@ -335,7 +327,6 @@ internal fun PixelAvatar(
             }
         }
 
-        // Aging is readable without replacing the underlying identity.
         if (pixelAgeTier(age) >= 2) {
             p(headX + 3, eyeY + 4, 3, 1, skinShadow.copy(alpha = .38f))
             p(headX + headW - 6, eyeY + 4, 3, 1, skinShadow.copy(alpha = .38f))
@@ -345,7 +336,6 @@ internal fun PixelAvatar(
             p(headX + 2, headY + 7, 1, 7, Color.White.copy(alpha = .12f))
         }
 
-        // Hero trim catches light and makes powers/costume readable at thumbnail size.
         if (heroMode) {
             p(torsoX + 2, torsoY, torsoW - 4, 1, trim.copy(alpha = .78f))
             p(leftLegX + 1, legY + 2, 1, (legH - 6).coerceAtLeast(2), trim.copy(alpha = .30f))
