@@ -9,6 +9,7 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import java.io.File
 import org.junit.Assert.*
 import org.junit.Before
@@ -30,7 +31,17 @@ class FinalJourneyTest {
         compose.waitForIdle()
         val bitmap = compose.onRoot(useUnmergedTree = true).captureToImage().asAndroidBitmap()
         val dir = File(context.getExternalFilesDir(null), "final-preview").apply { mkdirs() }
-        File(dir, "$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        val file = File(dir, "$name.png")
+        file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        // The Android test runner removes application storage when it finishes.
+        // Copy captures to the emulator's public test folder before that cleanup.
+        val shell = InstrumentationRegistry.getInstrumentation().uiAutomation
+        shell.executeShellCommand("mkdir -p /sdcard/Download/metahuman-final-preview").use { descriptor ->
+            android.os.ParcelFileDescriptor.AutoCloseInputStream(descriptor).use { it.readBytes() }
+        }
+        shell.executeShellCommand("cp '${file.absolutePath}' /sdcard/Download/metahuman-final-preview/$name.png").use { descriptor ->
+            android.os.ParcelFileDescriptor.AutoCloseInputStream(descriptor).use { it.readBytes() }
+        }
     }
     private fun chooseFirst() {
         compose.onNodeWithTag("final_choice_1").performScrollTo().assertIsDisplayed().performClick()
@@ -76,7 +87,7 @@ class FinalJourneyTest {
             assertEquals(seed, FinalSessionPersistence.load(context)!!.campaign.seed)
             capture("05-unread-consequence")
             compose.onNodeWithTag("final_continue").performClick()
-            compose.onNodeWithText("Construire une identité").assertIsDisplayed()
+            compose.onNodeWithText("Construire une identité", ignoreCase = true).assertIsDisplayed()
             compose.onNodeWithText("Alias / nom de terrain").performScrollTo().performTextReplacement("Aster")
             compose.onNodeWithText("PRENDRE CETTE IDENTITÉ").performScrollTo().performClick()
             assertEquals("Aster", FinalSessionPersistence.load(context)!!.campaign.alias)

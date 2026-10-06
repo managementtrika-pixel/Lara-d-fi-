@@ -72,7 +72,7 @@ internal fun UltimateSectionHeader(kicker: String, title: String, subtitle: Stri
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box(Modifier.width(24.dp).height(2.dp).background(accent))
         Spacer(Modifier.width(7.dp))
-        Text(kicker.uppercase(), color = accent, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.8.sp)
+        Text(kicker.uppercase(), color = accent, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 1.2.sp)
     }
     Spacer(Modifier.height(5.dp))
     Text(title.uppercase(), color = UltimateIvory, fontSize = 25.sp, lineHeight = 27.sp, fontWeight = FontWeight.Black, letterSpacing = .2.sp)
@@ -91,7 +91,7 @@ internal fun UltimatePill(text: String, accent: Color = UltimateBlue, modifier: 
             .border(1.dp, accent.copy(alpha = .36f), RoundedCornerShape(100.dp))
             .padding(horizontal = 9.dp, vertical = 4.dp)
     ) {
-        Text(text.uppercase(), color = accent.copy(alpha = .94f), fontSize = 8.sp, fontWeight = FontWeight.Black, letterSpacing = .7.sp)
+        Text(text.uppercase(), color = accent.copy(alpha = .94f), fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = .4.sp)
     }
 }
 
@@ -106,8 +106,8 @@ internal fun UltimateMeter(label: String, value: Int, accent: Color, modifier: M
     )
     Column(modifier) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text(label.uppercase(), color = UltimateMuted, fontSize = 8.sp, fontWeight = FontWeight.Black, letterSpacing = .55.sp)
-            Text(value.toString(), color = accent, fontSize = 10.sp, fontWeight = FontWeight.Black)
+            Text(label.uppercase(), modifier = Modifier.weight(1f).padding(end = 8.dp), color = UltimateMuted, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = .3.sp)
+            Text(value.toString(), color = accent, fontSize = 12.sp, fontWeight = FontWeight.Black)
         }
         Spacer(Modifier.height(5.dp))
         LinearProgressIndicator(
@@ -302,7 +302,7 @@ internal fun UltimateActionTile(title: String, subtitle: String, accent: Color =
         Column(Modifier.padding(horizontal = 14.dp, vertical = 11.dp)) {
             Text(title, color = if (enabled) UltimateIvory else UltimateMuted, fontWeight = FontWeight.Black, fontSize = 14.sp)
             Spacer(Modifier.height(2.dp))
-            Text(subtitle, color = UltimateMuted.copy(alpha = if (enabled) 1f else .62f), fontSize = 11.sp, lineHeight = 15.sp)
+            Text(subtitle, color = UltimateMuted.copy(alpha = if (enabled) 1f else .62f), fontSize = 12.sp, lineHeight = 18.sp)
         }
     }
 }
