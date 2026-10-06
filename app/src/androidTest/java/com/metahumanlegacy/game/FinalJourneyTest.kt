@@ -97,7 +97,7 @@ class FinalJourneyTest {
             val before = FinalSessionPersistence.load(context)!!
             val rest = LifeSimulationDirector.availableActions(before.campaign, before.deep.lifeSimulation!!)
                 .first { action -> action.type == LifeActionType.REST }
-            compose.onNodeWithText(rest.label).performScrollTo().performClick()
+            compose.onNodeWithText(rest.label, ignoreCase = true).performScrollTo().performClick()
             assertEquals(2, FinalSessionPersistence.load(context)!!.annual.remaining)
             assertEquals(2, FinalSessionPersistence.load(context)!!.deep.lifeSimulation!!.civil.freeMoments)
             capture("07-actions")
