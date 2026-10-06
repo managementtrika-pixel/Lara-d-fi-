@@ -21,8 +21,9 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: android-actions/setup-android@v3
-      - name: Install Android 36
-        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: false
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.5.0'
@@ -92,6 +93,9 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: false
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.5.0'
@@ -107,12 +111,7 @@ jobs:
           arch: x86_64
           profile: pixel_6
           disable-animations: true
-          script: gradle --no-daemon connectedDebugAndroidTest
-      - name: Collect device previews
-        if: always()
-        run: |
-          mkdir -p final-preview
-          adb pull /sdcard/Android/data/com.metahumanlegacy.game/files/final-preview/. final-preview/ || true
+          script: bash .github/scripts/run-device-tests.sh
       - uses: actions/upload-artifact@v4
         if: always()
         with:
