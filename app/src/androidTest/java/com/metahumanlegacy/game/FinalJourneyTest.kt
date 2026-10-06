@@ -87,14 +87,19 @@ class FinalJourneyTest {
             assertTrue(awakened.campaign.needsAlias)
             assertFalse(awakened.outcome.isNullOrBlank())
         }
-        ActivityScenario.launch(MainActivity::class.java).use {
+        ActivityScenario.launch(MainActivity::class.java).use { resumed ->
             compose.onNodeWithText("Continuer cette vie", ignoreCase = true).performClick()
             compose.onNodeWithTag("final_continue").performScrollTo().assertIsDisplayed()
             assertEquals(seed, FinalSessionPersistence.load(context)!!.campaign.seed)
             capture("05-unread-consequence")
             compose.onNodeWithTag("final_continue").performClick()
             compose.onNodeWithText("Construire une identité", ignoreCase = true).assertIsDisplayed()
+            Espresso.pressBack()
+            compose.onNodeWithText("Continuer cette vie", ignoreCase = true).performClick()
+            compose.onNodeWithText("Construire une identité", ignoreCase = true).assertIsDisplayed()
             compose.onNodeWithText("Alias / nom de terrain").performScrollTo().performTextReplacement("Aster")
+            resumed.recreate()
+            compose.onNodeWithText("Aster").performScrollTo().assertIsDisplayed()
             compose.onNodeWithText("PRENDRE CETTE IDENTITÉ").performScrollTo().performClick()
             assertEquals("Aster", FinalSessionPersistence.load(context)!!.campaign.alias)
             capture("06-adult")

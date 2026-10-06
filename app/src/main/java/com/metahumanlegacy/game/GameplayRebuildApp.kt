@@ -141,7 +141,7 @@ internal fun GameplayRebuildApp(context: Context) {
             BackHandler(enabled = screen != "HOME") {
                 go(when (screen) {
                     "SETTINGS" -> settingsReturn
-                    "CREATE", "HALL", "DESTIN" -> "HOME"
+                    "CREATE", "HALL", "DESTIN", "ALIAS" -> "HOME"
                     else -> if (campaign == null) "HOME" else "DESTIN"
                 })
             }

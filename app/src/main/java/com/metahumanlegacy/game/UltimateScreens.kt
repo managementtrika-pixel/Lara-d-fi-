@@ -142,9 +142,9 @@ private fun OptionStrip(title: String, options: List<String>, selected: String, 
 @Composable
 internal fun UltimateAliasScreen(c: Campaign, state: UltimateState, onConfirm: (String, String, String, String) -> Unit) {
     var alias by rememberSaveable(c.seed) { mutableStateOf("") }
-    var presentation by remember { mutableStateOf(if (state.heroPresentation == "À découvrir") "Sobre" else state.heroPresentation) }
-    var palette by remember { mutableStateOf(if (state.costumePalette == "Non définie") "Personnalisée au pouvoir" else state.costumePalette) }
-    var mask by remember { mutableStateOf(if (state.maskStyle == "Aucun") "Masque minimal" else state.maskStyle) }
+    var presentation by rememberSaveable(c.seed) { mutableStateOf(if (state.heroPresentation == "À découvrir") "Sobre" else state.heroPresentation) }
+    var palette by rememberSaveable(c.seed) { mutableStateOf(if (state.costumePalette == "Non définie") "Personnalisée au pouvoir" else state.costumePalette) }
+    var mask by rememberSaveable(c.seed) { mutableStateOf(if (state.maskStyle == "Aucun") "Masque minimal" else state.maskStyle) }
     val preview = state.copy(heroPresentation = presentation, costumePalette = palette, maskStyle = mask, costumeEra = 1)
     val profile = powerVisualProfile(c.powerFamily)
     MhlSceneFrame("ultimate-alias-${c.seed}-$presentation-$palette-$mask", MotionBoard.AWAKENING, MetahumanMotionLevel.MOTION_MAJOR, Modifier.fillMaxSize(), profile.accent) {
