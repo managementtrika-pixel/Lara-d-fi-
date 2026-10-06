@@ -39,9 +39,15 @@ class FinalJourneyTest {
         shell.executeShellCommand("mkdir -p /sdcard/Download/metahuman-final-preview").use { descriptor ->
             android.os.ParcelFileDescriptor.AutoCloseInputStream(descriptor).use { it.readBytes() }
         }
-        shell.executeShellCommand("cp '${file.absolutePath}' /sdcard/Download/metahuman-final-preview/$name.png").use { descriptor ->
+        val destination = "/sdcard/Download/metahuman-final-preview/$name.png"
+        // UiAutomation executes argv directly; generated Android paths contain no spaces.
+        shell.executeShellCommand("cp ${file.absolutePath} $destination").use { descriptor ->
             android.os.ParcelFileDescriptor.AutoCloseInputStream(descriptor).use { it.readBytes() }
         }
+        val size = shell.executeShellCommand("wc -c $destination").use { descriptor ->
+            android.os.ParcelFileDescriptor.AutoCloseInputStream(descriptor).use { it.readBytes().toString(Charsets.UTF_8) }
+        }.trim().substringBefore(' ').toLong()
+        assertEquals("Device screenshot was not preserved", file.length(), size)
     }
     private fun chooseFirst() {
         compose.onNodeWithTag("final_choice_1").performScrollTo().assertIsDisplayed().performClick()
