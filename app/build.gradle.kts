@@ -11,8 +11,8 @@ android {
         applicationId = "com.metahumanlegacy.game"
         minSdk = 23
         targetSdk = 36
-        versionCode = 6
-        versionName = "2.5.0"
+        versionCode = 50
+        versionName = "5.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -20,6 +20,16 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+        resValues = true
+    }
+
+    buildTypes {
+        release {
+            // Keep the previously installed development app and its saves intact.
+            applicationIdSuffix = ".final"
+            resValue("string", "app_name", "MetaHuman Legacy Final")
+            isMinifyEnabled = false
+        }
     }
 
     compileOptions {

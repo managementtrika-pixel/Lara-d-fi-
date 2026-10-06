@@ -23,9 +23,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -77,20 +79,20 @@ internal fun UltimateHomeScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                TextButton(onClick = onSettings) { Text("RÉGLAGES", color = UltimateMuted, fontSize = 10.sp) }
+                TextButton(onClick = onSettings) { Text("RÉGLAGES", color = UltimateMuted, fontSize = 12.sp) }
             }
             MhlProductionAsset("brand_hero", "Emblème MetaHuman Legacy", size = 112.dp, pulse = true)
             Text("METAHUMAN", color = UltimateMuted, fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 5.sp)
             Text("LEGACY", color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 48.sp, lineHeight = 48.sp)
-            Text("UNE VIE QUI LAISSE DES TRACES", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 11.sp, letterSpacing = 1.2.sp)
+            Text("UNE VIE QUI LAISSE DES TRACES", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp, letterSpacing = 1.2.sp)
             Spacer(Modifier.height(15.dp))
             if (campaign != null && state != null) {
                 UltimateHeroBanner(campaign, state, Modifier.fillMaxWidth())
                 Spacer(Modifier.height(10.dp))
                 UltimatePanel(Modifier.fillMaxWidth(), accent = powerVisualProfile(campaign.powerFamily).accent) {
-                    Text("TA DESTINÉE CONTINUE", color = UltimateGold, fontSize = 9.sp, fontWeight = FontWeight.Black)
+                    Text("TA DESTINÉE CONTINUE", color = UltimateGold, fontSize = 12.sp, fontWeight = FontWeight.Black)
                     Text("${campaign.city} · ${state.cityArchetype} · ${state.climate}", color = UltimateIvory, fontWeight = FontWeight.Black)
-                    Text("${state.mediaFrame} · ${state.legalStatus} · ${state.homeLabel()}", color = UltimateMuted, fontSize = 11.sp)
+                    Text("${state.mediaFrame} · ${state.legalStatus} · ${state.homeLabel()}", color = UltimateMuted, fontSize = 12.sp)
                 }
                 Spacer(Modifier.height(12.dp))
                 MhlPrimaryButton("Continuer", onContinue, Modifier.fillMaxWidth())
@@ -130,19 +132,19 @@ internal fun UltimateCreateScreen(
 @Composable
 private fun OptionStrip(title: String, options: List<String>, selected: String, onSelect: (String) -> Unit) {
     Spacer(Modifier.height(11.dp))
-    Text(title, color = UltimateGold, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
+    Text(title, color = UltimateGold, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
     Spacer(Modifier.height(5.dp))
     Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        options.forEach { option -> FilterChip(selected = selected == option, onClick = { onSelect(option) }, label = { Text(option, fontSize = 11.sp) }) }
+        options.forEach { option -> FilterChip(selected = selected == option, onClick = { onSelect(option) }, label = { Text(option, fontSize = 12.sp) }) }
     }
 }
 
 @Composable
 internal fun UltimateAliasScreen(c: Campaign, state: UltimateState, onConfirm: (String, String, String, String) -> Unit) {
-    var alias by remember { mutableStateOf("") }
-    var presentation by remember { mutableStateOf(if (state.heroPresentation == "À découvrir") "Sobre" else state.heroPresentation) }
-    var palette by remember { mutableStateOf(if (state.costumePalette == "Non définie") "Personnalisée au pouvoir" else state.costumePalette) }
-    var mask by remember { mutableStateOf(if (state.maskStyle == "Aucun") "Masque minimal" else state.maskStyle) }
+    var alias by rememberSaveable(c.seed) { mutableStateOf("") }
+    var presentation by rememberSaveable(c.seed) { mutableStateOf(if (state.heroPresentation == "À découvrir") "Sobre" else state.heroPresentation) }
+    var palette by rememberSaveable(c.seed) { mutableStateOf(if (state.costumePalette == "Non définie") "Personnalisée au pouvoir" else state.costumePalette) }
+    var mask by rememberSaveable(c.seed) { mutableStateOf(if (state.maskStyle == "Aucun") "Masque minimal" else state.maskStyle) }
     val preview = state.copy(heroPresentation = presentation, costumePalette = palette, maskStyle = mask, costumeEra = 1)
     val profile = powerVisualProfile(c.powerFamily)
     MhlSceneFrame("ultimate-alias-${c.seed}-$presentation-$palette-$mask", MotionBoard.AWAKENING, MetahumanMotionLevel.MOTION_MAJOR, Modifier.fillMaxSize(), profile.accent) {
@@ -154,7 +156,7 @@ internal fun UltimateAliasScreen(c: Campaign, state: UltimateState, onConfirm: (
             }
             Spacer(Modifier.height(10.dp))
             UltimatePanel(accent = profile.accent) {
-                Text("${c.powerFamily.uppercase()} · COÛT : ${c.weakness.uppercase()}", color = profile.accent, fontWeight = FontWeight.Black, fontSize = 10.sp)
+                Text("${c.powerFamily.uppercase()} · COÛT : ${c.weakness.uppercase()}", color = profile.accent, fontWeight = FontWeight.Black, fontSize = 12.sp)
                 Text(c.powerRevealText, color = UltimateIvory, fontSize = 12.sp, lineHeight = 18.sp)
             }
             Spacer(Modifier.height(10.dp))
@@ -227,16 +229,16 @@ private fun UltimateCareerHeader(c: Campaign, state: UltimateState, annual: Annu
         Spacer(Modifier.width(8.dp))
         Column(Modifier.weight(1f)) {
             Text(c.alias.ifBlank { c.name }.uppercase(), color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 15.sp)
-            Text("${c.age} ANS · ${c.phaseLabel} · ${if (c.powerRevealed) c.scope.label else "CIVIL"}", color = UltimateMuted, fontSize = 8.sp, fontWeight = FontWeight.Bold)
-            if (c.powerRevealed) Text("${state.mediaFrame} · ${state.legalStatus}", color = accent, fontSize = 8.sp, maxLines = 1)
+            Text("${c.age} ANS · ${c.phaseLabel} · ${if (c.powerRevealed) c.scope.label else "CIVIL"}", color = UltimateMuted, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            if (c.powerRevealed) Text("${state.mediaFrame} · ${state.legalStatus}", color = accent, fontSize = 12.sp, maxLines = 1)
         }
         Column(horizontalAlignment = Alignment.End) {
             if (savePulse > 0) Text("SAUVEGARDÉ", color = UltimateGreen, fontSize = 7.sp, fontWeight = FontWeight.Black)
-            Text("AGIR ${annual.synced(c).remaining}/$ANNUAL_ACTION_LIMIT", color = UltimateGold, fontSize = 8.sp, fontWeight = FontWeight.Black)
+            Text("AGIR ${annual.synced(c).remaining}/$ANNUAL_ACTION_LIMIT", color = UltimateGold, fontSize = 12.sp, fontWeight = FontWeight.Black)
             Row {
-                TextButton(onClick = onHome, contentPadding = PaddingValues(2.dp)) { Text("ACCUEIL", fontSize = 8.sp) }
-                TextButton(onClick = onSettings, contentPadding = PaddingValues(2.dp)) { Text("⚙", fontSize = 11.sp) }
-                TextButton(onClick = onReset, contentPadding = PaddingValues(2.dp)) { Text("↻", color = UltimateRed, fontSize = 11.sp) }
+                TextButton(onClick = onHome, contentPadding = PaddingValues(2.dp)) { Text("ACCUEIL", fontSize = 12.sp) }
+                TextButton(onClick = onSettings, contentPadding = PaddingValues(2.dp)) { Text("⚙", fontSize = 12.sp) }
+                TextButton(onClick = onReset, contentPadding = PaddingValues(2.dp)) { Text("↻", color = UltimateRed, fontSize = 12.sp) }
             }
         }
     }
@@ -284,7 +286,7 @@ private fun UltimateDestinyScreen(c: Campaign, state: UltimateState, annual: Ann
             Spacer(Modifier.height(10.dp))
             if (outcome != null) {
                 UltimatePanel(accent = if (c.health <= 25) UltimateRed else UltimateGold) {
-                    Text("CONSÉQUENCE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 9.sp, letterSpacing = 1.2.sp)
+                    Text("CONSÉQUENCE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp, letterSpacing = 1.2.sp)
                     Text(outcome, color = UltimateIvory, lineHeight = 20.sp)
                 }
                 Spacer(Modifier.height(10.dp))
@@ -292,13 +294,13 @@ private fun UltimateDestinyScreen(c: Campaign, state: UltimateState, annual: Ann
             } else if (event != null) {
                 if (!c.powerRevealed && c.turn < 10) {
                     UltimatePanel(accent = UltimateBlue) {
-                        Text("DÉCISION FORMATIVE ${c.turn + 1}/10", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 9.sp)
-                        Text("Le jeu ne montre toujours aucun calcul lié à ton futur pouvoir.", color = UltimateMuted, fontSize = 10.sp)
+                        Text("DÉCISION FORMATIVE ${c.turn + 1}/10", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                        Text("Le jeu ne montre toujours aucun calcul lié à ton futur pouvoir.", color = UltimateMuted, fontSize = 12.sp)
                     }
                     Spacer(Modifier.height(8.dp))
                 }
                 UltimatePanel(accent = if (event.stakes >= 4) UltimateRed else profile.accent) {
-                    Text(event.category.uppercase(), color = if (event.stakes >= 4) UltimateRed else profile.accent, fontSize = 9.sp, fontWeight = FontWeight.Black)
+                    Text(event.category.uppercase(), color = if (event.stakes >= 4) UltimateRed else profile.accent, fontSize = 12.sp, fontWeight = FontWeight.Black)
                     Text(event.title.uppercase(), color = UltimateIvory, fontSize = 23.sp, lineHeight = 25.sp, fontWeight = FontWeight.Black)
                     Spacer(Modifier.height(7.dp))
                     Text(event.text, color = UltimateMuted, lineHeight = 19.sp)
@@ -335,7 +337,7 @@ private fun UltimateChoiceCard(number: Int, choice: Choice, stakes: Int, onClick
     ) {
         Row(verticalAlignment = Alignment.Top) {
             Box(Modifier.size(27.dp).clip(RoundedCornerShape(14.dp)).background(accent.copy(alpha = .2f)), contentAlignment = Alignment.Center) {
-                Text(number.toString(), color = accent, fontWeight = FontWeight.Black, fontSize = 11.sp)
+                Text(number.toString(), color = accent, fontWeight = FontWeight.Black, fontSize = 12.sp)
             }
             Spacer(Modifier.width(8.dp))
             Column(Modifier.weight(1f)) {
@@ -372,16 +374,16 @@ private fun UltimateActionsScreen(c: Campaign, state: UltimateState, annual: Ann
         }
         Spacer(Modifier.height(8.dp))
         UltimatePanel(accent = if (state.powerStrain >= 70) UltimateRed else UltimateBlue) {
-            Text("VIE ENTRE LES CHAPITRES", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 9.sp)
-            Text("${state.credits} crédits · dette ${state.debt} · ${state.homeLabel()} · surcharge ${state.powerStrain}%", color = UltimateMuted, fontSize = 11.sp)
-            Text("Sauvetages, entraînement, enquêtes, relations, récupération, coiffure, médias, finances et QG nourrissent les grandes histoires sans les remplacer.", color = UltimateIvory, fontSize = 11.sp, lineHeight = 16.sp)
+            Text("VIE ENTRE LES CHAPITRES", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp)
+            Text("${state.credits} crédits · dette ${state.debt} · ${state.homeLabel()} · surcharge ${state.powerStrain}%", color = UltimateMuted, fontSize = 12.sp)
+            Text("Sauvetages, entraînement, enquêtes, relations, récupération, coiffure, médias, finances et QG nourrissent les grandes histoires sans les remplacer.", color = UltimateIvory, fontSize = 12.sp, lineHeight = 18.sp)
         }
         result?.let {
             Spacer(Modifier.height(8.dp))
             UltimatePanel(accent = UltimateGreen) {
                 Text(it.title.uppercase(), color = UltimateGreen, fontWeight = FontWeight.Black)
                 Text(it.text, color = UltimateIvory, fontSize = 12.sp, lineHeight = 18.sp)
-                Text("${it.state.remaining} moment(s) libre(s) restant(s).", color = UltimateMuted, fontSize = 10.sp)
+                Text("${it.state.remaining} moment(s) libre(s) restant(s).", color = UltimateMuted, fontSize = 12.sp)
             }
         }
         if (!c.powerRevealed && c.turn >= 10) {
@@ -421,10 +423,10 @@ private fun UltimateActionsScreen(c: Campaign, state: UltimateState, annual: Ann
                     MhlProductionAsset(card.iconKey, card.title, size = 48.dp)
                     Spacer(Modifier.width(8.dp))
                     Column(Modifier.weight(1f)) {
-                        Text(card.category.label.uppercase(), color = accent, fontSize = 8.sp, fontWeight = FontWeight.Black)
+                        Text(card.category.label.uppercase(), color = accent, fontSize = 12.sp, fontWeight = FontWeight.Black)
                         Text(card.title, color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 15.sp)
-                        Text(card.description, color = UltimateMuted, fontSize = 11.sp, lineHeight = 16.sp)
-                        Text("Développe · ${card.focus}", color = UltimateGold, fontSize = 8.sp, fontWeight = FontWeight.Black)
+                        Text(card.description, color = UltimateMuted, fontSize = 12.sp, lineHeight = 18.sp)
+                        Text("Développe · ${card.focus}", color = UltimateGold, fontSize = 12.sp, fontWeight = FontWeight.Black)
                     }
                 }
                 Spacer(Modifier.height(7.dp))
@@ -449,19 +451,19 @@ private fun UltimateCharacterScreen(c: Campaign, state: UltimateState, onStateCh
         }
         Spacer(Modifier.height(9.dp))
         UltimatePanel(accent = profile.accent) {
-            Text("DOSSIER D'ALIGNEMENT", color = profile.accent, fontWeight = FontWeight.Black, fontSize = 9.sp)
+            Text("DOSSIER D'ALIGNEMENT", color = profile.accent, fontWeight = FontWeight.Black, fontSize = 12.sp)
             Text(c.alignmentLabel.uppercase(), color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 16.sp)
-            Text("Moralité ${signed(c.morality)} · Opinion ${signed(c.opinion)} · Peur ${c.fear} · Prestige ${c.prestige}\nGouvernement ${signed(c.governmentStanding)} · Médias ${signed(c.mediaStanding)} · victimes civiles ${c.civilianCasualties}", color = UltimateMuted, fontSize = 10.sp, lineHeight = 15.sp)
+            Text("Moralité ${signed(c.morality)} · Opinion ${signed(c.opinion)} · Peur ${c.fear} · Prestige ${c.prestige}\nGouvernement ${signed(c.governmentStanding)} · Médias ${signed(c.mediaStanding)} · victimes civiles ${c.civilianCasualties}", color = UltimateMuted, fontSize = 12.sp, lineHeight = 18.sp)
         }
         Spacer(Modifier.height(8.dp))
         UltimatePanel(accent = profile.accent) {
-            Text("APPARENCE ACTUELLE", color = profile.accent, fontWeight = FontWeight.Black, fontSize = 9.sp)
+            Text("APPARENCE ACTUELLE", color = profile.accent, fontWeight = FontWeight.Black, fontSize = 12.sp)
             Text("${state.ageAppearance(c)} · ${state.bodyBuild} · ${state.stature} · ${state.skinTone}", color = UltimateIvory, fontWeight = FontWeight.Black)
-            Text("${state.faceShape} · ${state.hair} ${state.hairColor.lowercase()} · ${state.facialHair} · yeux ${state.eyes.lowercase()}\nStyle civil : ${state.civilianStyle} · ${state.accessory}", color = UltimateMuted, fontSize = 11.sp, lineHeight = 17.sp)
-            if (state.injuries.isNotEmpty()) Text("Cicatrices / séquelles : ${state.injuries.joinToString(" · ")}", color = UltimateRed, fontSize = 10.sp, lineHeight = 15.sp)
+            Text("${state.faceShape} · ${state.hair} ${state.hairColor.lowercase()} · ${state.facialHair} · yeux ${state.eyes.lowercase()}\nStyle civil : ${state.civilianStyle} · ${state.accessory}", color = UltimateMuted, fontSize = 12.sp, lineHeight = 17.sp)
+            if (state.injuries.isNotEmpty()) Text("Cicatrices / séquelles : ${state.injuries.joinToString(" · ")}", color = UltimateRed, fontSize = 12.sp, lineHeight = 18.sp)
         }
         Spacer(Modifier.height(8.dp))
-        Text("PERSONNALISATION CIVILE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 9.sp)
+        Text("PERSONNALISATION CIVILE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp)
         Spacer(Modifier.height(5.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
             UltimateActionTile("Coiffure", state.hair, UltimateBlue, onClick = { onStateChange(state.copy(hair = cycle(UltimateCatalog.hairs, state.hair))) })
@@ -473,12 +475,12 @@ private fun UltimateCharacterScreen(c: Campaign, state: UltimateState, onStateCh
         }
         if (c.powerRevealed) {
             Spacer(Modifier.height(12.dp))
-            Text("IDENTITÉ MÉTAHUMAINE", color = profile.accent, fontWeight = FontWeight.Black, fontSize = 9.sp)
+            Text("IDENTITÉ MÉTAHUMAINE", color = profile.accent, fontWeight = FontWeight.Black, fontSize = 12.sp)
             Spacer(Modifier.height(5.dp))
             UltimatePanel(accent = profile.accent) {
                 Text("ÈRE ${state.costumeEra.coerceAtLeast(1)} · ${state.heroPresentation.uppercase()}", color = profile.accent, fontWeight = FontWeight.Black)
-                Text("${state.costumePalette} · ${state.maskStyle} · ${state.emblem}\nObjet signature : ${state.signatureItem}\nSpécialité : ${state.powerBranch} · Combat : ${state.combatStyle}", color = UltimateMuted, fontSize = 11.sp, lineHeight = 17.sp)
-                if (state.techniques.isNotEmpty()) Text("Techniques : ${state.techniques.joinToString(" · ")}", color = UltimateGold, fontSize = 10.sp)
+                Text("${state.costumePalette} · ${state.maskStyle} · ${state.emblem}\nObjet signature : ${state.signatureItem}\nSpécialité : ${state.powerBranch} · Combat : ${state.combatStyle}", color = UltimateMuted, fontSize = 12.sp, lineHeight = 17.sp)
+                if (state.techniques.isNotEmpty()) Text("Techniques : ${state.techniques.joinToString(" · ")}", color = UltimateGold, fontSize = 12.sp)
             }
             Spacer(Modifier.height(6.dp))
             LibraryCostumePresetStrip(state, state.costumeEra.coerceAtLeast(1), onStateChange)
@@ -497,7 +499,7 @@ private fun UltimateCharacterScreen(c: Campaign, state: UltimateState, onStateCh
         }
         Spacer(Modifier.height(12.dp))
         UltimatePanel(accent = if (state.powerStrain >= 70) UltimateRed else UltimateViolet) {
-            Text("CORPS & POUVOIR", color = UltimateViolet, fontWeight = FontWeight.Black, fontSize = 9.sp)
+            Text("CORPS & POUVOIR", color = UltimateViolet, fontWeight = FontWeight.Black, fontSize = 12.sp)
             if (c.powerRevealed) {
                 UltimateMeter("Puissance", c.power, profile.accent)
                 Spacer(Modifier.height(5.dp)); UltimateMeter("Maîtrise", c.control, UltimateBlue)
@@ -516,20 +518,20 @@ private fun UltimateCityScreen(c: Campaign, state: UltimateState) {
         UltimateCityArtwork(c, state, Modifier.fillMaxWidth().height(220.dp).clip(CutCornerShape(18.dp)))
         Spacer(Modifier.height(8.dp))
         UltimatePanel(accent = UltimateGold) {
-            Text("IDENTITÉ URBAINE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 9.sp)
+            Text("IDENTITÉ URBAINE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp)
             Text("${state.cityArchetype} · ${state.architecture}", color = UltimateIvory, fontWeight = FontWeight.Black)
-            Text("${state.climate} · ${state.cityMood}\nÉtat général ${state.cityCondition}% · technologie ${state.cityTech}%", color = UltimateMuted, fontSize = 11.sp)
+            Text("${state.climate} · ${state.cityMood}\nÉtat général ${state.cityCondition}% · technologie ${state.cityTech}%", color = UltimateMuted, fontSize = 12.sp)
             Spacer(Modifier.height(6.dp))
             UltimateMeter("État de la ville", state.cityCondition, if (state.cityCondition >= 55) UltimateGreen else UltimateRed)
             Spacer(Modifier.height(5.dp)); UltimateMeter("Évolution technologique", state.cityTech, UltimateBlue)
         }
         Spacer(Modifier.height(8.dp))
         UltimatePanel(accent = if (state.legalStatus.contains("Recherché")) UltimateRed else UltimateBlue) {
-            Text("INSTITUTIONS & MONDE", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 9.sp)
-            Text("Statut : ${state.legalStatus}\nLoi : ${state.metaLaw}\nInternational : ${state.internationalAttention}%\nMédias : ${state.mediaFrame}\nJournaliste récurrent : ${state.journalist.ifBlank { "Aucun" }}", color = UltimateMuted, fontSize = 11.sp, lineHeight = 17.sp)
+            Text("INSTITUTIONS & MONDE", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 12.sp)
+            Text("Statut : ${state.legalStatus}\nLoi : ${state.metaLaw}\nInternational : ${state.internationalAttention}%\nMédias : ${state.mediaFrame}\nJournaliste récurrent : ${state.journalist.ifBlank { "Aucun" }}", color = UltimateMuted, fontSize = 12.sp, lineHeight = 17.sp)
         }
         Spacer(Modifier.height(10.dp))
-        Text("QUARTIERS", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 10.sp, letterSpacing = 1.sp)
+        Text("QUARTIERS", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp, letterSpacing = 1.sp)
         Spacer(Modifier.height(6.dp))
         state.districts.forEach { d ->
             UltimatePanel(accent = when { d.sentiment >= 35 -> UltimateGreen; d.sentiment <= -35 -> UltimateRed; else -> UltimateBlue }) {
@@ -537,7 +539,7 @@ private fun UltimateCityScreen(c: Campaign, state: UltimateState) {
                     Text(d.name.uppercase(), color = UltimateIvory, fontWeight = FontWeight.Black)
                     if (d.restricted) UltimatePill("Zone restreinte", UltimateRed)
                 }
-                Text("${if (d.faction == "Aucune") "Aucune faction dominante" else d.faction}${if (d.landmark.isNotBlank()) " · ${d.landmark}" else ""}", color = UltimateMuted, fontSize = 10.sp, lineHeight = 15.sp)
+                Text("${if (d.faction == "Aucune") "Aucune faction dominante" else d.faction}${if (d.landmark.isNotBlank()) " · ${d.landmark}" else ""}", color = UltimateMuted, fontSize = 12.sp, lineHeight = 18.sp)
                 Spacer(Modifier.height(5.dp))
                 UltimateMeter("Réputation locale", d.sentiment, if (d.sentiment >= 0) UltimateGreen else UltimateRed, rangeMin = -100, rangeMax = 100)
                 Spacer(Modifier.height(4.dp)); UltimateMeter("Dégâts", d.damage, UltimateRed)
@@ -548,9 +550,9 @@ private fun UltimateCityScreen(c: Campaign, state: UltimateState) {
         }
         Spacer(Modifier.height(5.dp))
         UltimatePanel(accent = UltimateGold) {
-            Text("LOGEMENT / QG", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 9.sp)
+            Text("LOGEMENT / QG", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp)
             Text("${state.homeLabel()} · ${state.baseType}", color = UltimateIvory, fontWeight = FontWeight.Black)
-            Text("Le refuge évolue avec l'exposition, les moyens et l'influence. Les souvenirs de carrière y deviennent progressivement des objets d'histoire.", color = UltimateMuted, fontSize = 11.sp, lineHeight = 16.sp)
+            Text("Le refuge évolue avec l'exposition, les moyens et l'influence. Les souvenirs de carrière y deviennent progressivement des objets d'histoire.", color = UltimateMuted, fontSize = 12.sp, lineHeight = 18.sp)
         }
     }
 }
@@ -575,7 +577,7 @@ private fun UltimateLinksScreen(c: Campaign, state: UltimateState) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text(rel.name.uppercase(), color = UltimateIvory, fontWeight = FontWeight.Black)
-                        Text("${rel.role} · ${rel.status} · env. ${c.age + rel.ageOffset} ans", color = UltimateMuted, fontSize = 10.sp)
+                        Text("${rel.role} · ${rel.status} · env. ${c.age + rel.ageOffset} ans", color = UltimateMuted, fontSize = 12.sp)
                     }
                     if (rel.knowsIdentity) UltimatePill("Connaît l'identité", UltimateRed)
                 }
@@ -607,42 +609,42 @@ private fun UltimateChronicleScreen(c: Campaign, state: UltimateState) {
         Spacer(Modifier.height(8.dp))
         if (state.snapshots.isNotEmpty()) {
             UltimatePanel(accent = UltimateGold) {
-                Text("PORTRAITS D'ÉPOQUE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 9.sp)
+                Text("PORTRAITS D'ÉPOQUE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp)
                 state.snapshots.forEach { snap ->
                     val p = snap.split('|')
-                    Text("${p.getOrElse(0) { "?" }} ans · ${p.getOrElse(1) { "Étape" }} · ${p.getOrElse(2) { "" }} · ${p.getOrElse(3) { "" }}", color = UltimateMuted, fontSize = 10.sp)
+                    Text("${p.getOrElse(0) { "?" }} ans · ${p.getOrElse(1) { "Étape" }} · ${p.getOrElse(2) { "" }} · ${p.getOrElse(3) { "" }}", color = UltimateMuted, fontSize = 12.sp)
                 }
             }
             Spacer(Modifier.height(7.dp))
         }
         if (state.cases.isNotEmpty()) {
             UltimatePanel(accent = UltimateBlue) {
-                Text("ENQUÊTES", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 9.sp)
+                Text("ENQUÊTES", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 12.sp)
                 state.cases.forEach { x ->
-                    Text("${if (x.solved) "✓" else "○"} ${x.title} · étape ${x.stage}/${x.maxStage} · preuves ${x.evidence}%${if (x.falseLead && x.solved) " · fausse piste corrigée" else ""}", color = if (x.solved) UltimateGreen else UltimateMuted, fontSize = 10.sp, lineHeight = 15.sp)
+                    Text("${if (x.solved) "✓" else "○"} ${x.title} · étape ${x.stage}/${x.maxStage} · preuves ${x.evidence}%${if (x.falseLead && x.solved) " · fausse piste corrigée" else ""}", color = if (x.solved) UltimateGreen else UltimateMuted, fontSize = 12.sp, lineHeight = 18.sp)
                 }
             }
             Spacer(Modifier.height(7.dp))
         }
         if (state.techniques.isNotEmpty() || state.injuries.isNotEmpty() || state.iconicItems.isNotEmpty()) {
             UltimatePanel(accent = powerVisualProfile(c.powerFamily).accent) {
-                if (state.techniques.isNotEmpty()) { Text("TECHNIQUES SIGNATURE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 9.sp); Text(state.techniques.joinToString(" · "), color = UltimateIvory, fontSize = 11.sp) }
-                if (state.injuries.isNotEmpty()) { Spacer(Modifier.height(6.dp)); Text("SÉQUELLES", color = UltimateRed, fontWeight = FontWeight.Black, fontSize = 9.sp); Text(state.injuries.joinToString("\n"), color = UltimateMuted, fontSize = 10.sp) }
-                if (state.iconicItems.isNotEmpty()) { Spacer(Modifier.height(6.dp)); Text("OBJETS / ÉPOQUES", color = UltimateViolet, fontWeight = FontWeight.Black, fontSize = 9.sp); Text(state.iconicItems.joinToString("\n"), color = UltimateMuted, fontSize = 10.sp) }
+                if (state.techniques.isNotEmpty()) { Text("TECHNIQUES SIGNATURE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp); Text(state.techniques.joinToString(" · "), color = UltimateIvory, fontSize = 12.sp) }
+                if (state.injuries.isNotEmpty()) { Spacer(Modifier.height(6.dp)); Text("SÉQUELLES", color = UltimateRed, fontWeight = FontWeight.Black, fontSize = 12.sp); Text(state.injuries.joinToString("\n"), color = UltimateMuted, fontSize = 12.sp) }
+                if (state.iconicItems.isNotEmpty()) { Spacer(Modifier.height(6.dp)); Text("OBJETS / ÉPOQUES", color = UltimateViolet, fontWeight = FontWeight.Black, fontSize = 12.sp); Text(state.iconicItems.joinToString("\n"), color = UltimateMuted, fontSize = 12.sp) }
             }
             Spacer(Modifier.height(7.dp))
         }
         if (state.rareMarks.isNotEmpty()) {
             UltimatePanel(accent = UltimateViolet) {
-                Text("ANOMALIES RARES", color = UltimateViolet, fontWeight = FontWeight.Black, fontSize = 9.sp)
-                state.rareMarks.forEach { Text("• $it", color = UltimateMuted, fontSize = 10.sp, lineHeight = 15.sp) }
+                Text("ANOMALIES RARES", color = UltimateViolet, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                state.rareMarks.forEach { Text("• $it", color = UltimateMuted, fontSize = 12.sp, lineHeight = 18.sp) }
             }
             Spacer(Modifier.height(7.dp))
         }
         UltimatePanel(accent = UltimateBlue) {
-            Text("HISTOIRE", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 9.sp)
+            Text("HISTOIRE", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 12.sp)
             c.timeline.takeLast(100).reversed().forEach { line ->
-                Text(line, color = UltimateMuted, fontSize = 10.sp, lineHeight = 15.sp)
+                Text(line, color = UltimateMuted, fontSize = 12.sp, lineHeight = 18.sp)
                 Spacer(Modifier.height(3.dp))
             }
         }
@@ -662,15 +664,15 @@ internal fun UltimateFinalScreen(c: Campaign, state: UltimateState, onArchive: (
             }
             Spacer(Modifier.height(9.dp))
             UltimatePanel(accent = UltimateGold) {
-                Text("CE QUE LE MONDE GARDE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 9.sp)
+                Text("CE QUE LE MONDE GARDE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp)
                 Text(UltimateDirector.legacySummary(c, state), color = UltimateIvory, lineHeight = 20.sp)
                 Spacer(Modifier.height(7.dp))
-                Text(GameEngine.legacySummary(c), color = UltimateMuted, fontSize = 11.sp, lineHeight = 17.sp)
+                Text(GameEngine.legacySummary(c), color = UltimateMuted, fontSize = 12.sp, lineHeight = 17.sp)
             }
             Spacer(Modifier.height(8.dp))
             UltimatePanel(accent = profile.accent) {
-                Text("ARCHIVE DE CARRIÈRE", color = profile.accent, fontWeight = FontWeight.Black, fontSize = 9.sp)
-                Text("Costume : ère ${state.costumeEra} · ${state.heroPresentation} · ${state.costumePalette}\nNémésis : ${state.nemesis.ifBlank { "Aucune" }} · Mentor : ${state.mentor.ifBlank { "Aucun" }} · Protégé : ${state.protege.ifBlank { "Aucun" }}\nTechniques : ${state.techniques.size} · blessures nommées : ${state.injuries.size} · dossiers résolus : ${state.cases.count { it.solved }}\nVille : ${state.cityCondition}% · attention internationale : ${state.internationalAttention}%", color = UltimateMuted, fontSize = 11.sp, lineHeight = 17.sp)
+                Text("ARCHIVE DE CARRIÈRE", color = profile.accent, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                Text("Costume : ère ${state.costumeEra} · ${state.heroPresentation} · ${state.costumePalette}\nNémésis : ${state.nemesis.ifBlank { "Aucune" }} · Mentor : ${state.mentor.ifBlank { "Aucun" }} · Protégé : ${state.protege.ifBlank { "Aucun" }}\nTechniques : ${state.techniques.size} · blessures nommées : ${state.injuries.size} · dossiers résolus : ${state.cases.count { it.solved }}\nVille : ${state.cityCondition}% · attention internationale : ${state.internationalAttention}%", color = UltimateMuted, fontSize = 12.sp, lineHeight = 17.sp)
             }
             Spacer(Modifier.height(10.dp))
             MhlPrimaryButton("Archiver dans le Hall", onArchive, Modifier.fillMaxWidth())
@@ -694,14 +696,14 @@ internal fun UltimateHallScreen(hall: List<String>, onBack: () -> Unit) {
                         Text(record.title, color = UltimateGold, fontWeight = FontWeight.Bold)
                     }
                     if (record.identityId.isNotBlank()) {
-                        Text(record.identityId, color = UltimateBlue, fontSize = 8.sp, fontWeight = FontWeight.Black)
+                        Text(record.identityId, color = UltimateBlue, fontSize = 12.sp, fontWeight = FontWeight.Black)
                     }
                 }
                 Text(
                     "Score ${record.score} · ${record.scope} · ${record.city}" +
                         if (record.finalAge > 0) " · ${record.finalAge} ans" else "",
                     color = UltimateMuted,
-                    fontSize = 10.sp
+                    fontSize = 12.sp
                 )
                 if (record.powerFamily.isNotBlank() && record.powerFamily != "Non révélé") {
                     Spacer(Modifier.height(4.dp))
@@ -709,7 +711,7 @@ internal fun UltimateHallScreen(hall: List<String>, onBack: () -> Unit) {
                         (if (record.alignment.isNotBlank()) "${record.alignment.uppercase()} · " else "") +
                             "${record.powerFamily.uppercase()} · Moralité ${signed(record.morality)} · Opinion ${signed(record.opinion)} · Peur ${record.fear}",
                         color = UltimateIvory,
-                        fontSize = 9.sp,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -717,20 +719,20 @@ internal fun UltimateHallScreen(hall: List<String>, onBack: () -> Unit) {
                     Text(
                         "PIXEL DNA · ${record.skinTone} · ${record.faceShape} · ${record.bodyBuild} · ${record.hair} ${record.hairColor.lowercase()} · ${record.civilianStyle}",
                         color = UltimateMuted,
-                        fontSize = 9.sp,
-                        lineHeight = 13.sp
+                        fontSize = 12.sp,
+                        lineHeight = 18.sp
                     )
                 }
                 if (record.strongestRelation.isNotBlank()) {
-                    Text("Lien majeur · ${record.strongestRelation}", color = UltimateMuted, fontSize = 9.sp)
+                    Text("Lien majeur · ${record.strongestRelation}", color = UltimateMuted, fontSize = 12.sp)
                 }
-                Text("Némésis · ${record.nemesis}", color = UltimateMuted, fontSize = 9.sp)
+                Text("Némésis · ${record.nemesis}", color = UltimateMuted, fontSize = 12.sp)
                 if (record.endingKind.isNotBlank()) {
-                    Text("Fin · ${record.endingKind}", color = UltimateGold, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    Text("Fin · ${record.endingKind}", color = UltimateGold, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
                 if (record.endingSummary.isNotBlank()) {
                     Spacer(Modifier.height(5.dp))
-                    Text(record.endingSummary, color = UltimateIvory, fontSize = 10.sp, lineHeight = 14.sp, maxLines = 4)
+                    Text(record.endingSummary, color = UltimateIvory, fontSize = 12.sp, lineHeight = 18.sp, maxLines = 4)
                 }
             }
             Spacer(Modifier.height(6.dp))
@@ -741,7 +743,8 @@ internal fun UltimateHallScreen(hall: List<String>, onBack: () -> Unit) {
 }
 
 @Composable
-internal fun UltimateSettingsScreen(settings: MetahumanMotionSettings, onChange: (MetahumanMotionSettings) -> Unit, onBack: () -> Unit) {
+internal fun UltimateSettingsScreen(settings: MetahumanMotionSettings, onChange: (MetahumanMotionSettings) -> Unit,
+                                    onBack: () -> Unit, extraContent: @Composable () -> Unit = {}) {
     Column(Modifier.fillMaxSize().padding(14.dp).verticalScroll(rememberScrollState())) {
         UltimateSectionHeader("Confort", "Réglages", "Le graphisme garde son énergie sans obliger les animations ou les vibrations.", UltimateBlue)
         Spacer(Modifier.height(10.dp))
@@ -750,13 +753,13 @@ internal fun UltimateSettingsScreen(settings: MetahumanMotionSettings, onChange:
         SettingToggle("Contraste élevé", "Renforce fonds et lisibilité.", settings.highContrast) { onChange(settings.copy(highContrast = it)) }
         Spacer(Modifier.height(8.dp))
         UltimatePanel(accent = UltimateGold) {
-            Text("VITESSE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 9.sp)
+            Text("VITESSE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp)
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 FilterChip(selected = settings.speed == MetahumanMotionSpeed.NORMAL, onClick = { onChange(settings.copy(speed = MetahumanMotionSpeed.NORMAL)) }, label = { Text("Normale") })
                 FilterChip(selected = settings.speed == MetahumanMotionSpeed.FAST, onClick = { onChange(settings.copy(speed = MetahumanMotionSpeed.FAST)) }, label = { Text("Rapide") })
             }
             Spacer(Modifier.height(6.dp))
-            Text("TAILLE DU TEXTE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 9.sp)
+            Text("TAILLE DU TEXTE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp)
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 listOf(90 to "Compact", 100 to "Normal", 115 to "Grand").forEach { (value, label) ->
                     FilterChip(selected = settings.textScalePercent == value, onClick = { onChange(settings.copy(textScalePercent = value)) }, label = { Text(label) })
@@ -764,6 +767,7 @@ internal fun UltimateSettingsScreen(settings: MetahumanMotionSettings, onChange:
             }
         }
         Spacer(Modifier.height(10.dp))
+        extraContent()
         MhlSecondaryButton("Retour", onBack, Modifier.fillMaxWidth())
     }
 }
@@ -774,7 +778,7 @@ private fun SettingToggle(title: String, body: String, value: Boolean, onChange:
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(title.uppercase(), color = UltimateIvory, fontWeight = FontWeight.Black)
-                Text(body, color = UltimateMuted, fontSize = 11.sp, lineHeight = 15.sp)
+                Text(body, color = UltimateMuted, fontSize = 12.sp, lineHeight = 18.sp)
             }
             Switch(checked = value, onCheckedChange = onChange)
         }

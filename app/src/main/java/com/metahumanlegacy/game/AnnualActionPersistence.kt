@@ -15,7 +15,11 @@ internal object AnnualActionPersistence {
     }
 
     fun save(context: Context, state: AnnualActionState) {
-        val raw = listOf(
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .edit().putString(state.seed.toString(), encode(state)).apply()
+    }
+
+    internal fun encode(state: AnnualActionState): String = listOf(
             state.seed,
             state.turn,
             state.used,
@@ -25,16 +29,13 @@ internal object AnnualActionPersistence {
             state.discipline,
             state.usedIds.sorted().joinToString(",")
         ).joinToString("|")
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-            .edit().putString(state.seed.toString(), raw).apply()
-    }
 
     fun clear(context: Context, seed: Long) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
             .edit().remove(seed.toString()).apply()
     }
 
-    private fun decode(raw: String): AnnualActionState? = runCatching {
+    internal fun decode(raw: String): AnnualActionState? = runCatching {
         val p = raw.split('|')
         AnnualActionState(
             seed = p[0].toLong(),

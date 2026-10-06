@@ -1,6 +1,7 @@
 package com.metahumanlegacy.game
 
 import android.content.Context
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -16,6 +17,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
@@ -62,33 +65,32 @@ internal fun GameplayRebuildApp(context: Context) {
 
     CompositionLocalProvider(LocalMetahumanMotion provides controller, LocalDensity provides scaledDensity) {
         MaterialTheme(colorScheme = colors) {
-            var campaign by remember { mutableStateOf(loadCampaignV4(context)) }
-            var ultimate by remember { mutableStateOf(campaign?.let { UltimateStore.load(context, it) }) }
-            var annual by remember { mutableStateOf(campaign?.let { AnnualActionPersistence.load(context, it) }) }
-            var deep by remember {
-                mutableStateOf(campaign?.let { c -> ultimate?.let { u -> DeepLifePersistence.load(context, c, u) } })
-            }
-            var screen by remember { mutableStateOf("HOME") }
+            val restored = remember { FinalSessionPersistence.load(context) }
+            var campaign by remember { mutableStateOf(restored?.campaign) }
+            var ultimate by remember { mutableStateOf(restored?.ultimate) }
+            var annual by remember { mutableStateOf(restored?.annual) }
+            var deep by remember { mutableStateOf(restored?.deep) }
+            var screen by rememberSaveable { mutableStateOf("HOME") }
+            var settingsReturn by rememberSaveable { mutableStateOf("HOME") }
             var hall by remember { mutableStateOf(loadHallV4(context)) }
-            var outcome by remember { mutableStateOf(loadRebuildOutcome(context, campaign?.seed)) }
-            var draftSeed by remember { mutableStateOf(System.currentTimeMillis()) }
+            var outcome by remember { mutableStateOf(restored?.outcome) }
+            var draftSeed by rememberSaveable { mutableStateOf(System.currentTimeMillis()) }
             var blueprint by remember { mutableStateOf(GameEngine.randomBlueprint(draftSeed)) }
-            var draft by remember { mutableStateOf(UltimateCatalog.randomDraft(draftSeed, blueprint)) }
+            var draft by rememberSaveable(stateSaver = Saver<UltimateCreationDraft, String>(
+                save = { FinalDraftCodec.encode(it) }, restore = { FinalDraftCodec.decode(it) }
+            )) { mutableStateOf(UltimateCatalog.randomDraft(draftSeed, blueprint)) }
             var savePulse by remember { mutableIntStateOf(0) }
 
-            fun persist(c: Campaign, u: UltimateState, a: AnnualActionState? = annual, d: DeepLifeState? = deep) {
-                campaign = c
-                ultimate = u
-                saveCampaignV4(context, c)
-                UltimateStore.save(context, u)
-                if (a != null) {
-                    annual = a
-                    AnnualActionPersistence.save(context, a)
-                }
-                if (d != null) {
-                    deep = d
-                    DeepLifePersistence.save(context, d)
-                }
+            fun persist(c: Campaign, u: UltimateState, a: AnnualActionState? = annual,
+                        d: DeepLifeState? = deep, pending: String? = outcome) {
+                val session = FinalSessionPersistence.normalized(FinalSession(c, u,
+                    a ?: AnnualActionState.fresh(c), d ?: DeepLifePersistence.load(context, c, u), pending))
+                FinalSessionPersistence.save(context, session)
+                campaign = session.campaign
+                ultimate = session.ultimate
+                annual = session.annual
+                deep = session.deep
+                outcome = session.outcome
                 savePulse++
             }
 
@@ -99,11 +101,18 @@ internal fun GameplayRebuildApp(context: Context) {
             }
 
             fun go(next: String, feedback: MetahumanMotionLevel = MetahumanMotionLevel.MOTION_SUBTLE) {
+                if (next in setOf("ACTIONS", "LIENS") && outcome != null) {
+                    android.widget.Toast.makeText(context, "Lis d'abord la conséquence de ton dernier choix.", android.widget.Toast.LENGTH_SHORT).show()
+                    screen = "DESTIN"
+                    return
+                }
+                if (next == "SETTINGS") settingsReturn = screen
                 if (screen != next) haptic(feedback)
                 screen = next
             }
 
             fun startLife(d: UltimateCreationDraft) {
+                if (campaign != null) return
                 val seed = System.currentTimeMillis()
                 val c = GameEngine.newCampaign(seed, d.blueprint)
                 val u = UltimateStore.create(c, d)
@@ -111,14 +120,7 @@ internal fun GameplayRebuildApp(context: Context) {
                 val baseDeep = DeepLifeDirector.bootstrap(c, u)
                 val generationDeep = GenerationalDirector.seedNewLife(c, baseDeep, DeepLegacyArchive.load(context))
                 val dl = generationDeep.copy(lifeSimulation = LifeSimulationDirector.bootstrap(c, generationDeep))
-                campaign = c; ultimate = u; annual = a; deep = dl
-                saveCampaignV4(context, c)
-                UltimateStore.save(context, u)
-                AnnualActionPersistence.save(context, a)
-                DeepLifePersistence.save(context, dl)
-                outcome = null
-                saveRebuildOutcome(context, seed, null)
-                savePulse++
+                persist(c, u, a, dl, pending = null)
                 haptic(MetahumanMotionLevel.MOTION_STANDARD)
                 screen = "DESTIN"
             }
@@ -136,9 +138,17 @@ internal fun GameplayRebuildApp(context: Context) {
                 screen = "CREATE"
             }
 
+            BackHandler(enabled = screen != "HOME") {
+                go(when (screen) {
+                    "SETTINGS" -> settingsReturn
+                    "CREATE", "HALL", "DESTIN", "ALIAS" -> "HOME"
+                    else -> if (campaign == null) "HOME" else "DESTIN"
+                })
+            }
+
             UltimateRootBackdrop(campaign = campaign, state = ultimate, scene = if (campaign?.finished == true) "LEGACY" else screen) {
                 val transitionDuration = MetahumanMotionTokens.duration(MetahumanMotionTokens.FAST, motion)
-                val stageKey = "${screen}|${campaign?.turn ?: -1}|${outcome?.hashCode() ?: 0}|${campaign?.needsAlias == true}|$savePulse"
+                val stageKey = "${screen}|${campaign?.seed}|${campaign?.turn ?: -1}|${outcome?.hashCode() ?: 0}|${campaign?.needsAlias == true}"
                 AnimatedContent(
                     targetState = stageKey,
                     transitionSpec = {
@@ -156,7 +166,17 @@ internal fun GameplayRebuildApp(context: Context) {
                         renderedScreen == "SETTINGS" -> UltimateSettingsScreen(
                             settings = motion,
                             onChange = controller.update,
-                            onBack = { go(if (campaign == null) "HOME" else "DESTIN") }
+                            onBack = { go(settingsReturn) },
+                            extraContent = {
+                                FinalBackupPanel(context) {
+                                    val imported = FinalSessionPersistence.load(context)
+                                    campaign = imported?.campaign; ultimate = imported?.ultimate
+                                    annual = imported?.annual; deep = imported?.deep; outcome = imported?.outcome
+                                    hall = loadHallV4(context)
+                                    settingsReturn = "HOME"
+                                    screen = "HOME"
+                                }
+                            }
                         )
 
                         renderedScreen == "HALL" -> DeepLegacyHallScreen(
@@ -169,7 +189,7 @@ internal fun GameplayRebuildApp(context: Context) {
                             campaign = campaign,
                             state = ultimate,
                             hallCount = maxOf(hall.size, DeepLegacyArchive.load(context).size),
-                            onContinue = { go(if (campaign?.needsAlias == true) "ALIAS" else "DESTIN", MetahumanMotionLevel.MOTION_STANDARD) },
+                            onContinue = { go(if (outcome == null && campaign?.needsAlias == true) "ALIAS" else "DESTIN", MetahumanMotionLevel.MOTION_STANDARD) },
                             onNew = { abandon() },
                             onHall = { go("HALL") },
                             onSettings = { go("SETTINGS") }
@@ -193,8 +213,9 @@ internal fun GameplayRebuildApp(context: Context) {
                             onSettings = { go("SETTINGS") }
                         )
 
-                        campaign!!.finished -> UltimateFinalScreen(campaign!!, ultimate ?: UltimateStore.fallback(campaign!!)) {
-                            val c = campaign!!
+                        campaign!!.finished && outcome == null -> UltimateFinalScreen(campaign!!, ultimate ?: UltimateStore.fallback(campaign!!)) archive@{
+                            val c = campaign ?: return@archive
+                            if (!c.finished || outcome != null) return@archive
                             val u = ultimate ?: UltimateStore.fallback(c)
                             val dl = deep ?: DeepLifePersistence.load(context, c, u)
                             DeepLegacyArchive.archive(context, c, u, dl)
@@ -237,51 +258,27 @@ internal fun GameplayRebuildApp(context: Context) {
                         else -> {
                             val c = campaign!!
                             val u = ultimate ?: UltimateStore.fallback(c).also { ultimate = it }
-                            val a = (annual ?: AnnualActionPersistence.load(context, c)).synced(c).also { annual = it }
+                            val rawAnnual = (annual ?: AnnualActionPersistence.load(context, c)).synced(c)
                             val loadedDeep = (deep ?: DeepLifePersistence.load(context, c, u))
-                            val loadedLife = loadedDeep.lifeSimulation ?: LifeSimulationDirector.bootstrap(c, loadedDeep)
-                            val syncedLife = LifeSimulationDirector.synced(c, loadedDeep, loadedLife)
-                            val dl = if (loadedDeep.lifeSimulation != syncedLife) {
-                                loadedDeep.copy(lifeSimulation = syncedLife).also {
-                                    deep = it
-                                    DeepLifePersistence.save(context, it)
-                                }
-                            } else loadedDeep.also { deep = it }
+                            val (a, dl) = FinalGameRules.synchronize(c, rawAnnual, loadedDeep)
 
                             val choiceHandler: (EventNode, Choice) -> Unit = { event, choice ->
                                 val current = campaign
-                                if (current != null) {
+                                if (FinalGameRules.canChoose(current, c, outcome) && choice in event.choices) {
+                                    val active = requireNotNull(current)
                                     haptic(if (event.stakes >= 4) MetahumanMotionLevel.MOTION_MAJOR else MetahumanMotionLevel.MOTION_STANDARD)
                                     MetahumanAudioHooks.onChoice()
-                                    val currentState = ultimate ?: UltimateStore.load(context, current)
-                                    val currentDeep = deep ?: DeepLifePersistence.load(context, current, currentState)
-                                    val result = UltimateGameEngine.resolve(current, currentState, event, choice)
-                                    val deepUpdate = DeepLifeRuntime.afterChoice(current, result.campaign, event, choice, currentDeep)
-                                    val worldUpdate = DeepWorldDirector.afterChoice(result.campaign, result.state, deepUpdate.state, event, choice)
-                                    val generationUpdate = GenerationalDirector.afterChoice(worldUpdate.campaign, worldUpdate.ultimate, worldUpdate.deep, event, choice)
-                                    val revealedDeep = DeepLifeDirector.revealPower(generationUpdate.campaign, generationUpdate.deep)
-                                    val life = LifeSimulationDirector.synced(
-                                        generationUpdate.campaign,
-                                        revealedDeep,
-                                        revealedDeep.lifeSimulation ?: LifeSimulationDirector.bootstrap(generationUpdate.campaign, revealedDeep)
-                                    )
-                                    val nextDeep = LifeSimulationDirector.mergedIntoDeep(revealedDeep, life)
-                                    val nextAnnual = (annual ?: AnnualActionState.fresh(generationUpdate.campaign)).synced(generationUpdate.campaign)
-                                    persist(generationUpdate.campaign, generationUpdate.ultimate, nextAnnual, nextDeep)
-                                    val combinedOutcome = buildString {
-                                        append(result.outcome)
-                                        if (deepUpdate.echo.isNotBlank()) append("\n\nTRACE DE VIE\n${deepUpdate.echo}")
-                                        if (worldUpdate.echo.isNotBlank()) append("\n\nMONDE QUI RÉAGIT\n${worldUpdate.echo}")
-                                        if (generationUpdate.echo.isNotBlank()) append("\n\nPASSAGE DE RELAIS\n${generationUpdate.echo}")
-                                    }
-                                    outcome = combinedOutcome
-                                    saveRebuildOutcome(context, generationUpdate.campaign.seed, combinedOutcome)
+                                    val currentState = ultimate ?: UltimateStore.load(context, active)
+                                    val currentDeep = deep ?: DeepLifePersistence.load(context, active, currentState)
+                                    val next = FinalGameRuntime.resolve(
+                                        FinalSession(active, currentState, annual ?: AnnualActionState.fresh(active), currentDeep), event, choice)
+                                    if (next != null) persist(next.campaign, next.ultimate, next.annual, next.deep, next.outcome)
                                 }
                             }
 
                             val actionHandler: (AnnualActionCard) -> AnnualActionResult? = { card ->
                                 val current = campaign
-                                if (current == null) null else {
+                                if (current == null || !FinalGameRules.canAct(current, outcome) || current.turn != c.turn) null else {
                                     haptic(MetahumanMotionLevel.MOTION_SUBTLE)
                                     val currentState = ultimate ?: UltimateStore.load(context, current)
                                     val currentDeep = deep ?: DeepLifePersistence.load(context, current, currentState)
@@ -305,12 +302,14 @@ internal fun GameplayRebuildApp(context: Context) {
 
                             val lifeActionHandler: (LifeAction) -> LifeActionResult? = { lifeAction ->
                                 val current = campaign
-                                if (current == null) null else {
+                                if (current == null || !FinalGameRules.canAct(current, outcome) || current.turn != c.turn) null else {
                                     haptic(MetahumanMotionLevel.MOTION_SUBTLE)
                                     val currentState = ultimate ?: UltimateStore.load(context, current)
                                     val currentDeep = deep ?: DeepLifePersistence.load(context, current, currentState)
                                     val baseLife = currentDeep.lifeSimulation ?: LifeSimulationDirector.bootstrap(current, currentDeep)
-                                    val synced = LifeSimulationDirector.synced(current, currentDeep, baseLife)
+                                    val syncedBudget = FinalGameRules.synchronize(current,
+                                        annual ?: AnnualActionState.fresh(current), currentDeep.copy(lifeSimulation = baseLife))
+                                    val synced = requireNotNull(syncedBudget.second.lifeSimulation)
                                     val result = LifeSimulationDirector.perform(current, synced, lifeAction)
                                     if (result.state == synced) result else {
                                         val bridge = LifeWorldStateBridge.afterLifeAction(current, currentState, synced, result.state)
@@ -324,7 +323,7 @@ internal fun GameplayRebuildApp(context: Context) {
                             }
 
                             when (renderedScreen) {
-                                "DESTIN" -> GameplayRebuildEarlyShell(
+                                "DESTIN" -> FinalDestinyScreen(
                                     c = c,
                                     state = u,
                                     annual = a,
@@ -333,10 +332,11 @@ internal fun GameplayRebuildApp(context: Context) {
                                     savePulse = savePulse,
                                     onScreen = { go(it) },
                                     onContinue = {
-                                        haptic(MetahumanMotionLevel.MOTION_SUBTLE)
-                                        outcome = null
-                                        saveRebuildOutcome(context, c.seed, null)
-                                        if (campaign?.needsAlias == true) screen = "ALIAS"
+                                        if (outcome != null && campaign?.turn == c.turn) {
+                                            haptic(MetahumanMotionLevel.MOTION_SUBTLE)
+                                            persist(c, u, a, dl, pending = null)
+                                            if (c.needsAlias) screen = "ALIAS"
+                                        }
                                     },
                                     onChoice = choiceHandler,
                                     onHome = { go("HOME") },
@@ -354,16 +354,12 @@ internal fun GameplayRebuildApp(context: Context) {
                                     state = u,
                                     deep = dl,
                                     onStateChange = { next ->
-                                        ultimate = next
-                                        UltimateStore.save(context, next)
-                                        DeepLifePersistence.save(context, dl)
-                                        savePulse++
-                                        saveCampaignV4(context, c)
+                                        persist(c, next, a, dl)
                                     },
                                     onBack = { go("DESTIN") }
                                 )
 
-                                else -> GameplayRebuildEarlyShell(
+                                else -> FinalDestinyScreen(
                                     c = c,
                                     state = u,
                                     annual = a,
@@ -372,10 +368,11 @@ internal fun GameplayRebuildApp(context: Context) {
                                     savePulse = savePulse,
                                     onScreen = { go(it) },
                                     onContinue = {
-                                        haptic(MetahumanMotionLevel.MOTION_SUBTLE)
-                                        outcome = null
-                                        saveRebuildOutcome(context, c.seed, null)
-                                        if (campaign?.needsAlias == true) screen = "ALIAS"
+                                        if (outcome != null && campaign?.turn == c.turn) {
+                                            haptic(MetahumanMotionLevel.MOTION_SUBTLE)
+                                            persist(c, u, a, dl, pending = null)
+                                            if (c.needsAlias) screen = "ALIAS"
+                                        }
                                     },
                                     onChoice = choiceHandler,
                                     onHome = { go("HOME") },

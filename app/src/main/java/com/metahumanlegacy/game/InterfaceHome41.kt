@@ -4,6 +4,8 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
@@ -43,10 +45,11 @@ internal fun InterfaceHome41(
         Box(Modifier.align(Alignment.TopEnd).padding(14.dp).size(48.dp).background(Interface41.glassSoft, RoundedCornerShape(16.dp)).clickable(onClick = onSettings).semantics { contentDescription = "Réglages" }, contentAlignment = Alignment.Center) {
             Text("⚙", color = Interface41.text, fontSize = 18.sp)
         }
-        Column(Modifier.align(Alignment.BottomStart).fillMaxWidth().padding(horizontal = 20.dp, vertical = 22.dp)) {
+        Column(Modifier.align(Alignment.BottomStart).fillMaxWidth().verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp, vertical = 22.dp).padding(top = 58.dp)) {
             Text("METAHUMAN", color = Interface41.muted, fontWeight = FontWeight.Bold, fontSize = 12.sp, letterSpacing = 5.sp)
             Text("LEGACY", color = Interface41.text, fontWeight = FontWeight.Black, fontSize = 51.sp, lineHeight = 49.sp)
-            Text("UNE VIE QUI LAISSE DES TRACES", color = accent, fontWeight = FontWeight.Black, fontSize = 10.sp, letterSpacing = 1.3.sp)
+            Text("UNE VIE QUI LAISSE DES TRACES", color = accent, fontWeight = FontWeight.Black, fontSize = 12.sp, letterSpacing = .7.sp)
             Spacer(Modifier.height(18.dp))
             if (campaign != null && state != null) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -55,7 +58,7 @@ internal fun InterfaceHome41(
                     Column(Modifier.weight(1f)) {
                         Text("REPRENDRE", color = accent, fontWeight = FontWeight.Black, fontSize = 9.sp, letterSpacing = 1.4.sp)
                         Text(campaign.alias.ifBlank { campaign.name }.uppercase(), color = Interface41.text, fontWeight = FontWeight.Black, fontSize = 19.sp)
-                        Text("${campaign.age} ans · ${campaign.city} · ${state.mediaFrame}", color = Interface41.muted, fontSize = 11.sp)
+                        Text("${campaign.age} ans · ${campaign.city} · ${state.mediaFrame}", color = Interface41.muted, fontSize = 13.sp)
                     }
                 }
                 Spacer(Modifier.height(12.dp))
@@ -69,6 +72,8 @@ internal fun InterfaceHome41(
             }
             Spacer(Modifier.height(7.dp))
             HomeAction41("Hall of Legacies  ·  $hallCount", Color.White, false, onHall)
+            Spacer(Modifier.height(16.dp))
+            Text("${BuildConfig.VERSION_NAME} · Ta vie est enregistrée sur cet appareil", color = Interface41.muted, fontSize = 12.sp)
         }
     }
 }

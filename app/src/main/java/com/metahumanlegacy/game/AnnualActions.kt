@@ -72,7 +72,8 @@ internal data class AnnualActionState(
 
     fun synced(c: Campaign): AnnualActionState = when {
         seed != c.seed -> fresh(c)
-        turn != c.turn -> copy(turn = c.turn, used = 0, usedIds = emptySet())
+        turn != c.turn && c.copy(turn = turn).age != c.age -> copy(turn = c.turn, used = 0, usedIds = emptySet())
+        turn != c.turn -> copy(turn = c.turn)
         else -> this
     }
 

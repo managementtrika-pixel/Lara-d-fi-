@@ -67,23 +67,23 @@ private fun GameplayLifeSimulationScreen(
     val actions = LifeSimulationDirector.availableActions(c, simulation)
 
     Column(Modifier.fillMaxSize().padding(14.dp).verticalScroll(rememberScrollState())) {
-        Text("TA VIE, PAS JUSTE TA LÉGENDE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 10.sp)
+        Text("TA VIE, PAS JUSTE TA LÉGENDE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp)
         Text("${simulation.civil.freeMoments} moment${if (simulation.civil.freeMoments > 1) "s" else ""} à choisir à ${c.age} ans.", color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 25.sp)
         Text("Travail, proches, logement, récupération et pouvoir se disputent le même temps.", color = UltimateMuted, fontSize = 12.sp)
         Spacer(Modifier.height(10.dp))
 
         UltimatePanel(accent = UltimateBlue) {
-            Text("VIE CIVILE", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 9.sp)
+            Text("VIE CIVILE", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 12.sp)
             Text(simulation.civil.jobTitle, color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 17.sp)
-            Text("Économies ${simulation.civil.savings} · logement ${housingLabel(simulation.civil.housing)}", color = UltimateMuted, fontSize = 11.sp)
-            Text("Stress ${lifeBand(simulation.civil.stress)} · progression ${lifeBand(simulation.civil.careerProgress)}", color = UltimateMuted, fontSize = 11.sp)
+            Text("Économies ${simulation.civil.savings} · logement ${housingLabel(simulation.civil.housing)}", color = UltimateMuted, fontSize = 12.sp)
+            Text("Stress ${lifeBand(simulation.civil.stress)} · progression ${lifeBand(simulation.civil.careerProgress)}", color = UltimateMuted, fontSize = 12.sp)
         }
 
         val closePeople = simulation.relationshipLives.sortedByDescending { it.closeness }.take(4)
         if (closePeople.isNotEmpty()) {
             Spacer(Modifier.height(7.dp))
             UltimatePanel(accent = UltimateGold) {
-                Text("TES LIENS", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 9.sp)
+                Text("TES LIENS", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp)
                 closePeople.forEach { rel ->
                     val person = peopleById[rel.personId]
                     val secret = when (rel.secretKnowledge) {
@@ -96,10 +96,10 @@ private fun GameplayLifeSimulationScreen(
                     Text(
                         "${person?.name ?: rel.personId} · ${relationshipBand(rel.closeness)}$secret",
                         color = if (rel.secretKnowledge == SecretKnowledge.THREATENS) UltimateRed else UltimateIvory,
-                        fontSize = 11.sp
+                        fontSize = 12.sp
                     )
                 }
-                Text("Consacrer du temps à quelqu'un renforce réellement le lien et ouvre de nouvelles actions.", color = UltimateMuted, fontSize = 10.sp)
+                Text("Consacrer du temps à quelqu'un renforce réellement le lien et ouvre de nouvelles actions.", color = UltimateMuted, fontSize = 12.sp)
             }
         }
 
@@ -111,45 +111,45 @@ private fun GameplayLifeSimulationScreen(
                 else -> UltimateBlue
             }
             UltimatePanel(accent = identityAccent) {
-                Text("IDENTITÉ SOUS PRESSION", color = identityAccent, fontWeight = FontWeight.Black, fontSize = 9.sp)
+                Text("IDENTITÉ SOUS PRESSION", color = identityAccent, fontWeight = FontWeight.Black, fontSize = 12.sp)
                 Text(
                     "Exposition ${lifeBand(simulation.secretIdentity.exposure)} · ${simulation.secretIdentity.evidenceIds.size} preuve${if (simulation.secretIdentity.evidenceIds.size > 1) "s" else ""} · ${IdentityPressureDirector.knownCount(simulation)} personne${if (IdentityPressureDirector.knownCount(simulation) > 1) "s" else ""} au courant",
                     color = UltimateIvory,
-                    fontSize = 11.sp
+                    fontSize = 12.sp
                 )
                 if (simulation.secretIdentity.activeRumors.isEmpty()) {
-                    Text("Aucune rumeur structurée ne relie encore ta vie civile à ton identité métahumaine.", color = UltimateMuted, fontSize = 10.sp)
+                    Text("Aucune rumeur structurée ne relie encore ta vie civile à ton identité métahumaine.", color = UltimateMuted, fontSize = 12.sp)
                 } else {
                     Spacer(Modifier.height(4.dp))
-                    Text("RUMEURS ACTIVES", color = identityAccent, fontWeight = FontWeight.Black, fontSize = 8.sp)
+                    Text("RUMEURS ACTIVES", color = identityAccent, fontWeight = FontWeight.Black, fontSize = 12.sp)
                     simulation.secretIdentity.activeRumors.take(4).forEach { rumor ->
-                        Text("• $rumor", color = UltimateMuted, fontSize = 10.sp, lineHeight = 14.sp)
+                        Text("• $rumor", color = UltimateMuted, fontSize = 12.sp, lineHeight = 18.sp)
                     }
                 }
             }
 
             Spacer(Modifier.height(7.dp))
             UltimatePanel(accent = UltimateViolet) {
-                Text("MAÎTRISE DU POUVOIR", color = UltimateViolet, fontWeight = FontWeight.Black, fontSize = 9.sp)
-                Text("Contrôle ${lifeBand(simulation.powerRules.control)} · précision ${lifeBand(simulation.powerRules.precision)}", color = UltimateIvory, fontSize = 11.sp)
-                Text("Fatigue ${lifeBand(simulation.powerRules.fatigue)} · surcharge ${lifeBand(simulation.powerRules.overload)}", color = if (simulation.powerRules.overload >= 70) UltimateRed else UltimateMuted, fontSize = 11.sp)
+                Text("MAÎTRISE DU POUVOIR", color = UltimateViolet, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                Text("Contrôle ${lifeBand(simulation.powerRules.control)} · précision ${lifeBand(simulation.powerRules.precision)}", color = UltimateIvory, fontSize = 12.sp)
+                Text("Fatigue ${lifeBand(simulation.powerRules.fatigue)} · surcharge ${lifeBand(simulation.powerRules.overload)}", color = if (simulation.powerRules.overload >= 70) UltimateRed else UltimateMuted, fontSize = 12.sp)
                 Spacer(Modifier.height(5.dp))
                 val unlocked = simulation.powerRules.techniques.filter { it.unlocked }
                 if (unlocked.isEmpty()) {
-                    Text("Aucune technique stabilisée pour l'instant. L'entraînement peut en faire émerger une.", color = UltimateMuted, fontSize = 10.sp)
+                    Text("Aucune technique stabilisée pour l'instant. L'entraînement peut en faire émerger une.", color = UltimateMuted, fontSize = 12.sp)
                 } else {
-                    Text("TECHNIQUES", color = UltimateViolet, fontWeight = FontWeight.Black, fontSize = 8.sp)
+                    Text("TECHNIQUES", color = UltimateViolet, fontWeight = FontWeight.Black, fontSize = 12.sp)
                     unlocked.take(4).forEach { technique ->
                         val cooldown = if (technique.cooldownTurns > 0) " · récupération" else " · prête"
                         Text(
                             "${technique.name} · maîtrise ${technique.proficiency}%$cooldown",
                             color = if (technique.cooldownTurns > 0) UltimateMuted else UltimateIvory,
-                            fontSize = 10.sp
+                            fontSize = 12.sp
                         )
                     }
                 }
                 simulation.powerRules.techniques.firstOrNull { !it.unlocked }?.let { next ->
-                    Text("Prochaine : ${next.name} · seuil ${next.masteryRequired}", color = UltimateMuted, fontSize = 9.sp)
+                    Text("Prochaine : ${next.name} · seuil ${next.masteryRequired}", color = UltimateMuted, fontSize = 12.sp)
                 }
             }
         }
@@ -158,22 +158,22 @@ private fun GameplayLifeSimulationScreen(
         if (district != null) {
             Spacer(Modifier.height(7.dp))
             UltimatePanel(accent = UltimateGreen) {
-                Text("TON QUARTIER", color = UltimateGreen, fontWeight = FontWeight.Black, fontSize = 9.sp)
-                Text("Sécurité ${lifeBand(district.safety)} · emprise criminelle ${lifeBand(district.criminalControl)}", color = UltimateIvory, fontSize = 11.sp)
-                Text("Confiance locale ${lifeBand(district.localTrust)} · attention média ${lifeBand(district.mediaHeat)}", color = UltimateMuted, fontSize = 11.sp)
+                Text("TON QUARTIER", color = UltimateGreen, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                Text("Sécurité ${lifeBand(district.safety)} · emprise criminelle ${lifeBand(district.criminalControl)}", color = UltimateIvory, fontSize = 12.sp)
+                Text("Confiance locale ${lifeBand(district.localTrust)} · attention média ${lifeBand(district.mediaHeat)}", color = UltimateMuted, fontSize = 12.sp)
             }
         }
 
         feedback?.let { result ->
             Spacer(Modifier.height(8.dp))
             UltimatePanel(accent = UltimateGold) {
-                Text(result.headline.uppercase(), color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 9.sp)
-                Text(result.detail, color = UltimateIvory, fontSize = 11.sp)
+                Text(result.headline.uppercase(), color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                Text(result.detail, color = UltimateIvory, fontSize = 12.sp)
             }
         }
 
         Spacer(Modifier.height(10.dp))
-        Text("QUE FAIS-TU DE TON TEMPS ?", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 9.sp)
+        Text("QUE FAIS-TU DE TON TEMPS ?", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp)
         Spacer(Modifier.height(6.dp))
         actions.forEach { action ->
             val name = peopleById[action.targetId]?.name ?: "un proche"
