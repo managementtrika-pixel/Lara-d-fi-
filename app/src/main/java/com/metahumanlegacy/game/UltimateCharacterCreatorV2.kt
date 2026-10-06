@@ -22,8 +22,11 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.activity.compose.BackHandler
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
@@ -54,7 +57,8 @@ internal fun UltimateCharacterCreatorV2(
     onBack: () -> Unit,
     onStart: (UltimateCreationDraft) -> Unit
 ) {
-    var step by remember(draft.blueprint.fullName) { mutableIntStateOf(0) }
+    var step by rememberSaveable { mutableIntStateOf(0) }
+    BackHandler(enabled = step > 0) { step-- }
     fun updateBlueprint(next: CharacterBlueprint) = onDraft(draft.copy(blueprint = next))
     val previewCampaign = remember(draft) { GameEngine.newCampaign(10101L, draft.blueprint) }
     val previewState = remember(draft) { UltimateStore.create(previewCampaign, draft) }
@@ -108,7 +112,7 @@ internal fun UltimateCharacterCreatorV2(
                     MhlPrimaryButton(
                         if (step == creatorSteps.lastIndex) "COMMENCER À 8 ANS" else creatorNextLabel(step),
                         { if (step == creatorSteps.lastIndex) onStart(draft) else step++ },
-                        Modifier.weight(1f),
+                        Modifier.weight(1f).testTag("creator_next"),
                         canAdvance
                     )
                 }
@@ -156,10 +160,10 @@ private fun CreatorTopBar(
         Spacer(Modifier.width(9.dp))
         Column(Modifier.weight(1f)) {
             Text(title, color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 25.sp, letterSpacing = .8.sp)
-            Text(subtitle, color = UltimateMuted, fontSize = 10.sp, lineHeight = 14.sp)
+            Text(subtitle, color = UltimateMuted, fontSize = 12.sp, lineHeight = 18.sp)
         }
         TextButton(onClick = onRandomize) {
-            Text("ALÉATOIRE", color = UltimateBlue, fontSize = 9.sp, fontWeight = FontWeight.Black)
+            Text("ALÉATOIRE", color = UltimateBlue, fontSize = 12.sp, fontWeight = FontWeight.Black)
         }
     }
     Spacer(Modifier.height(7.dp))
@@ -173,7 +177,7 @@ private fun CreatorTopBar(
     ) {
         Text(
             draft.blueprint.fullName.ifBlank { "PERSONNAGE SANS NOM" }.uppercase(),
-            color = UltimateIvory, fontSize = 8.sp, fontWeight = FontWeight.Black,
+            color = UltimateIvory, fontSize = 12.sp, fontWeight = FontWeight.Black,
             modifier = Modifier.weight(1f), maxLines = 1
         )
         Text(
@@ -267,14 +271,14 @@ private fun CharacterStage(campaign: Campaign, state: UltimateState, caption: St
                 .border(1.dp, UltimateGold.copy(alpha = .45f), CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp))
                 .padding(horizontal = 8.dp, vertical = 5.dp)
         ) {
-            Text("PIXEL ID", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 8.sp, letterSpacing = 1.sp)
+            Text("PIXEL ID", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp, letterSpacing = 1.sp)
         }
         Box(
             Modifier.align(Alignment.BottomStart).fillMaxWidth()
                 .background(Color.Black.copy(alpha = .48f))
                 .padding(horizontal = 12.dp, vertical = 8.dp)
         ) {
-            Text(caption.uppercase(), color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 10.sp)
+            Text(caption.uppercase(), color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 12.sp)
         }
     }
 }
@@ -350,8 +354,8 @@ private fun LookStep(
         onDraft(draft.copy(eyes = it, libraryFaceIndex = -1))
     }
     UltimatePanel(accent = UltimateBlue) {
-        Text("PILOSITÉ", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 8.sp)
-        Text("À 8 ans, aucune pilosité faciale n'est appliquée. Elle pourra évoluer plus tard avec l'âge.", color = UltimateMuted, fontSize = 10.sp, lineHeight = 14.sp)
+        Text("PILOSITÉ", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 12.sp)
+        Text("À 8 ans, aucune pilosité faciale n'est appliquée. Elle pourra évoluer plus tard avec l'âge.", color = UltimateMuted, fontSize = 12.sp, lineHeight = 18.sp)
     }
     PixelStyleStrip(draft.civilianStyle) {
         onDraft(draft.copy(civilianStyle = it))
@@ -420,10 +424,10 @@ private fun FaceStep(
 ) {
     CharacterStage(campaign, state, "Avatar pixel")
     UltimatePanel(accent = UltimateBlue) {
-        Text("100 % SANS ASSET", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 9.sp)
+        Text("100 % SANS ASSET", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 12.sp)
         Text(
             "Ton personnage est dessiné directement par le jeu. Chaque option s'assemble proprement et instantanément.",
-            color = UltimateMuted, fontSize = 11.sp, lineHeight = 16.sp
+            color = UltimateMuted, fontSize = 12.sp, lineHeight = 18.sp
         )
     }
     PixelColorStrip("TEINT", UltimateCatalog.skinTones, draft.skinTone, ::pixelSkinPreview) {
@@ -461,9 +465,9 @@ private fun BodyStep(
     CreatorOptionStrip("TAILLE", UltimateCatalog.statures, draft.stature) { onDraft(draft.copy(stature = it)) }
     Spacer(Modifier.height(10.dp))
     UltimatePanel(accent = UltimateGold) {
-        Text("SILHOUETTE ACTIVE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 8.sp, letterSpacing = 1.sp)
+        Text("SILHOUETTE ACTIVE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp, letterSpacing = 1.sp)
         Text(draft.bodyBuild.uppercase() + " · " + draft.stature.uppercase(), color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 16.sp)
-        Text("La silhouette reste civile. Ton évolution physique pourra venir plus tard dans l'histoire.", color = UltimateMuted, fontSize = 10.sp, lineHeight = 14.sp)
+        Text("La silhouette reste civile. Ton évolution physique pourra venir plus tard dans l'histoire.", color = UltimateMuted, fontSize = 12.sp, lineHeight = 18.sp)
     }
     Spacer(Modifier.height(8.dp))
     MhlSecondaryButton("REMIX SILHOUETTE", {
@@ -560,7 +564,7 @@ private fun DetailsStep(
     }
     Spacer(Modifier.height(10.dp))
     UltimatePanel(accent = UltimateBlue) {
-        Text("QUI ÉTAIS-TU ?", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 8.sp, letterSpacing = 1.sp)
+        Text("QUI ÉTAIS-TU ?", color = UltimateBlue, fontWeight = FontWeight.Black, fontSize = 12.sp, letterSpacing = 1.sp)
         Text(pixelLifeSentence(draft.blueprint), color = UltimateIvory, fontWeight = FontWeight.Bold, fontSize = 12.sp, lineHeight = 17.sp)
     }
 }
@@ -588,14 +592,14 @@ private fun CityStep(
     CreatorOptionStrip("AMBIANCE", UltimateCatalog.cityMoods, draft.cityMood) { onDraft(draft.copy(cityMood = it)) }
     Spacer(Modifier.height(10.dp))
     UltimatePanel(accent = UltimateGold) {
-        Text("TON TERRITOIRE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 8.sp, letterSpacing = 1.sp)
+        Text("TON TERRITOIRE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp, letterSpacing = 1.sp)
         Text(
             draft.blueprint.city.uppercase() + " · " + draft.blueprint.district.uppercase(),
             color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 16.sp
         )
         Text(
             pixelCitySentence(draft),
-            color = UltimateMuted, fontSize = 10.sp, lineHeight = 15.sp
+            color = UltimateMuted, fontSize = 12.sp, lineHeight = 18.sp
         )
     }
     Spacer(Modifier.height(8.dp))
@@ -642,11 +646,11 @@ private fun ValidationStep(draft: UltimateCreationDraft, campaign: Campaign, sta
                 }
                 Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
-                    Text("METAHUMAN LEGACY", color = UltimateMuted, fontSize = 8.sp, fontWeight = FontWeight.Black, letterSpacing = 1.2.sp)
+                    Text("METAHUMAN LEGACY", color = UltimateMuted, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 1.2.sp)
                     Text("DOSSIER CIVIL", color = UltimateIvory, fontSize = 20.sp, fontWeight = FontWeight.Black)
                 }
                 Column(horizontalAlignment = Alignment.End) {
-                    Text("DÉPART · 8 ANS", color = UltimateBlue, fontSize = 10.sp, fontWeight = FontWeight.Black)
+                    Text("DÉPART · 8 ANS", color = UltimateBlue, fontSize = 12.sp, fontWeight = FontWeight.Black)
                     Text("AUCUN POUVOIR", color = UltimateMuted, fontSize = 6.sp, fontWeight = FontWeight.Black)
                 }
             }
@@ -687,7 +691,7 @@ private fun ValidationStep(draft: UltimateCreationDraft, campaign: Campaign, sta
                             draft.blueprint.city.uppercase() + " · " + draft.blueprint.district.uppercase(),
                             color = UltimateGold,
                             fontWeight = FontWeight.Black,
-                            fontSize = 9.sp
+                            fontSize = 12.sp
                         )
                         Text(
                             pixelIdentityCode(draft),
@@ -735,8 +739,8 @@ private fun ValidationStep(draft: UltimateCreationDraft, campaign: Campaign, sta
                 Text(
                     "Tu ne choisis aucun pouvoir ici. Les dix premières décisions de ta vie construiront secrètement ton éveil.",
                     color = UltimateMuted,
-                    fontSize = 11.sp,
-                    lineHeight = 16.sp
+                    fontSize = 12.sp,
+                    lineHeight = 18.sp
                 )
             }
         }
@@ -774,9 +778,9 @@ private fun PixelColorStrip(
 ) {
     Spacer(Modifier.height(13.dp))
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text(title, color = UltimateGold, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
+        Text(title, color = UltimateGold, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
         Spacer(Modifier.weight(1f))
-        Text(selected.uppercase(), color = UltimateBlue, fontSize = 8.sp, fontWeight = FontWeight.Black)
+        Text(selected.uppercase(), color = UltimateBlue, fontSize = 12.sp, fontWeight = FontWeight.Black)
     }
     Spacer(Modifier.height(7.dp))
     Row(
@@ -811,7 +815,7 @@ private fun PixelColorStrip(
 @Composable
 private fun PixelFaceShapeStrip(selected: String, skinTone: String, onSelect: (String) -> Unit) {
     Spacer(Modifier.height(13.dp))
-    Text("FORME DU VISAGE", color = UltimateGold, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
+    Text("FORME DU VISAGE", color = UltimateGold, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
     Spacer(Modifier.height(7.dp))
     Row(
         Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
@@ -850,7 +854,7 @@ private fun PixelFaceShapeStrip(selected: String, skinTone: String, onSelect: (S
                     drawRect(Color(0xFF6A3433), Offset(size.width*.42f, size.height*.66f), Size(size.width*.16f,3f))
                 }
                 Spacer(Modifier.height(4.dp))
-                Text(shape.uppercase(), color = if (active) UltimateIvory else UltimateMuted, fontSize = 8.sp, fontWeight = FontWeight.Black)
+                Text(shape.uppercase(), color = if (active) UltimateIvory else UltimateMuted, fontSize = 12.sp, fontWeight = FontWeight.Black)
             }
         }
     }
@@ -859,7 +863,7 @@ private fun PixelFaceShapeStrip(selected: String, skinTone: String, onSelect: (S
 @Composable
 private fun PixelBodyShapeStrip(selected: String, civilianStyle: String, onSelect: (String) -> Unit) {
     Spacer(Modifier.height(13.dp))
-    Text("SILHOUETTE", color = UltimateGold, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
+    Text("SILHOUETTE", color = UltimateGold, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
     Spacer(Modifier.height(7.dp))
     Row(
         Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
@@ -897,7 +901,7 @@ private fun PixelBodyShapeStrip(selected: String, civilianStyle: String, onSelec
                     drawRect(outline, Offset(size.width*.55f,size.height*.72f), Size(size.width*.12f,size.height*.24f))
                 }
                 Spacer(Modifier.height(4.dp))
-                Text(build.uppercase(), color = if (active) UltimateIvory else UltimateMuted, fontSize = 8.sp, fontWeight = FontWeight.Black, maxLines = 1)
+                Text(build.uppercase(), color = if (active) UltimateIvory else UltimateMuted, fontSize = 12.sp, fontWeight = FontWeight.Black, maxLines = 1)
             }
         }
     }
@@ -907,7 +911,7 @@ private fun PixelBodyShapeStrip(selected: String, civilianStyle: String, onSelec
 @Composable
 private fun PixelHairStrip(selected: String, hairColor: String, skinTone: String, onSelect: (String) -> Unit) {
     Spacer(Modifier.height(13.dp))
-    Text("COIFFURE", color = UltimateGold, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
+    Text("COIFFURE", color = UltimateGold, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
     Spacer(Modifier.height(7.dp))
     Row(
         Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
@@ -969,7 +973,7 @@ private fun PixelHairStrip(selected: String, hairColor: String, skinTone: String
                     drawRect(Color(0xFF26303A), Offset(x+fw*.68f,y+fh*.38f), Size(4f,4f))
                 }
                 Spacer(Modifier.height(4.dp))
-                Text(hair.uppercase(), color = if (active) UltimateIvory else UltimateMuted, fontSize = 8.sp, fontWeight = FontWeight.Black, maxLines = 1)
+                Text(hair.uppercase(), color = if (active) UltimateIvory else UltimateMuted, fontSize = 12.sp, fontWeight = FontWeight.Black, maxLines = 1)
             }
         }
     }
@@ -978,7 +982,7 @@ private fun PixelHairStrip(selected: String, hairColor: String, skinTone: String
 @Composable
 private fun PixelStyleStrip(selected: String, onSelect: (String) -> Unit) {
     Spacer(Modifier.height(13.dp))
-    Text("STYLE CIVIL", color = UltimateGold, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
+    Text("STYLE CIVIL", color = UltimateGold, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
     Spacer(Modifier.height(7.dp))
     Row(
         Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
@@ -1029,7 +1033,7 @@ private fun PixelStyleStrip(selected: String, onSelect: (String) -> Unit) {
 @Composable
 private fun PixelFacialHairStrip(selected: String, hairColor: String, skinTone: String, onSelect: (String) -> Unit) {
     Spacer(Modifier.height(13.dp))
-    Text("PILOSITÉ", color = UltimateGold, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
+    Text("PILOSITÉ", color = UltimateGold, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
     Spacer(Modifier.height(7.dp))
     Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
         UltimateCatalog.facialHairs.forEach { beard ->
@@ -1070,7 +1074,7 @@ private fun PixelFacialHairStrip(selected: String, hairColor: String, skinTone: 
 @Composable
 private fun PixelEyesStrip(selected: String, skinTone: String, hairColor: String, onSelect: (String) -> Unit) {
     Spacer(Modifier.height(13.dp))
-    Text("REGARD", color = UltimateGold, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
+    Text("REGARD", color = UltimateGold, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
     Spacer(Modifier.height(7.dp))
     Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
         UltimateCatalog.eyes.forEach { eyes ->
@@ -1109,7 +1113,7 @@ private fun PixelEyesStrip(selected: String, skinTone: String, hairColor: String
 @Composable
 private fun PixelAccessoryStrip(selected: String, hairColor: String, skinTone: String, onSelect: (String) -> Unit) {
     Spacer(Modifier.height(13.dp))
-    Text("ACCESSOIRE", color = UltimateGold, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
+    Text("ACCESSOIRE", color = UltimateGold, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
     Spacer(Modifier.height(7.dp))
     Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
         UltimateCatalog.accessories.forEach { accessory ->
@@ -1199,7 +1203,7 @@ private fun CreatorCompletionBar(step: Int, total: Int, draft: UltimateCreationD
             Text(
                 (((step + 1) * 100) / total).toString() + "%",
                 color = if (step == total - 1) UltimateGold else UltimateBlue,
-                fontSize = 8.sp,
+                fontSize = 12.sp,
                 fontWeight = FontWeight.Black
             )
         }
@@ -1231,7 +1235,7 @@ private fun PixelOriginStat(label: String, value: String, modifier: Modifier = M
     ) {
         Text(label, color = UltimateBlue, fontSize = 6.sp, fontWeight = FontWeight.Black, letterSpacing = .8.sp)
         Spacer(Modifier.height(2.dp))
-        Text(value.uppercase(), color = UltimateIvory, fontSize = 8.sp, fontWeight = FontWeight.Black, maxLines = 2, lineHeight = 10.sp)
+        Text(value.uppercase(), color = UltimateIvory, fontSize = 12.sp, fontWeight = FontWeight.Black, maxLines = 2, lineHeight = 10.sp)
     }
 }
 
@@ -1279,8 +1283,8 @@ private fun PixelYearOneTeaser(draft: UltimateCreationDraft) {
                 " va traverser dix années formatives, de 8 à 17 ans. " +
                 "À 18 ans, ce vécu déterminera silencieusement la première manifestation de son pouvoir.",
             color = UltimateMuted,
-            fontSize = 10.sp,
-            lineHeight = 15.sp
+            fontSize = 12.sp,
+            lineHeight = 18.sp
         )
     }
 }
@@ -1359,9 +1363,9 @@ private fun nextPixelOption(options: List<String>, current: String, offset: Int)
 private fun CreatorOptionStrip(title: String, options: List<String>, selected: String, onSelect: (String) -> Unit) {
     Spacer(Modifier.height(13.dp))
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text(title, color = UltimateGold, fontSize = 9.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
+        Text(title, color = UltimateGold, fontSize = 12.sp, fontWeight = FontWeight.Black, letterSpacing = 1.1.sp)
         Spacer(Modifier.weight(1f))
-        Text(selected.uppercase(), color = UltimateBlue, fontSize = 8.sp, fontWeight = FontWeight.Black, maxLines = 1)
+        Text(selected.uppercase(), color = UltimateBlue, fontSize = 12.sp, fontWeight = FontWeight.Black, maxLines = 1)
     }
     Spacer(Modifier.height(7.dp))
     Row(
@@ -1398,8 +1402,8 @@ private fun CreatorOptionStrip(title: String, options: List<String>, selected: S
                         option.uppercase(),
                         color = if (isSelected) UltimateIvory else Color(0xFFCBD4DE),
                         fontWeight = FontWeight.Black,
-                        fontSize = 10.sp,
-                        lineHeight = 13.sp,
+                        fontSize = 12.sp,
+                        lineHeight = 18.sp,
                         maxLines = 2
                     )
                     if (isSelected) {

@@ -254,7 +254,7 @@ internal object UltimateStore {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(seed.toString()).apply()
     }
 
-    private fun encode(state: UltimateState): String {
+    internal fun encode(state: UltimateState): String {
         fun e(v: Any) = Uri.encode(v.toString())
         fun list(v: List<String>) = v.joinToString("~") { Uri.encode(it) }
         fun relations(v: List<UltimateRelation>) = v.joinToString("~") { r ->
@@ -284,7 +284,7 @@ internal object UltimateStore {
         return "U1|$scalar|${e(relations(state.relations))}|${e(cases(state.cases))}|${e(districts(state.districts))}|${e(list(state.techniques))}|${e(list(state.injuries))}|${e(list(state.iconicItems))}|${e(list(state.rareMarks))}|${e(list(state.memories))}|${e(list(state.snapshots))}|${e(state.libraryFaceIndex)}"
     }
 
-    private fun decode(raw: String): UltimateState? = runCatching {
+    internal fun decode(raw: String): UltimateState? = runCatching {
         if (!raw.startsWith("U1|")) return@runCatching null
         val p = raw.removePrefix("U1|").split('|').map(Uri::decode)
         var i = 0

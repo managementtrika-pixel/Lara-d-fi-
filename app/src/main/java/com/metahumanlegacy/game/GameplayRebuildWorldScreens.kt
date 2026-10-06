@@ -45,18 +45,18 @@ internal fun GameplayRebuildCityScreen(c: Campaign, state: UltimateState, deep: 
             }
             Column(Modifier.align(Alignment.BottomStart).padding(14.dp)) {
                 Text(c.city.uppercase(), color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 28.sp)
-                Text("Une ville qui continue sans toi", color = accent, fontWeight = FontWeight.Black, fontSize = 10.sp)
-                Text("${cityConditionLabel(state.cityCondition)} · ${state.metaLaw}", color = UltimateMuted, fontSize = 10.sp)
+                Text("Une ville qui continue sans toi", color = accent, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                Text("${cityConditionLabel(state.cityCondition)} · ${state.metaLaw}", color = UltimateMuted, fontSize = 12.sp)
             }
         }
 
         Column(Modifier.padding(14.dp)) {
-            Text("QUARTIERS VIVANTS", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 9.sp, letterSpacing = 1.2.sp)
+            Text("QUARTIERS VIVANTS", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp, letterSpacing = 1.2.sp)
             Spacer(Modifier.height(7.dp))
             if (state.districts.isEmpty()) {
                 UltimatePanel(accent = accent) {
                     Text(c.district, color = UltimateIvory, fontWeight = FontWeight.Black)
-                    Text("Le quartier n'a pas encore assez d'histoire pour être cartographié. Tes prochaines décisions vont le faire évoluer.", color = UltimateMuted, fontSize = 11.sp)
+                    Text("Le quartier n'a pas encore assez d'histoire pour être cartographié. Tes prochaines décisions vont le faire évoluer.", color = UltimateMuted, fontSize = 12.sp)
                 }
             } else {
                 state.districts.forEach { d ->
@@ -68,13 +68,13 @@ internal fun GameplayRebuildCityScreen(c: Campaign, state: UltimateState, deep: 
             val urgent = deep.opportunities.sortedByDescending { it.urgency }.take(3)
             if (urgent.isNotEmpty()) {
                 Spacer(Modifier.height(7.dp))
-                Text("CE QUI AVANCE SANS TOI", color = UltimateRed, fontWeight = FontWeight.Black, fontSize = 9.sp)
+                Text("CE QUI AVANCE SANS TOI", color = UltimateRed, fontWeight = FontWeight.Black, fontSize = 12.sp)
                 Spacer(Modifier.height(6.dp))
                 urgent.forEach { opportunity ->
                     UltimatePanel(accent = if (opportunity.urgency >= 7) UltimateRed else UltimateGold) {
                         Text(opportunity.title, color = UltimateIvory, fontWeight = FontWeight.Black)
-                        Text(opportunityTimingLine(c, opportunity), color = UltimateMuted, fontSize = 10.sp)
-                        if (opportunity.ignoredPayload.isNotBlank()) Text("Si tu l'ignores : ${opportunity.ignoredPayload}", color = UltimateRed, fontSize = 10.sp, lineHeight = 14.sp)
+                        Text(opportunityTimingLine(c, opportunity), color = UltimateMuted, fontSize = 12.sp)
+                        if (opportunity.ignoredPayload.isNotBlank()) Text("Si tu l'ignores : ${opportunity.ignoredPayload}", color = UltimateRed, fontSize = 12.sp, lineHeight = 18.sp)
                     }
                     Spacer(Modifier.height(6.dp))
                 }
@@ -97,13 +97,13 @@ private fun DistrictLifeCard(d: UltimateDistrict) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(d.name.uppercase(), color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 14.sp)
-                Text(d.landmark.ifBlank { "Aucun lieu emblématique encore" }, color = UltimateMuted, fontSize = 10.sp)
+                Text(d.landmark.ifBlank { "Aucun lieu emblématique encore" }, color = UltimateMuted, fontSize = 12.sp)
             }
-            Text(if (d.restricted) "FERMÉ" else when { danger >= 70 -> "CRISE"; danger >= 45 -> "TENDU"; else -> "CALME" }, color = accent, fontWeight = FontWeight.Black, fontSize = 9.sp)
+            Text(if (d.restricted) "FERMÉ" else when { danger >= 70 -> "CRISE"; danger >= 45 -> "TENDU"; else -> "CALME" }, color = accent, fontWeight = FontWeight.Black, fontSize = 12.sp)
         }
         Spacer(Modifier.height(5.dp))
-        Text(districtConditionLine(d), color = UltimateMuted, fontSize = 10.sp)
-        Text("Contrôle : ${d.faction} · sentiment ${signedHuman(d.sentiment)}", color = UltimateIvory, fontSize = 10.sp)
+        Text(districtConditionLine(d), color = UltimateMuted, fontSize = 12.sp)
+        Text("Contrôle : ${d.faction} · sentiment ${signedHuman(d.sentiment)}", color = UltimateIvory, fontSize = 12.sp)
     }
 }
 
@@ -118,7 +118,7 @@ internal fun GameplayRebuildLinksScreen(
     val synced = annual.synced(c)
     var result by remember(c.turn) { mutableStateOf<AnnualActionResult?>(null) }
     Column(Modifier.fillMaxSize().padding(14.dp).verticalScroll(rememberScrollState())) {
-        Text("LES GENS DE TA VIE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 10.sp, letterSpacing = 1.3.sp)
+        Text("LES GENS DE TA VIE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp, letterSpacing = 1.3.sp)
         Text("À ${c.age} ans, personne n'est une jauge.", color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 25.sp, lineHeight = 27.sp)
         Text(
             if (synced.remaining > 0) "Il te reste ${synced.remaining} moment${if (synced.remaining > 1) "s" else ""} libre${if (synced.remaining > 1) "s" else ""}. Appeler, venir, s'excuser ou demander de l'aide prend du temps réel."
@@ -128,8 +128,8 @@ internal fun GameplayRebuildLinksScreen(
         result?.let {
             Spacer(Modifier.height(8.dp))
             UltimatePanel(accent = UltimateGreen) {
-                Text(it.title.uppercase(), color = UltimateGreen, fontWeight = FontWeight.Black, fontSize = 9.sp)
-                Text(it.text, color = UltimateIvory, fontSize = 11.sp, lineHeight = 16.sp)
+                Text(it.title.uppercase(), color = UltimateGreen, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                Text(it.text, color = UltimateIvory, fontSize = 12.sp, lineHeight = 18.sp)
             }
         }
         Spacer(Modifier.height(10.dp))
@@ -170,18 +170,18 @@ private fun RelationshipLifeCard(
             Spacer(Modifier.size(9.dp))
             Column(Modifier.weight(1f)) {
                 Text(person.name, color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 16.sp)
-                Text("${person.role} · ${relationshipPhrase(person)}", color = accent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                if (person.knowsIdentity) Text("Connaît ton identité", color = UltimateViolet, fontSize = 9.sp)
+                Text("${person.role} · ${relationshipPhrase(person)}", color = accent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                if (person.knowsIdentity) Text("Connaît ton identité", color = UltimateViolet, fontSize = 12.sp)
             }
         }
         Spacer(Modifier.height(7.dp))
-        if (person.core.values.isNotEmpty()) Text("Ce qui compte : ${person.core.values.take(2).joinToString(" · ").lowercase()}", color = UltimateIvory, fontSize = 10.sp)
-        if (person.core.fears.isNotEmpty()) Text("Ce qu'iel redoute : ${person.core.fears.take(1).joinToString().lowercase().replace('_', ' ')}", color = UltimateMuted, fontSize = 10.sp)
-        if (person.core.ambitions.isNotEmpty()) Text("Ce qu'iel veut : ${person.core.ambitions.take(1).joinToString().lowercase().replace('_', ' ')}", color = UltimateMuted, fontSize = 10.sp)
+        if (person.core.values.isNotEmpty()) Text("Ce qui compte : ${person.core.values.take(2).joinToString(" · ").lowercase()}", color = UltimateIvory, fontSize = 12.sp)
+        if (person.core.fears.isNotEmpty()) Text("Ce qu'iel redoute : ${person.core.fears.take(1).joinToString().lowercase().replace('_', ' ')}", color = UltimateMuted, fontSize = 12.sp)
+        if (person.core.ambitions.isNotEmpty()) Text("Ce qu'iel veut : ${person.core.ambitions.take(1).joinToString().lowercase().replace('_', ' ')}", color = UltimateMuted, fontSize = 12.sp)
         person.memories.maxByOrNull { it.weight }?.let { memory ->
             Spacer(Modifier.height(6.dp))
-            Text("SE SOUVIENT", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 8.sp)
-            Text("« ${memory.summary} »", color = UltimateIvory, fontSize = 10.sp, lineHeight = 14.sp)
+            Text("SE SOUVIENT", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp)
+            Text("« ${memory.summary} »", color = UltimateIvory, fontSize = 12.sp, lineHeight = 18.sp)
         }
 
         Spacer(Modifier.height(8.dp))
@@ -191,7 +191,7 @@ private fun RelationshipLifeCard(
                 MhlSecondaryButton(card.title, { onAction(card) }, Modifier.fillMaxWidth())
                 Spacer(Modifier.height(5.dp))
             }
-            if (actions.isEmpty()) Text("Tu as déjà agi envers cette personne cette année.", color = UltimateMuted, fontSize = 9.sp)
+            if (actions.isEmpty()) Text("Tu as déjà agi envers cette personne cette année.", color = UltimateMuted, fontSize = 12.sp)
         }
     }
 }
@@ -239,24 +239,24 @@ internal fun GameplayRebuildActionsScreen(
     var result by remember(c.turn) { mutableStateOf<AnnualActionResult?>(null) }
     val actions = remember(c.seed, c.turn, state.hashCode(), synced.usedIds, synced.used) { UltimateGameEngine.annualActions(c, state, synced) }
     Column(Modifier.fillMaxSize().padding(14.dp).verticalScroll(rememberScrollState())) {
-        Text("TON TEMPS EST LIMITÉ", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 10.sp, letterSpacing = 1.2.sp)
+        Text("TON TEMPS EST LIMITÉ", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp, letterSpacing = 1.2.sp)
         Text("${synced.remaining} moment${if (synced.remaining > 1) "s" else ""} libre${if (synced.remaining > 1) "s" else ""} cette année.", color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 25.sp, lineHeight = 27.sp)
         Text("Tout choisir est impossible. Ce que tu ignores peut continuer sans toi.", color = UltimateMuted, fontSize = 12.sp, lineHeight = 17.sp)
         Spacer(Modifier.height(9.dp))
 
         deep.opportunities.sortedByDescending { it.urgency }.take(2).forEach { o ->
             UltimatePanel(accent = if (o.urgency >= 7) UltimateRed else UltimateGold) {
-                Text("ÇA N'ATTENDRA PAS", color = if (o.urgency >= 7) UltimateRed else UltimateGold, fontWeight = FontWeight.Black, fontSize = 8.sp)
+                Text("ÇA N'ATTENDRA PAS", color = if (o.urgency >= 7) UltimateRed else UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp)
                 Text(o.title, color = UltimateIvory, fontWeight = FontWeight.Black)
-                Text(opportunityTimingLine(c, o), color = UltimateMuted, fontSize = 10.sp)
+                Text(opportunityTimingLine(c, o), color = UltimateMuted, fontSize = 12.sp)
             }
             Spacer(Modifier.height(6.dp))
         }
 
         result?.let {
             UltimatePanel(accent = UltimateGreen) {
-                Text(it.title.uppercase(), color = UltimateGreen, fontWeight = FontWeight.Black, fontSize = 9.sp)
-                Text(it.text, color = UltimateIvory, fontSize = 11.sp, lineHeight = 16.sp)
+                Text(it.title.uppercase(), color = UltimateGreen, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                Text(it.text, color = UltimateIvory, fontSize = 12.sp, lineHeight = 18.sp)
             }
             Spacer(Modifier.height(7.dp))
         }
@@ -265,11 +265,11 @@ internal fun GameplayRebuildActionsScreen(
             actions.take(8).forEach { card ->
                 val accent = actionAccent(card.category)
                 UltimatePanel(accent = accent) {
-                    Text(card.category.label.uppercase(), color = accent, fontWeight = FontWeight.Black, fontSize = 8.sp)
+                    Text(card.category.label.uppercase(), color = accent, fontWeight = FontWeight.Black, fontSize = 12.sp)
                     Text(card.title, color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 15.sp)
-                    Text(card.description, color = UltimateMuted, fontSize = 10.sp, lineHeight = 15.sp)
+                    Text(card.description, color = UltimateMuted, fontSize = 12.sp, lineHeight = 18.sp)
                     Spacer(Modifier.height(4.dp))
-                    Text(actionTradeoff(card), color = UltimateGold, fontSize = 9.sp, lineHeight = 13.sp)
+                    Text(actionTradeoff(card), color = UltimateGold, fontSize = 12.sp, lineHeight = 18.sp)
                     Spacer(Modifier.height(7.dp))
                     MhlPrimaryButton("Y consacrer du temps", {
                         val r = onAction(card)
@@ -281,7 +281,7 @@ internal fun GameplayRebuildActionsScreen(
         } else {
             UltimatePanel(accent = UltimateGold) {
                 Text("TU AS CHOISI OÙ PASSER TON TEMPS", color = UltimateGold, fontWeight = FontWeight.Black)
-                Text("Le reste de l'année continuera. Certaines choses que tu n'as pas faites pourront changer sans toi.", color = UltimateMuted, fontSize = 11.sp)
+                Text("Le reste de l'année continuera. Certaines choses que tu n'as pas faites pourront changer sans toi.", color = UltimateMuted, fontSize = 12.sp)
             }
         }
         Spacer(Modifier.height(7.dp))

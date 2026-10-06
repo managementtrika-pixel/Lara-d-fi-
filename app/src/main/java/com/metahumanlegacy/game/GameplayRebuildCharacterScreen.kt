@@ -24,9 +24,9 @@ internal fun GameplayRebuildCharacterScreen(
 ) {
     val accent = if (c.powerRevealed) powerVisualProfile(c.powerFamily).accent else UltimateBlue
     Column(Modifier.fillMaxSize().padding(14.dp).verticalScroll(rememberScrollState())) {
-        Text("QUI TU ES DEVENU", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 9.sp, letterSpacing = 1.2.sp)
+        Text("QUI TU ES DEVENU", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp, letterSpacing = 1.2.sp)
         Text(c.alias.ifBlank { c.name }, color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 29.sp, lineHeight = 31.sp)
-        Text("${c.age} ans · ${humanIdentityLine(c, deep)}", color = accent, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+        Text("${c.age} ans · ${humanIdentityLine(c, deep)}", color = accent, fontWeight = FontWeight.Bold, fontSize = 12.sp)
         Spacer(Modifier.height(10.dp))
 
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
@@ -36,7 +36,7 @@ internal fun GameplayRebuildCharacterScreen(
 
         val traits = deep.personality.entries.sortedByDescending { kotlin.math.abs(it.value) }.take(4)
         UltimatePanel(accent = accent) {
-            Text("CE QUE TES ANNÉES ONT FAIT DE TOI", color = accent, fontWeight = FontWeight.Black, fontSize = 9.sp)
+            Text("CE QUE TES ANNÉES ONT FAIT DE TOI", color = accent, fontWeight = FontWeight.Black, fontSize = 12.sp)
             if (traits.isEmpty()) {
                 Text(c.temperament, color = UltimateIvory, fontWeight = FontWeight.Black)
             } else {
@@ -44,42 +44,42 @@ internal fun GameplayRebuildCharacterScreen(
             }
             val public = deep.perception.civilians
             val government = deep.perception.government
-            Text("Les civils te voient ${perceptionWord(public)}. Les institutions te voient ${perceptionWord(government)}.", color = UltimateMuted, fontSize = 11.sp, lineHeight = 16.sp)
+            Text("Les civils te voient ${perceptionWord(public)}. Les institutions te voient ${perceptionWord(government)}.", color = UltimateMuted, fontSize = 12.sp, lineHeight = 18.sp)
         }
 
         Spacer(Modifier.height(8.dp))
         UltimatePanel(accent = if (deep.injuries.isNotEmpty() || state.injuries.isNotEmpty()) UltimateRed else UltimateGreen) {
-            Text("TON CORPS", color = if (deep.injuries.isNotEmpty() || state.injuries.isNotEmpty()) UltimateRed else UltimateGreen, fontWeight = FontWeight.Black, fontSize = 9.sp)
+            Text("TON CORPS", color = if (deep.injuries.isNotEmpty() || state.injuries.isNotEmpty()) UltimateRed else UltimateGreen, fontWeight = FontWeight.Black, fontSize = 12.sp)
             Text(humanAgeAppearance(c, state), color = UltimateIvory, fontWeight = FontWeight.Black)
-            Text("${state.bodyBuild} · ${state.stature} · ${state.hair} · yeux ${state.eyes.lowercase()}", color = UltimateMuted, fontSize = 11.sp)
+            Text("${state.bodyBuild} · ${state.stature} · ${state.hair} · yeux ${state.eyes.lowercase()}", color = UltimateMuted, fontSize = 12.sp)
             val injuries = deep.injuries.map { "${it.bodyPart} (${it.originAge} ans)" } + state.injuries
-            if (injuries.isNotEmpty()) Text("Traces : ${injuries.distinct().take(4).joinToString(" · ")}", color = UltimateRed, fontSize = 10.sp, lineHeight = 15.sp)
+            if (injuries.isNotEmpty()) Text("Traces : ${injuries.distinct().take(4).joinToString(" · ")}", color = UltimateRed, fontSize = 12.sp, lineHeight = 18.sp)
         }
 
         if (c.powerRevealed) {
             Spacer(Modifier.height(8.dp))
             UltimatePanel(accent = accent) {
-                Text("TON POUVOIR N'EST PLUS LE MÊME QU'À 18 ANS", color = accent, fontWeight = FontWeight.Black, fontSize = 9.sp)
+                Text("TON POUVOIR N'EST PLUS LE MÊME QU'À 18 ANS", color = accent, fontWeight = FontWeight.Black, fontSize = 12.sp)
                 Text(c.powerFamily, color = UltimateIvory, fontWeight = FontWeight.Black, fontSize = 18.sp)
                 deep.powerEvolution?.let { power ->
-                    Text("${power.architecture.name.lowercase().replaceFirstChar(Char::uppercase)} · ${power.branch} · maîtrise ${power.mastery}", color = UltimateMuted, fontSize = 11.sp)
-                    if (power.unlockedTechniques.isNotEmpty()) Text(power.unlockedTechniques.takeLast(4).joinToString(" · "), color = UltimateGold, fontSize = 10.sp)
-                    if (power.mutations.isNotEmpty()) Text("Évolution : ${power.mutations.takeLast(2).joinToString(" · ")}", color = UltimateViolet, fontSize = 10.sp)
+                    Text("${power.architecture.name.lowercase().replaceFirstChar(Char::uppercase)} · ${power.branch} · maîtrise ${power.mastery}", color = UltimateMuted, fontSize = 12.sp)
+                    if (power.unlockedTechniques.isNotEmpty()) Text(power.unlockedTechniques.takeLast(4).joinToString(" · "), color = UltimateGold, fontSize = 12.sp)
+                    if (power.mutations.isNotEmpty()) Text("Évolution : ${power.mutations.takeLast(2).joinToString(" · ")}", color = UltimateViolet, fontSize = 12.sp)
                 }
-                Text("Coût : ${c.weakness}", color = UltimateRed, fontSize = 10.sp)
+                Text("Coût : ${c.weakness}", color = UltimateRed, fontSize = 12.sp)
             }
 
             Spacer(Modifier.height(8.dp))
             UltimatePanel(accent = UltimateGold) {
-                Text("TON IDENTITÉ PUBLIQUE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 9.sp)
+                Text("TON IDENTITÉ PUBLIQUE", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp)
                 Text("${state.heroPresentation} · ${state.maskStyle}", color = UltimateIvory, fontWeight = FontWeight.Black)
-                Text("${state.costumePalette} · ère ${state.costumeEra.coerceAtLeast(1)} · ${state.emblem}", color = UltimateMuted, fontSize = 10.sp)
-                Text("Ce costume influence la manière dont on te reconnaît, te craint et remonte jusqu'à ta vie civile.", color = UltimateMuted, fontSize = 10.sp, lineHeight = 15.sp)
+                Text("${state.costumePalette} · ère ${state.costumeEra.coerceAtLeast(1)} · ${state.emblem}", color = UltimateMuted, fontSize = 12.sp)
+                Text("Ce costume influence la manière dont on te reconnaît, te craint et remonte jusqu'à ta vie civile.", color = UltimateMuted, fontSize = 12.sp, lineHeight = 18.sp)
             }
         }
 
         Spacer(Modifier.height(10.dp))
-        Text("TON APPARENCE CONTINUE DE T'APPARTENIR", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 9.sp)
+        Text("TON APPARENCE CONTINUE DE T'APPARTENIR", color = UltimateGold, fontWeight = FontWeight.Black, fontSize = 12.sp)
         Spacer(Modifier.height(6.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Box(Modifier.weight(1f)) {

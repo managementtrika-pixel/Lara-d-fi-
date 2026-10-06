@@ -4,6 +4,14 @@ import android.content.Context
 import android.net.Uri
 
 internal fun saveCampaignV4(context: Context, c: Campaign) {
+    context.getSharedPreferences("legacy", Context.MODE_PRIVATE).edit()
+        .putString("campaign", encodeCampaignV4(c))
+        .remove(FinalSessionPersistence.ACTIVE)
+        .remove(FinalSessionPersistence.PREVIOUS)
+        .apply()
+}
+
+internal fun encodeCampaignV4(c: Campaign): String {
     fun e(v: Any) = Uri.encode(v.toString())
     fun map(v: Map<String, Int>) = v.entries.sortedBy { it.key }.joinToString(";") { "${it.key}:${it.value}" }
     val flags = c.flags.joinToString(";")
@@ -25,14 +33,16 @@ internal fun saveCampaignV4(context: Context, c: Campaign) {
         map(c.affinityScores), map(c.expressionScores), map(c.costScores), c.formativeRisk,
         c.powerRevealText, c.powerCostText, c.powerSignature
     ).joinToString("|") { e(it) }
-    context.getSharedPreferences("legacy", Context.MODE_PRIVATE)
-        .edit().putString("campaign", "V5|$fields").apply()
+    return "V5|$fields"
 }
 
 internal fun loadCampaignV4(context: Context): Campaign? {
     val raw = context.getSharedPreferences("legacy", Context.MODE_PRIVATE)
         .getString("campaign", null) ?: return null
-    return runCatching {
+    return decodeCampaignV4(raw)
+}
+
+internal fun decodeCampaignV4(raw: String): Campaign? = runCatching {
         when {
             raw.startsWith("V5|") -> parseV4(raw.removePrefix("V5|"))
             raw.startsWith("V4|") -> migrateLegacyV4Chronology(parseV4(raw.removePrefix("V4|")))
@@ -40,7 +50,6 @@ internal fun loadCampaignV4(context: Context): Campaign? {
             else -> null
         }
     }.getOrNull()
-}
 
 private fun parseV4(raw: String): Campaign {
     val p = raw.split('|').map(Uri::decode)
@@ -162,7 +171,8 @@ private fun migrateV3(raw: String): Campaign {
 }
 
 internal fun clearCampaignV4(context: Context) =
-    context.getSharedPreferences("legacy", Context.MODE_PRIVATE).edit().remove("campaign").apply()
+    context.getSharedPreferences("legacy", Context.MODE_PRIVATE).edit().remove("campaign")
+        .remove(FinalSessionPersistence.ACTIVE).remove(FinalSessionPersistence.PREVIOUS).apply()
 
 internal fun loadHallV4(context: Context): List<String> =
     context.getSharedPreferences("legacy", Context.MODE_PRIVATE)

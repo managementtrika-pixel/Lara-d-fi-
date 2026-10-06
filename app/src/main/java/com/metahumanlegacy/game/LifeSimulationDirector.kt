@@ -246,7 +246,7 @@ internal object LifeSimulationDirector {
 
     private fun initialCloseness(person: DeepRelationship): Int = (((person.trust + person.affection) / 2) - 40).coerceIn(0, 60)
 
-    private fun annualMoments(age: Int): Int = when { age < 12 -> 2; age < 18 -> 3; age < 65 -> 4; else -> 3 }
+    private fun annualMoments(age: Int): Int = ANNUAL_ACTION_LIMIT
 
     private fun result(state: LifeSimulationState, action: LifeAction, headline: String, detail: String): LifeActionResult =
         LifeActionResult(state.copy(actionLog = (state.actionLog + "${state.calendarYear}: ${action.label}").takeLast(80)), headline, detail)

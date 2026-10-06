@@ -48,7 +48,7 @@ internal fun Interface41TopHud(
     ) {
         Column(Modifier.weight(1f)) {
             Text(c.alias.ifBlank { c.name }.uppercase(), color = Interface41.text, fontWeight = FontWeight.Black, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text("${c.age} ANS  ·  ${c.phaseLabel.uppercase()}", color = accent, fontWeight = FontWeight.Bold, fontSize = 9.sp, letterSpacing = .8.sp)
+            Text("${c.age} ANS  ·  ${c.phaseLabel.uppercase()}", color = accent, fontWeight = FontWeight.Bold, fontSize = 11.sp, letterSpacing = .3.sp)
         }
         if (savePulse > 0) Text("●", color = UltimateGreen, fontSize = 9.sp, modifier = Modifier.padding(end = 6.dp).semantics { contentDescription = "Sauvegardé" })
         Interface41IconButton("⌂", "Accueil", onHome)
@@ -99,7 +99,7 @@ internal fun Interface41Dock(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(glyph, color = if (selected) accent else Interface41.muted, fontSize = 16.sp, fontWeight = FontWeight.Black)
-                Text(label, color = if (selected) Interface41.text else Interface41.muted, fontSize = 8.sp, maxLines = 1)
+                Text(label, color = if (selected) Interface41.text else Interface41.muted, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
     }

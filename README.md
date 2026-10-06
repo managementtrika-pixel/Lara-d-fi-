@@ -4,9 +4,28 @@ Simulateur Android solo de destinée métahumaine, en français. Le joueur comme
 
 ## Version
 
-**2.0.0 — Deep Life Simulation** (`versionCode 5`)
+**5.0.0 — Final** (`versionCode 50`), reprise du commit 4.5 `0803c04d6d16257f3a8412e39f77026b9b2f359f`.
 
-La 2.0 transforme la simulation de statistiques en simulation de vie : mémoire narrative, relations qui changent de nature, personnalité évolutive, perceptions multiples, blessures persistantes, identité secrète fondée sur des indices, opportunités qui expirent, conséquences différées, économie civile, districts vivants, némésis adaptatif, vieillissement, retraite, succession et héritage entre parties.
+Cette version remplace l'écran principal par une scène avec illustration séparée, texte lisible,
+choix accessibles et navigation fixe. La simulation existante est conservée. Les décisions sont
+protégées contre les appuis répétés ; les actions civiles et de carrière partagent trois moments
+par année réelle ; les conséquences sont enregistrées avec la partie, y compris la dernière
+avant le Hall. Le créateur conserve ses options et son étape lors d'une recréation d'activité.
+
+Les réglages permettent d'exporter/importer la vie et le Hall. L'import demande confirmation
+avant de remplacer les données. Un checkpoint précédent permet de récupérer une sauvegarde
+endommagée. La persistance 4.5 est migrée lorsqu'elle est présente dans le même stockage Android.
+
+L'APK finale utilise `com.metahumanlegacy.game.final` et une signature conservée séparément.
+Elle s'installe à côté des anciennes APK debug : Android ne partage pas leurs données entre
+ces deux identifiants. Aucun ancien APK ni aucune ancienne partie n'est supprimé par cette installation.
+
+La CI produit une release non signée ; la signature finale est faite avec la clé privée conservée
+hors du dépôt. Les tests Android parcourent créateur, enfance, éveil, reprise d'une conséquence,
+actions, ville, personnage, réglages, fin et Hall, et exportent des captures de l'application.
+
+Le socle Deep Life conserve mémoire narrative, relations, perceptions, blessures persistantes,
+identité secrète, opportunités à expiration, économie civile, districts, vieillissement et transmission.
 
 ## Piliers
 
@@ -39,6 +58,7 @@ La CI Android exécute :
 gradle testDebugUnitTest
 gradle lintDebug
 gradle assembleDebug
+gradle assembleRelease
 gradle connectedDebugAndroidTest
 ```
 

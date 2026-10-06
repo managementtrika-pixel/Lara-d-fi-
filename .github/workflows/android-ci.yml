@@ -2,7 +2,7 @@ name: Android CI
 
 on:
   push:
-    branches: [ "main", "final/comic-apk" ]
+    branches: [ "main", "final/comic-apk", "final/metahuman-legacy-5.0" ]
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
@@ -32,6 +32,8 @@ jobs:
         run: gradle --no-daemon lintDebug
       - name: Assemble debug APK
         run: gradle --no-daemon assembleDebug
+      - name: Assemble final release APK
+        run: gradle --no-daemon assembleRelease
       - name: Verify APK signature and alignment
         run: |
           "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -P 16 -v 4 app/build/outputs/apk/debug/app-debug.apk
@@ -45,6 +47,28 @@ jobs:
             app/build/outputs/apk/debug/app-debug.apk
             apk-sha256.txt
           if-no-files-found: error
+      - name: Record release source
+        run: |
+          git rev-parse HEAD > final-source-commit.txt
+          sha256sum app/build/outputs/apk/release/app-release-unsigned.apk > final-unsigned-sha256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: metahuman-legacy-final-release
+          path: |
+            app/build/outputs/apk/release/app-release-unsigned.apk
+            final-source-commit.txt
+            final-unsigned-sha256.txt
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: metahuman-legacy-unit-and-lint-reports
+          path: |
+            app/build/test-results/testDebugUnitTest
+            app/build/reports/tests/testDebugUnitTest
+            app/build/reports/lint-results-debug.html
+            app/build/reports/lint-results-debug.xml
+          if-no-files-found: warn
       - name: Export Android packaging tools
         run: |
           cp "$ANDROID_HOME/build-tools/36.0.0/lib/apksigner.jar" apksigner.jar
@@ -84,3 +108,17 @@ jobs:
           profile: pixel_6
           disable-animations: true
           script: gradle --no-daemon connectedDebugAndroidTest
+      - name: Collect device previews
+        if: always()
+        run: |
+          mkdir -p final-preview
+          adb pull /sdcard/Android/data/com.metahumanlegacy.game/files/final-preview/. final-preview/ || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: metahuman-legacy-device-reports
+          path: |
+            final-preview
+            app/build/outputs/androidTest-results/connected
+            app/build/reports/androidTests/connected
+          if-no-files-found: warn
